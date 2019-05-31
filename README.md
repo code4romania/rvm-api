@@ -6,7 +6,7 @@ API of the resource and volunteers management app of DSU (Dispeceratul pentru Si
 
 [See the project live](https://www.figma.com/proto/K7Qqywpx1QFVzG1ml2Fa3qsv/Resource-%26-Volunteer-Management-App?scaling=min-zoom)
 
-DSU (Dispeceratul pentru Situatii de Urgenta) needs a digital tool to manage the resources it has at its disposal, their location, as well as the volunteers and NGOs that are registered to offer help during a crisis situation. The aim of this project is to offer a better management solution so that DSU is better prepared for an emergency situation.
+DSU (Departamentul pentru Situatii de Urgenta) needs a digital tool to manage the resources it has at its disposal, their location, as well as the volunteers and NGOs that are registered to offer help during a crisis situation. The aim of this project is to offer a better management solution so that DSU is better prepared for an emergency situation.
 
 [Contributing](#contributing) | [Built with](#built-with) | [Repos and projects](#repos-and-projects) | [Deployment](#deployment) | [Feedback](#feedback) | [License](#license) | [About Code4Ro](#about-code4ro)
 
