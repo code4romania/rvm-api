@@ -53,6 +53,15 @@ Client of the API: https://github.com/code4romania/rvm-client
 
     docker-compose up
 
+## Swagger
+[L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger) has been bundled which is a Laravel 5 - Swagger integration that
+works out of the box.
+
+To parse new API route definitions, you need to publish a new version of Swagger definitions
+
+    ./dev/artisan.sh vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
+
+To see all API definitions, hit the [/api/documentation](http://localhost:8080/api/documentation) endpoint of the server.
 ## Deployment
 
 TBD

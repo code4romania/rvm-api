@@ -9,5 +9,14 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
+    /**
+     * @SWG\Swagger(
+     *   basePath="/",
+     *   @SWG\Info(
+     *     title="RVM API",
+     *     version="1.0.0"
+     *   )
+     * )
+     */
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }
