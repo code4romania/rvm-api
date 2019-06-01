@@ -40,6 +40,19 @@ MySQL
 
 Client of the API: https://github.com/code4romania/rvm-client
 
+## Development
+
+    # Only the first time
+
+    ./dev/composer.sh update
+    cp src/.env.example src/.env
+    docker-compose up
+    ./dev/key_generate.sh
+
+    # Every other time
+
+    docker-compose up
+
 ## Deployment
 
 TBD
