@@ -1,6 +1,7 @@
 vendor/
 node_modules/
 npm-debug.log
+.idea/
 
 # Laravel 4 specific
 src/bootstrap/compiled.php
@@ -18,3 +19,6 @@ src/Homestead.json
 
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
 .rocketeer/
+
+# Swagger
+src/resources/views/vendor/l5-swagger
