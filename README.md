@@ -40,6 +40,19 @@ MySQL
 
 Client of the API: https://github.com/code4romania/rvm-client
 
+## Development
+
+    # To bootstrap the project (Run this only once), run the following commands in your shell:
+
+    ./dev/composer.sh update
+    cp src/.env.example src/.env
+    docker-compose up
+    ./dev/key_generate.sh
+
+    # Every other time
+
+    docker-compose up
+
 ## Deployment
 
 TBD
