@@ -48,6 +48,7 @@ Client of the API: https://github.com/code4romania/rvm-client
     cp src/.env.example src/.env
     docker-compose up
     ./dev/key_generate.sh
+    ./dev/artisan.sh migrate
     ./dev/artisan.sh passport:install
 
     # Every other time
