@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'couchdb'),
 
     /*
     |--------------------------------------------------------------------------
@@ -77,7 +77,17 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
         ],
-
+        'couchdb' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'forge'),
+            'user'     => env('DB_USERNAME', null),
+            'password' => env('DB_PASSWORD', null),
+            'logging'  => env('DB_LOGGING', false),
+        ],
     ],
 
     /*
