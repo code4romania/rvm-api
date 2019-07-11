@@ -1,0 +1,37 @@
+{
+  "name": "inft/laravel-couchdb",
+  "description": "A CouchDB v2.0.0 based Eloquent model and Query builder for Laravel",
+  "authors": [
+    {
+      "name": "Robson Nascimento",
+      "email": "robsonvnasc@gmail.com"
+    }
+  ],
+  "license" : "MIT",
+  "require": {
+    "illuminate/database": "5.8.*",
+    "illuminate/support": "5.8.*",
+    "illuminate/container": "5.8.*",
+    "illuminate/events": "5.8.*",
+    "doctrine/couchdb": "*",
+    "adbario/php-dot-notation": "^1.2"
+  },
+  "require-dev":{
+    "laravel/passport": "^3.0.0",
+    "phpunit/phpunit": "@stable",
+    "orchestra/testbench": "^3.1",
+    "mockery/mockery": "^0.9"
+  },
+  "autoload": {
+        "psr-4": {
+            "Robsonvn\\CouchDB\\": "src"
+        }
+   },
+   "autoload-dev": {
+       "classmap": [
+           "tests/TestCase.php",
+           "tests/models",
+           "tests/seeds"
+       ]
+   }
+}
