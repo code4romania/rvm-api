@@ -337,7 +337,6 @@ class BelongsToMany extends EloquentBelongsToMany
      */
     public function getRelatedKey()
     {
-        //var_dump($this);
         return property_exists($this, 'relatedPivotKey') ? $this->relatedPivotKey : $this->relatedKey;
     }
 }

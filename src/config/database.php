@@ -87,6 +87,7 @@ return [
             'user'     => env('DB_USERNAME', null),
             'password' => env('DB_PASSWORD', null),
             'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
         ],
     ],
 
