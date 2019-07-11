@@ -1,31 +1,112 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "Customer rate calculator API",
+        "title": "RVM API",
         "version": "1.0.0"
     },
     "basePath": "/",
     "paths": {
-        "/create": {
-            "get": {
-                "summary": "Create user",
-                "operationId": "createUser",
+        "/api/register": {
+            "post": {
+                "summary": "Register user",
+                "operationId": "register",
                 "parameters": [
                     {
-                        "name": "firstname",
+                        "name": "name",
                         "in": "query",
-                        "description": "Customer first name.",
+                        "description": "Customer name.",
                         "required": true,
                         "type": "string"
                     },
                     {
-                        "name": "lastname",
+                        "name": "email",
                         "in": "query",
-                        "description": "Customer last name.",
+                        "description": "Customer email.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "Customer password.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password_confirmation",
+                        "in": "query",
+                        "description": "Customer confirmation password.",
                         "required": true,
                         "type": "string"
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "summary": "User login",
+                "operationId": "login",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Emaill address.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "Password",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "get": {
+                "summary": "User logout",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/profile": {
+            "get": {
+                "summary": "Get user profile",
+                "operationId": "profile",
                 "responses": {
                     "200": {
                         "description": "successful operation"

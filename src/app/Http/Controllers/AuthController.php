@@ -11,6 +11,46 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    /**
+     * @SWG\Post(
+     *   path="/api/register",
+     *   summary="Register user",
+     *   operationId="register",
+     *   @SWG\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Customer name.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Customer email.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     description="Customer password.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="password_confirmation",
+     *     in="query",
+     *     description="Customer confirmation password.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
     public function register (Request $request) {
 
         $validator = Validator::make($request->all(), [
@@ -33,6 +73,34 @@ class AuthController extends Controller
         return response($response, 200);
     
     }
+
+
+    /**
+     * @SWG\Post(
+     *   path="/api/login",
+     *   summary="User login",
+     *   operationId="login",
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Emaill address.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     description="Password",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
 
     public function login (Request $request) {
 
@@ -57,6 +125,20 @@ class AuthController extends Controller
     
     }
 
+
+    /**
+     * @SWG\Get(
+     *   path="/api/logout",
+     *   summary="User logout",
+     *   operationId="logout",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
+
     public function logout (Request $request) {
 
         $token = $request->user()->token();
@@ -66,6 +148,19 @@ class AuthController extends Controller
         return response()->json($response, 200);
     
     }
+
+
+    /**
+     * @SWG\Get(
+     *   path="/api/profile",
+     *   summary="Get user profile",
+     *   operationId="profile",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
 
     public function profile() 
     { 
