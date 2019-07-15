@@ -56,5 +56,6 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'json.response' => \App\Http\Middleware\ForceJsonResponse::class,
+        'checkRole' => \App\Http\Middleware\CheckRole::class,
     ];
 }

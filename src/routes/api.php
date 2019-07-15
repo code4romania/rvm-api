@@ -25,4 +25,8 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::get('/logout', 'AuthController@logout')->name('logout');
     });
 
+    Route::middleware('checkRole')->group(function () {
+        
+    });
+
 });

@@ -44,6 +44,20 @@ class AuthController extends Controller
      *     required=true,
      *     type="string"
      *   ),
+     *  @SWG\Parameter(
+     *     name="role",
+     *     in="query",
+     *     description="Customer role.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="phone",
+     *     in="query",
+     *     description="Customer phone.",
+     *     required=true,
+     *     type="string"
+     *   ),
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -57,6 +71,8 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
+            'role' => 'required',
+            'phone' => 'required|string|min:6|'
         ]);
     
         if ($validator->fails())
@@ -103,8 +119,9 @@ class AuthController extends Controller
 
 
     public function login (Request $request) {
-
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)
+            ->orWhere('phone', $request->phone)
+            ->first();
 
         if ($user) {
             

@@ -38,6 +38,20 @@
                         "description": "Customer confirmation password.",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Customer role.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Customer phone.",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
