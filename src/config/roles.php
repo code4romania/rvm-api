@@ -7,14 +7,14 @@ return [
     | Roles 
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for roles such as
-    | DSU, Organization, RescueOfficer. 
+    | This file is for storing roles such as
+    | DSU, CSO (Organisation), RescueOfficer. 
     |
     */
 
     'role' => [
         'officer' => '0',
-        'organization' => '1',
+        'cso' => '1',
         'dsu' => '2'
     ],
 

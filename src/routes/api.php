@@ -26,7 +26,12 @@ Route::group(['middleware' => ['json.response']], function () {
     });
 
     Route::middleware('checkRole')->group(function () {
-        
+
     });
 
+    Route::get('organisations', 'OrganisationController@index');
+    Route::get('organisations/{id}', 'OrganisationController@show');
+    Route::post('organisations', 'OrganisationController@store');
+    Route::put('organisations/{id}', 'OrganisationController@update');
+    Route::delete('organisations/{id}', 'OrganisationController@delete');
 });

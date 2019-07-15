@@ -133,6 +133,150 @@
                     }
                 }
             }
+        },
+        "/api/organisations": {
+            "get": {
+                "summary": "Return all organisations",
+                "operationId": "index",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create organisation",
+                "operationId": "store",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Organisation name.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "website",
+                        "in": "query",
+                        "description": "Organisation website.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "contact_person",
+                        "in": "query",
+                        "description": "Organisation Contact Person.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Organisation email.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Organisation phone.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "county",
+                        "in": "query",
+                        "description": "Organisation county.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "locality",
+                        "in": "query",
+                        "description": "Organisation locality.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "address",
+                        "in": "query",
+                        "description": "Organisation address.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "comments",
+                        "in": "query",
+                        "description": "Organisation comments.",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/organisations/{id}": {
+            "get": {
+                "summary": "Show organisation info ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update organisation",
+                "operationId": "update",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete organisation",
+                "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
         }
     },
     "definitions": {}
