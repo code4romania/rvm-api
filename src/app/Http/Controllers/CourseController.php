@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
-use App\Organisation;
+use App\Course;
 
-class OrganisationController extends Controller
+class CourseController extends Controller
 {
         /**
      * @SWG\Get(
-     *   tags={"Organisations"},
-     *   path="/api/organisations",
-     *   summary="Return all organisations",
+     *   tags={"Courses"},
+     *   path="/api/courses",
+     *   summary="Return all courses",
      *   operationId="index",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -23,14 +23,14 @@ class OrganisationController extends Controller
      */
     public function index()
     {
-        return Organisation::all();
+        return Course::all();
     }
 
      /**
      * @SWG\Get(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Show organisation info ",
+     *   tags={"Courses"},
+     *   path="/api/courses/{id}",
+     *   summary="Show course info ",
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -41,76 +41,41 @@ class OrganisationController extends Controller
 
     public function show($id)
     {
-        return Organisation::find($id);
+        return Course::find($id);
     }
 
     /**
      * @SWG\Post(
-     *   tags={"Organisations"},
-     *   path="/api/organisations",
-     *   summary="Create organisation",
+     *   tags={"Courses"},
+     *   path="/api/courses",
+     *   summary="Create course",
      *   operationId="store",
      *   @SWG\Parameter(
-     *     name="name",
+     *     name="volunteer_id",
      *     in="query",
-     *     description="Organisation name.",
+     *     description="Course volunteer id.",
      *     required=true,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
-     *     name="website",
+     *     name="name",
      *     in="query",
-     *     description="Organisation website.",
+     *     description="Course name.",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
-     *     name="contact_person",
+     *     name="ssn",
      *     in="query",
-     *     description="Organisation Contact Person.",
+     *     description="Course acredited.",
      *     required=true,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
      *     name="email",
      *     in="query",
-     *     description="Organisation email.",
+     *     description="Course obatained.",
      *     required=true,
-     *     type="string"
-     *   ),
-     *   @SWG\Parameter(
-     *     name="phone",
-     *     in="query",
-     *     description="Organisation phone.",
-     *     required=true,
-     *     type="string"
-     *   ),
-     *  @SWG\Parameter(
-     *     name="county",
-     *     in="query",
-     *     description="Organisation county.",
-     *     required=true,
-     *     type="string"
-     *   ),
-     *  @SWG\Parameter(
-     *     name="city",
-     *     in="query",
-     *     description="Organisation city.",
-     *     required=true,
-     *     type="string"
-     *   ),
-     *  @SWG\Parameter(
-     *     name="address",
-     *     in="query",
-     *     description="Organisation address.",
-     *     required=false,
-     *     type="string"
-     *   ),
-     *   @SWG\Parameter(
-     *     name="comments",
-     *     in="query",
-     *     description="Organisation comments.",
-     *     required=false,
      *     type="string"
      *   ),
      *   @SWG\Response(response=200, description="successful operation"),
@@ -121,29 +86,27 @@ class OrganisationController extends Controller
      */
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
+            'volunteer_id' => 'required|string',
             'name' => 'required|string|max:255',
-            'website' => 'required|max:255',
-            'contact_person' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'required|string|min:6|',
-            'county' => 'required|string|min:4|',
-            'city' => 'required|string|min:4|'
+            'acredited' => 'required|string',
+            'obatained' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response(['errors'=>$validator->errors()->all()], 400);
         }
         
-        $organisation = Organisation::create($request->all());
-        return response()->json($organisation, 201); 
+        $course = Course::create($request->all());
+        return response()->json($course, 201); 
     }
 
     /**
      * @SWG\put(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Update organisation",
+     *   tags={"Courses"},
+     *   path="/api/courses/{id}",
+     *   summary="Update course",
      *   operationId="update",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -154,17 +117,17 @@ class OrganisationController extends Controller
 
     public function update(Request $request, $id)
     {
-        $organisation = Organisation::findOrFail($id);
-        $organisation->update($request->all());
+        $course = Course::findOrFail($id);
+        $course->update($request->all());
 
-        return $organisation;
+        return $course;
     }
 
     /**
      * @SWG\Delete(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Delete organisation",
+     *   tags={"Courses"},
+     *   path="/api/courses/{id}",
+     *   summary="Delete course",
      *   operationId="delete",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -175,10 +138,10 @@ class OrganisationController extends Controller
 
     public function delete(Request $request, $id)
     {
-        $organisation = Organisation::findOrFail($id);
-        $organisation->delete();
+        $course = Course::findOrFail($id);
+        $course->delete();
 
-        $response = array("message" => 'Organisation deleted.');
+        $response = array("message" => 'Course deleted.');
 
         return response()->json($response, 200);
     }

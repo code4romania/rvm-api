@@ -13,6 +13,7 @@ class AuthController extends Controller
 {
     /**
      * @SWG\Post(
+     *   tags={"Auth"},
      *   path="/api/register",
      *   summary="Register user",
      *   operationId="register",
@@ -93,6 +94,7 @@ class AuthController extends Controller
 
     /**
      * @SWG\Post(
+     *   tags={"Auth"},
      *   path="/api/login",
      *   summary="User login",
      *   operationId="login",
@@ -145,6 +147,7 @@ class AuthController extends Controller
 
     /**
      * @SWG\Get(
+     *   tags={"Auth"},
      *   path="/api/logout",
      *   summary="User logout",
      *   operationId="logout",
@@ -169,6 +172,7 @@ class AuthController extends Controller
 
     /**
      * @SWG\Get(
+     *   tags={"Auth"},
      *   path="/api/profile",
      *   summary="Get user profile",
      *   operationId="profile",

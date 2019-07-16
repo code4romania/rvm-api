@@ -34,4 +34,22 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::post('organisations', 'OrganisationController@store');
     Route::put('organisations/{id}', 'OrganisationController@update');
     Route::delete('organisations/{id}', 'OrganisationController@delete');
+
+    Route::get('volunteers', 'VolunteerController@index');
+    Route::get('volunteers/{id}', 'VolunteerController@show');
+    Route::post('volunteers', 'VolunteerController@store');
+    Route::put('volunteers/{id}', 'VolunteerController@update');
+    Route::delete('volunteers/{id}', 'VolunteerController@delete');
+
+    Route::get('resources', 'ResourcesController@index');
+    Route::get('resources/{id}', 'ResourcesController@show');
+    Route::post('resources', 'ResourcesController@store');
+    Route::put('resources/{id}', 'ResourcesController@update');
+    Route::delete('resources/{id}', 'ResourcesController@delete');
+
+    Route::get('courses', 'CourseController@index');
+    Route::get('courses/{id}', 'CourseController@show');
+    Route::post('courses', 'CourseController@store');
+    Route::put('courses/{id}', 'CourseController@update');
+    Route::delete('courses/{id}', 'CourseController@delete');
 });

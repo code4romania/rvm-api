@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
-use App\Organisation;
+use App\Volunteer;
 
-class OrganisationController extends Controller
+class VolunteerController extends Controller
 {
         /**
      * @SWG\Get(
-     *   tags={"Organisations"},
-     *   path="/api/organisations",
-     *   summary="Return all organisations",
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers",
+     *   summary="Return all volunteers",
      *   operationId="index",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -23,14 +23,14 @@ class OrganisationController extends Controller
      */
     public function index()
     {
-        return Organisation::all();
+        return Volunteer::all();
     }
 
      /**
      * @SWG\Get(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Show organisation info ",
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers/{id}",
+     *   summary="Show volunteer info ",
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -41,75 +41,89 @@ class OrganisationController extends Controller
 
     public function show($id)
     {
-        return Organisation::find($id);
+        return Volunteer::find($id);
     }
 
     /**
      * @SWG\Post(
-     *   tags={"Organisations"},
-     *   path="/api/organisations",
-     *   summary="Create organisation",
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers",
+     *   summary="Create volunteer",
      *   operationId="store",
      *   @SWG\Parameter(
-     *     name="name",
+     *     name="organisation_id",
      *     in="query",
-     *     description="Organisation name.",
+     *     description="Volunteer organisation id.",
      *     required=true,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
-     *     name="website",
+     *     name="name",
      *     in="query",
-     *     description="Organisation website.",
+     *     description="Volunteer name.",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
-     *     name="contact_person",
+     *     name="ssn",
      *     in="query",
-     *     description="Organisation Contact Person.",
+     *     description="Volunteer ssn.",
      *     required=true,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
      *     name="email",
      *     in="query",
-     *     description="Organisation email.",
+     *     description="Volunteer email.",
      *     required=true,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
      *     name="phone",
      *     in="query",
-     *     description="Organisation phone.",
+     *     description="Volunteer phone.",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="county",
      *     in="query",
-     *     description="Organisation county.",
+     *     description="Volunteer county.",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="city",
      *     in="query",
-     *     description="Organisation city.",
+     *     description="Volunteer city.",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="address",
      *     in="query",
-     *     description="Organisation address.",
+     *     description="Volunteer address.",
      *     required=false,
      *     type="string"
      *   ),
      *   @SWG\Parameter(
      *     name="comments",
      *     in="query",
-     *     description="Organisation comments.",
+     *     description="Volunteer comments.",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="job",
+     *     in="query",
+     *     description="Volunteer job.",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="added_by",
+     *     in="query",
+     *     description="Volunteer added by.",
      *     required=false,
      *     type="string"
      *   ),
@@ -123,8 +137,7 @@ class OrganisationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'website' => 'required|max:255',
-            'contact_person' => 'required|string|max:255',
+            'ssn' => 'required|string',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
@@ -135,15 +148,15 @@ class OrganisationController extends Controller
             return response(['errors'=>$validator->errors()->all()], 400);
         }
         
-        $organisation = Organisation::create($request->all());
-        return response()->json($organisation, 201); 
+        $volunteer = Volunteer::create($request->all());
+        return response()->json($volunteer, 201); 
     }
 
     /**
      * @SWG\put(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Update organisation",
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers/{id}",
+     *   summary="Update volunteer",
      *   operationId="update",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -154,17 +167,17 @@ class OrganisationController extends Controller
 
     public function update(Request $request, $id)
     {
-        $organisation = Organisation::findOrFail($id);
-        $organisation->update($request->all());
+        $volunteer = Volunteer::findOrFail($id);
+        $volunteer->update($request->all());
 
-        return $organisation;
+        return $volunteer;
     }
 
     /**
      * @SWG\Delete(
-     *   tags={"Organisations"},
-     *   path="/api/organisations/{id}",
-     *   summary="Delete organisation",
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers/{id}",
+     *   summary="Delete volunteer",
      *   operationId="delete",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -175,10 +188,10 @@ class OrganisationController extends Controller
 
     public function delete(Request $request, $id)
     {
-        $organisation = Organisation::findOrFail($id);
-        $organisation->delete();
+        $volunteer = Volunteer::findOrFail($id);
+        $volunteer->delete();
 
-        $response = array("message" => 'Organisation deleted.');
+        $response = array("message" => 'Volunteer deleted.');
 
         return response()->json($response, 200);
     }
