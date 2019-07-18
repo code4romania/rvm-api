@@ -125,7 +125,7 @@ class OrganisationController extends Controller
             'name' => 'required|string|max:255',
             'website' => 'required|max:255',
             'contact_person' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:organisations.organisations',
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'

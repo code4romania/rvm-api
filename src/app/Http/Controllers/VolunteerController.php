@@ -138,7 +138,7 @@ class VolunteerController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'ssn' => 'required|string',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:volunteers.volunteers',
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'
