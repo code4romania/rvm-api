@@ -23,7 +23,8 @@ class ResourceController extends Controller
      */
     public function index()
     {
-        return Resource::all();
+        //$resources = Resource::simplePaginate();
+        return response()->json(Resource::all(), 200); 
     }
 
      /**
@@ -65,9 +66,9 @@ class ResourceController extends Controller
      *     type="string"
      *   ),
      *  @SWG\Parameter(
-     *     name="type",
+     *     name="type_name",
      *     in="query",
-     *     description="Resource type.",
+     *     description="Resource type_name.",
      *     required=true,
      *     type="string"
      *   ),
@@ -122,18 +123,27 @@ class ResourceController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'organisation_id' => 'required',
             'name' => 'required|string|max:255',
-            'type' => 'required|string',
+            'type_name' => 'required|string',
             'quantity' => 'required|string',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'
         ]);
 
         if ($validator->fails()) {
-            return response(['errors'=>$validator->errors()->all()], 400);
+            return response(['errors' => $validator->errors()->all()], 400);
         }
         
+        $organisation_id = $request->organisation_id;
+        $organisation = \DB::connection('organisations')->collection('organisations')
+            ->where('_id', '=', $organisation_id)
+            ->get(['_id', 'name', 'website'])
+            ->first();
+
+        $request->request->add(['organisation' => $organisation]);
         $resource = Resource::create($request->all());
+
         return response()->json($resource, 201); 
     }
 
@@ -179,5 +189,44 @@ class ResourceController extends Controller
         $response = array("message" => 'Resource deleted.');
 
         return response()->json($response, 200);
+    }
+
+        /**
+     * @SWG\Get(
+     *   tags={"Resources"},
+     *   path="/api/resources/list",
+     *   summary="List resources",
+     *   operationId="delete",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
+    public function list()
+    {
+        $items = [];
+        $resOrgsIds = [];
+
+        $resources = Resource::all();
+        $resType = $resources->groupBy(['type_name']);
+
+        foreach($resType as $key => $resource) {
+            foreach($resource as $item) {
+                $resOrgsIds[$key][$item->name]['organisation_ids'][] = $item->organisation['_id'];
+                if(isset($items[$key]) && array_key_exists($item->name,$items[$key])) {
+                    $items[$key][$item->name]['quantity'] +=  (int)$item->quantity;
+                    $items[$key][$item->name]['organisations_nr'] = count(array_unique($resOrgsIds[$key][$item->name]['organisation_ids']));
+                } else {
+                    $items[$key][$item->name]['quantity']  =  (int)$item->quantity;
+                    $items[$key][$item->name]['organisations_nr'] =  1;
+                }
+            }
+        }
+        //$paginare = Resource::simplePaginate();
+        //var_Dump($paginare);
+
+        return response()->json($items, 201);
     }
 }

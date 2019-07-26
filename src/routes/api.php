@@ -20,14 +20,14 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::post('/register', 'AuthController@register')->name('register.api');
 
     // private routes
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware(['auth:api', 'checkRole'])->group(function () {
         Route::get('/profile', 'AuthController@profile')->name('profile.api');
         Route::get('/logout', 'AuthController@logout')->name('logout');
     });
 
-    Route::middleware('checkRole')->group(function () {
-
-    });
+    // Route::middleware('checkRole')->group(function () {
+    //     Route::get('/profile', 'AuthController@profile')->name('profile.api');
+    // });
 
     Route::get('organisations', 'OrganisationController@index');
     Route::get('organisations/{id}', 'OrganisationController@show');
@@ -41,11 +41,12 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::put('volunteers/{id}', 'VolunteerController@update');
     Route::delete('volunteers/{id}', 'VolunteerController@delete');
 
-    Route::get('resources', 'ResourcesController@index');
-    Route::get('resources/{id}', 'ResourcesController@show');
-    Route::post('resources', 'ResourcesController@store');
-    Route::put('resources/{id}', 'ResourcesController@update');
-    Route::delete('resources/{id}', 'ResourcesController@delete');
+    Route::get('resources', 'ResourceController@index');
+    Route::get('resources/list', 'ResourceController@list');
+    Route::get('resources/{id}', 'ResourceController@show');
+    Route::post('resources', 'ResourceController@store');
+    Route::put('resources/{id}', 'ResourceController@update');
+    Route::delete('resources/{id}', 'ResourceController@delete');
 
     Route::get('courses', 'CourseController@index');
     Route::get('courses/{id}', 'CourseController@show');

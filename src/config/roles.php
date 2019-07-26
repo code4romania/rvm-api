@@ -8,13 +8,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file is for storing roles such as
-    | DSU, CSO (Organisation), RescueOfficer. 
+    | DSU, NGO (Organisation), RescueOfficer. 
     |
     */
 
     'role' => [
         'officer' => '0',
-        'cso' => '1',
+        'ngo' => '1',
         'dsu' => '2'
     ],
 
