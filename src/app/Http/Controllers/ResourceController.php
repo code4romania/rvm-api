@@ -191,7 +191,35 @@ class ResourceController extends Controller
         return response()->json($response, 200);
     }
 
-        /**
+
+    // public function listGroupByType()
+    // {
+    //     $items = [];
+    //     $resOrgsIds = [];
+
+    //     $resources = Resource::all();
+    //     $resType = $resources->groupBy(['type_name']);
+
+
+    //     foreach($resType as $key => $resource) {
+    //         foreach($resource as $item) {
+    //             $resOrgsIds[$key][$item->name]['organisation_ids'][] = $item->organisation['_id'];
+    //             if(isset($items[$key]) && array_key_exists($item->name,$items[$key])) {
+    //                 $items[$key][$item->name]['quantity'] +=  (int)$item->quantity;
+    //                 $items[$key][$item->name]['organisations_nr'] = count(array_unique($resOrgsIds[$key][$item->name]['organisation_ids']));
+    //             } else {
+    //                 $items[$key][$item->name]['quantity']  =  (int)$item->quantity;
+    //                 $items[$key][$item->name]['organisations_nr'] =  1;
+    //             }
+    //         }
+    //     }
+    //     //$paginare = Resource::simplePaginate();
+    //     //var_Dump($paginare);
+
+    //     return response()->json($items, 201);
+    // }
+
+    /**
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources/list",
@@ -203,30 +231,30 @@ class ResourceController extends Controller
      * )
      *
      */
-
+    
     public function list()
     {
         $items = [];
         $resOrgsIds = [];
 
         $resources = Resource::all();
-        $resType = $resources->groupBy(['type_name']);
+        $resType = $resources->groupBy(['name']);
 
         foreach($resType as $key => $resource) {
             foreach($resource as $item) {
-                $resOrgsIds[$key][$item->name]['organisation_ids'][] = $item->organisation['_id'];
+                $resOrgsIds[$key]['organisation_ids'][] = $item->organisation['_id'];
                 if(isset($items[$key]) && array_key_exists($item->name,$items[$key])) {
-                    $items[$key][$item->name]['quantity'] +=  (int)$item->quantity;
-                    $items[$key][$item->name]['organisations_nr'] = count(array_unique($resOrgsIds[$key][$item->name]['organisation_ids']));
+                    $items[$key]['type_name'] = $item->type_name;
+                    $items[$key]['quantity'] +=  (int)$item->quantity;
+                    $items[$key]['organisations_nr'] = count(array_unique($resOrgsIds[$key]['organisation_ids']));
                 } else {
-                    $items[$key][$item->name]['quantity']  =  (int)$item->quantity;
-                    $items[$key][$item->name]['organisations_nr'] =  1;
+                    $items[$key]['type_name'] = $item->type_name;
+                    $items[$key]['quantity']  =  (int)$item->quantity;
+                    $items[$key]['organisations_nr'] =  1;
                 }
             }
         }
-        //$paginare = Resource::simplePaginate();
-        //var_Dump($paginare);
 
-        return response()->json($items, 201);
+        return response()->json($items, 200);
     }
 }

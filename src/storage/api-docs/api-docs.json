@@ -470,9 +470,9 @@
                         "type": "string"
                     },
                     {
-                        "name": "type",
+                        "name": "type_name",
                         "in": "query",
-                        "description": "Resource type.",
+                        "description": "Resource type_name.",
                         "required": true,
                         "type": "string"
                     },
@@ -574,6 +574,26 @@
                     "Resources"
                 ],
                 "summary": "Delete resource",
+                "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/resources/list": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "List resources",
                 "operationId": "delete",
                 "responses": {
                     "200": {
