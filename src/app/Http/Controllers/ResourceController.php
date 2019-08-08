@@ -21,10 +21,30 @@ class ResourceController extends Controller
      * )
      *
      */
-    public function index()
+    public function index(Request $request)
     {
-        //$resources = Resource::simplePaginate();
-        return response()->json(Resource::all(), 200); 
+        $params = $request->query();
+        $resources = Resource::query();
+
+        applyFilters($resources, $params, array(
+            '1' => array( 'type_name', 'ilike' ),
+            '2' => array( 'county', 'ilike' ),
+            '3' => array( 'organisation.name', 'ilike')
+        ));
+        
+        applySort($resources, $params, array(
+            '1' => 'name',
+            '2' => 'type_name',
+            '3' => 'quantity',
+            '4' => 'organisation', //change to nr_org
+        ));
+
+        $pager = applyPaginate($resources, $params);
+
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $resources->get()
+        ), 200); 
     }
 
      /**
@@ -42,7 +62,60 @@ class ResourceController extends Controller
 
     public function show($id)
     {
-        return Resource::find($id);
+        $resources = Resource::find($id);
+
+        if(empty($resources)) {
+            return response()->json(404);
+        }
+
+        return response()->json($resources, 200);
+    }
+
+    /**
+    * @SWG\POST(
+    *   tags={"Organisations"},
+    *   path="/api/resources/organisations",
+    *   summary="Show all resources of an Organisation ",
+    *   operationId="show",
+    *   @SWG\Response(response=200, description="successful operation"),
+    *   @SWG\Response(response=404, description="not found")
+    * )
+    *
+    */
+
+    public function showOrganisations(Request $request)
+    {
+        $params = $request->query();
+        $resources = Resource::query();
+
+        // applySort($resources, $params, array(
+        //     '1' => 'organisation.name',
+        //     '2' => 'organisation.address',
+        //     '3' => 'organisation.county',
+        // ));
+
+        // applyFilters($resources, $params, array(
+        //     '1' => array( 'name', 'ilike' ),
+        //     '2' => array( 'organisation.address', 'ilike' )
+        // ));
+
+        $pager = applyPaginate($resources, $params);
+       
+        $results = $resources->get(['quantity',
+            'name',
+            'updated_at',
+            'organisation._id',
+            'organisation.name',
+            'organisation.address',
+            'organisation.county']);
+        //->unique('organisation._id');
+
+        return response()->json(
+            array(
+                "pager" => $pager,
+                "data" => $results
+            )
+        , 200); 
     }
 
     /**
@@ -122,27 +195,30 @@ class ResourceController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+        $rules = [
             'organisation_id' => 'required',
             'name' => 'required|string|max:255',
             'type_name' => 'required|string',
-            'quantity' => 'required|string',
+            'quantity' => 'required|integer',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'
-        ]);
-
+        ];
+        $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
-        
+
+        $data = convertData($validator->validated(), $rules);
         $organisation_id = $request->organisation_id;
+
         $organisation = \DB::connection('organisations')->collection('organisations')
             ->where('_id', '=', $organisation_id)
-            ->get(['_id', 'name', 'website'])
+            ->get(['_id', 'name', 'website', 'address', 'county'])
             ->first();
 
-        $request->request->add(['organisation' => $organisation]);
-        $resource = Resource::create($request->all());
+        $data['organisation'] = $organisation;
+        $resource = Resource::create($data);
 
         return response()->json($resource, 201); 
     }
@@ -163,9 +239,20 @@ class ResourceController extends Controller
     public function update(Request $request, $id)
     {
         $resource = Resource::findOrFail($id);
-        $resource->update($request->all());
 
-        return $resource;
+        if($request->has('organisation_id')) {
+            $organisation_id = $request->organisation_id;
+            $organisation = \DB::connection('organisations')->collection('organisations')
+                ->where('_id', '=', $organisation_id)
+                ->get(['_id', 'name', 'website', 'address', 'county'])
+                ->first();
+
+            $request->request->add(['organisation' => $organisation]);
+        }
+
+        $resource->update($request->all());
+ 
+        return response()->json($resource, 200); 
     }
 
     /**
@@ -232,7 +319,7 @@ class ResourceController extends Controller
      *
      */
     
-    public function list()
+    public function list(Request $request)
     {
         $items = [];
         $resOrgsIds = [];
@@ -243,7 +330,7 @@ class ResourceController extends Controller
         foreach($resType as $key => $resource) {
             foreach($resource as $item) {
                 $resOrgsIds[$key]['organisation_ids'][] = $item->organisation['_id'];
-                if(isset($items[$key]) && array_key_exists($item->name,$items[$key])) {
+                if(isset($items[$key]) && array_key_exists($key, $items)) {
                     $items[$key]['type_name'] = $item->type_name;
                     $items[$key]['quantity'] +=  (int)$item->quantity;
                     $items[$key]['organisations_nr'] = count(array_unique($resOrgsIds[$key]['organisation_ids']));
@@ -254,6 +341,7 @@ class ResourceController extends Controller
                 }
             }
         }
+       // $items = rvmPaginate($items);
 
         return response()->json($items, 200);
     }

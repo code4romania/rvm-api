@@ -136,8 +136,9 @@ class VolunteerController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'organisation_id' => 'required',
             'name' => 'required|string|max:255',
-            'ssn' => 'required|string',
+            'ssn' => 'required|string|unique:volunteers.volunteers',
             'email' => 'required|string|email|max:255|unique:volunteers.volunteers',
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
@@ -147,8 +148,15 @@ class VolunteerController extends Controller
         if ($validator->fails()) {
             return response(['errors'=>$validator->errors()->all()], 400);
         }
-        
+        $organisation_id = $request->organisation_id;
+        $organisation = \DB::connection('organisations')->collection('organisations')
+            ->where('_id', '=', $organisation_id)
+            ->get(['_id', 'name', 'website'])
+            ->first();
+
+        $request->request->add(['organisation' => $organisation]);    
         $volunteer = Volunteer::create($request->all());
+
         return response()->json($volunteer, 201); 
     }
 

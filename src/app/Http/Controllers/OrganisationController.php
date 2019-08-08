@@ -33,16 +33,59 @@ class OrganisationController extends Controller
      *   summary="Show organisation info ",
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error")
+     *   @SWG\Response(response=404, description="not acceptable"),
      * )
      *
      */
 
     public function show($id)
     {
-        return Organisation::find($id);
+        return response()->json(Organisation::findOrFail($id), 200); 
+
     }
+
+    /**
+    * @SWG\Get(
+    *   tags={"Organisations"},
+    *   path="/api/organisations/{id}/volunteers",
+    *   summary="Show all volunteers of an Organisation ",
+    *   operationId="show",
+    *   @SWG\Response(response=200, description="successful operation"),
+    *   @SWG\Response(response=404, description="not found")
+    * )
+    *
+    */
+
+    public function showVolunteers($id)
+    {
+        $volunteers = \DB::connection('volunteers')->collection('volunteers')
+            ->where('organisation._id', '=', $id)
+            ->get();
+
+        return response()->json($volunteers, 200); 
+    }
+
+    /**
+    * @SWG\Get(
+    *   tags={"Organisations"},
+    *   path="/api/organisations/{id}/resources",
+    *   summary="Show all resources of an Organisation ",
+    *   operationId="show",
+    *   @SWG\Response(response=200, description="successful operation"),
+    *   @SWG\Response(response=404, description="not found")
+    * )
+    *
+    */
+
+    public function showResources($id)
+    {
+        $resources = \DB::connection('resources')->collection('resources')
+            ->where('organisation._id', '=', $id)
+            ->get();
+
+        return response()->json($resources, 200); 
+    }
+
 
     /**
      * @SWG\Post(

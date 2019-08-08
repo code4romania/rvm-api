@@ -188,4 +188,43 @@ class AuthController extends Controller
         $user = Auth::user(); 
         return response()->json($user, 200); 
     } 
+
+    /**
+     * @SWG\Get(
+     *   tags={"Auth"},
+     *   path="/api/password/reset",
+     *   summary="Get user reset pw",
+     *   operationId="passwordReset",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
+    public function passwordReset() 
+    { 
+        $user = Auth::user(); 
+        return response()->json($user, 200); 
+    } 
+
+    /**
+     * @SWG\Get(
+     *   tags={"Auth"},
+     *   path="/api/password/recovery",
+     *   summary="Get user recovery password ",
+     *   operationId="passwordRecovery",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function passwordRecovery() 
+    { 
+        $user = Auth::user(); 
+        return response()->json($user, 200); 
+    } 
+    
+
 }

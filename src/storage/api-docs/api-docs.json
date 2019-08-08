@@ -146,6 +146,46 @@
                 }
             }
         },
+        "api/password/reset": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get user reset pw",
+                "operationId": "passwordReset",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/password/recovery": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get user recovery password ",
+                "operationId": "passwordRecovery",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/api/courses": {
             "get": {
                 "tags": [
@@ -384,11 +424,8 @@
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
+                    "404": {
                         "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
                     }
                 }
             },
@@ -425,6 +462,40 @@
                     },
                     "500": {
                         "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/organisations/{id}/volunteers": {
+            "get": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Show all volunteers of an Organisation ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not found"
+                    }
+                }
+            }
+        },
+        "/api/organisations/{id}/resources": {
+            "get": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Show all resources of an Organisation ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not found"
                     }
                 }
             }
@@ -588,12 +659,123 @@
                 }
             }
         },
+        "/api/resources/organisations": {
+            "post": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Show all resources of an Organisation ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not found"
+                    }
+                }
+            }
+        },
         "/api/resources/list": {
             "get": {
                 "tags": [
                     "Resources"
                 ],
                 "summary": "List resources",
+                "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Return all users",
+                "operationId": "index",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create volunteer",
+                "operationId": "store",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Show user info ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user",
+                "operationId": "update",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete user",
                 "operationId": "delete",
                 "responses": {
                     "200": {

@@ -12,5 +12,8 @@ class Resource extends Eloquent
         'organisation', 'name', 'type_name', 'quantity', 'county', 'city', 'address', 'comments', 'added_by',
     ];
   
+    protected $casts = [
+        'quantity' => 'integer',
+    ];
 }
 

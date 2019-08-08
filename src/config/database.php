@@ -143,13 +143,13 @@ return [
             'sticky'   => true
         ],
 
-        'volunteer' => [    
+        'volunteers' => [    
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
             'ip'       => env('DB_IP', null),
             'port'     => env('DB_PORT', '5984'),
-            'dbname'   => env('DB_DATABASE', 'volunteer'),
+            'dbname'   => env('DB_DATABASE', 'volunteers'),
             'user'     => env('DB_USERNAME', 'admin'),
             'password' => env('DB_PASSWORD', 'admin'),
             'logging'  => env('DB_LOGGING', false),
