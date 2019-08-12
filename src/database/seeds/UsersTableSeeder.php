@@ -28,7 +28,7 @@ class UsersTableSeeder extends Seeder
             'phone' => substr(str_shuffle("0123456789"), 0, 10),
         ]);
         User::firstOrCreate([
-            'name' => 'Dsu Admin',
+            'name' => 'Instituition Admin',
             'email' => 'institution@rvm.com',
             'password' => bcrypt('test1234'),
             'role' => '1',

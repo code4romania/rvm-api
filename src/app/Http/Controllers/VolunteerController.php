@@ -27,11 +27,12 @@ class VolunteerController extends Controller
         $volunteers = Volunteer::query();
 
         applyFilters($volunteers, $params, array(
-            '1' => array( 'type_name', 'ilike' ),
+            //'1' => array( 'type_name', 'ilike' ),
             '2' => array( 'county', 'ilike' ),
-            '3' => array( 'organisation.name', 'ilike')
+            '3' => array( 'organisation.name', 'ilike'),
+           // '4' => array( 'specialization', 'ilike')
         ));
-       // dd("test");
+
         applySort($volunteers, $params, array(
             '1' => 'name',
             '2' => 'type_name',

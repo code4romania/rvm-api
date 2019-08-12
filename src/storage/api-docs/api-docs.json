@@ -659,23 +659,6 @@
                 }
             }
         },
-        "/api/resources/organisations": {
-            "post": {
-                "tags": [
-                    "Organisations"
-                ],
-                "summary": "Show all resources of an Organisation ",
-                "operationId": "show",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "404": {
-                        "description": "not found"
-                    }
-                }
-            }
-        },
         "/api/resources/list": {
             "get": {
                 "tags": [
