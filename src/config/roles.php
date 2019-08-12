@@ -8,14 +8,15 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file is for storing roles such as
-    | DSU, NGO (Organisation), RescueOfficer. 
+    | DSU, NGO (Organisation), Rescue Officer, Institution Admin
     |
     */
 
     'role' => [
         'officer' => '0',
-        'ngo' => '1',
-        'dsu' => '2'
+        'institution' => '1',
+        'ngo' => '2',
+        'dsu' => '3'
     ],
 
 ];

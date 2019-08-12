@@ -21,9 +21,30 @@ class VolunteerController extends Controller
      * )
      *
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Volunteer::all();
+        $params = $request->query();
+        $volunteers = Volunteer::query();
+
+        applyFilters($volunteers, $params, array(
+            '1' => array( 'type_name', 'ilike' ),
+            '2' => array( 'county', 'ilike' ),
+            '3' => array( 'organisation.name', 'ilike')
+        ));
+       // dd("test");
+        applySort($volunteers, $params, array(
+            '1' => 'name',
+            '2' => 'type_name',
+            '3' => 'quantity',
+            '4' => 'organisation', //change to nr_org
+        ));
+
+        $pager = applyPaginate($volunteers, $params);
+
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $volunteers->get()
+        ), 200); 
     }
 
      /**

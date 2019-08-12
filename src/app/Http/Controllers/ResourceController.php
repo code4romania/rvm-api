@@ -31,7 +31,7 @@ class ResourceController extends Controller
             '2' => array( 'county', 'ilike' ),
             '3' => array( 'organisation.name', 'ilike')
         ));
-        
+       // dd("test");
         applySort($resources, $params, array(
             '1' => 'name',
             '2' => 'type_name',

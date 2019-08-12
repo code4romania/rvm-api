@@ -5,6 +5,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
 use Illuminate\Validation\ValidationRuleParser;
+use App\Volunteer;
 /**
  * Pagination helper
  *
@@ -37,6 +38,7 @@ use Illuminate\Validation\ValidationRuleParser;
 function applyFilters($query, $params, $filterKeys = array()){
     $filters = isset($params['filters']) ? $params['filters'] : null;
 
+    //var_dump($query->toSql());
     if($filters && count($filters) > 0 && $filterKeys && count($filterKeys) > 0){
         foreach($filters as $key => $filter_value){
             $values = explode(",", $filter_value);
@@ -45,11 +47,15 @@ function applyFilters($query, $params, $filterKeys = array()){
                     if($filterKeys[$key][1]=='ilike' || $filterKeys[$key][1]=='like'){
                         $value = '%'.$value.'%';
                     }
+                    
+                    // var_dump($filter_value);
                     if($kval < 1) {
-                        $query->where($filterKeys[$key][0], $filterKeys[$key][1], $value);
+                        $query->where($filterKeys[$key][0], $filterKeys[$key][1], $value);                        
                     } else {
                         $query->orWhere($filterKeys[$key][0], $filterKeys[$key][1], $value);
                     }
+                    
+                   // var_dump($query->toSql());
                 }
             }
             // if(isset($filterKeys[$key])){
@@ -72,6 +78,7 @@ function applySort($query, $params, $sortKeys = array()){
         $query->orderBy($sortKeys[$sort],  $method);
     }
 
+    //dd($query->get());
     return $query;
 }
 
@@ -104,4 +111,24 @@ function convertData($data, $validator){
     return $newData;
 }
 
+function countByOrgId($org_ids, $model) {
+    foreach($org_ids as $id) {
+        
+    dd($id);
+        $test = $model::where('organisation._id', '=', $id)->count();
+        dd($test);
+    }
+   //dd($test->toSql());
+}
+
+// function countProducts()
+//     {
+//         $cv = array_count_values(Volunteer::query()->pluck('_id')->toArray());
+
+
+//         dd($cv);
+//         return collect($cv)->map(function ($v, $k) {
+//             return ['id' => $k, 'quantity' => $v];
+//         })->values();
+//     }
 

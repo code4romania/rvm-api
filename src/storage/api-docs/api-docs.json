@@ -146,12 +146,12 @@
                 }
             }
         },
-        "api/password/reset": {
-            "get": {
+        "/api/password/reset": {
+            "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Get user reset pw",
+                "summary": "User reset pw",
                 "operationId": "passwordReset",
                 "responses": {
                     "200": {
@@ -167,11 +167,11 @@
             }
         },
         "/api/password/recovery": {
-            "get": {
+            "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Get user recovery password ",
+                "summary": "User recovery password ",
                 "operationId": "passwordRecovery",
                 "responses": {
                     "200": {

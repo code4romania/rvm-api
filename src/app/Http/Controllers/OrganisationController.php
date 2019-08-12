@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Organisation;
+use App\Volunteer;
+use App\Resource;
 
 class OrganisationController extends Controller
 {
@@ -21,11 +23,35 @@ class OrganisationController extends Controller
      * )
      *
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Organisation::all();
-    }
+        $params = $request->query();
+        $organisations = Organisation::query();
 
+        // $volunteers = Volunteer::query();
+        // dd($organisations->get(['_id']));
+        // dd(countByOrgId($organisations->get(['_id']),$volunteers));
+        applyFilters($organisations, $params, array(
+            '1' => array( 'county', 'ilike' ),
+            // '2' => array( 'county', 'ilike' ),
+            // '3' => array( 'organisation.name', 'ilike')
+        ));
+
+        applySort($organisations, $params, array(
+            '1' => 'name',
+            '2' => 'county',
+            // '2' => 'type_name',
+            // '3' => 'quantity',
+            // '4' => 'organisation', //change to nr_org
+        ));
+
+        $pager = applyPaginate($organisations, $params);
+
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $organisations->get()
+        ), 200); 
+    }
      /**
      * @SWG\Get(
      *   tags={"Organisations"},
@@ -56,13 +82,31 @@ class OrganisationController extends Controller
     *
     */
 
-    public function showVolunteers($id)
+    public function showVolunteers(Request $request, $id)
     {
-        $volunteers = \DB::connection('volunteers')->collection('volunteers')
-            ->where('organisation._id', '=', $id)
-            ->get();
+        $params = $request->query();
+        $volunteers = Volunteer::query()
+            ->where('organisation._id', '=', $id);
 
-        return response()->json($volunteers, 200); 
+        // applyFilters($volunteers, $params, array(
+        //     '1' => array( 'type_name', 'ilike' ),
+        //     '2' => array( 'county', 'ilike' ),
+        //     '3' => array( 'organisation.name', 'ilike')
+        // ));
+
+        applySort($volunteers, $params, array(
+            '1' => 'name',
+            '2' => 'county',
+           // '3' => 'specialization', //Specialization
+          //  '4' => 'training', //data ultimului training
+        ));
+
+        $pager = applyPaginate($volunteers, $params);
+
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $volunteers->get()
+        ), 200); 
     }
 
     /**
@@ -77,13 +121,29 @@ class OrganisationController extends Controller
     *
     */
 
-    public function showResources($id)
+    public function showResources(Request $request, $id)
     {
-        $resources = \DB::connection('resources')->collection('resources')
-            ->where('organisation._id', '=', $id)
-            ->get();
+        $params = $request->query();
+        $resources = Resource::query()
+            ->where('organisation._id', '=', $id);
 
-        return response()->json($resources, 200); 
+        applyFilters($resources, $params, array(
+            '1' => array( 'type_name', 'ilike' ),
+            '2' => array( 'county', 'ilike' ),
+        ));
+
+        applySort($resources, $params, array(
+            '1' => 'name',
+            '2' => 'quantity',
+            '3' => 'county',
+        ));
+
+        $pager = applyPaginate($resources, $params);
+
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $resources->get()
+        ), 200); 
     }
 
 

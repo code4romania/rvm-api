@@ -28,8 +28,8 @@ Route::group(['middleware' => ['json.response']], function () {
     // Route::middleware('checkRole')->group(function () {
     //     Route::get('/profile', 'AuthController@profile')->name('profile.api');
     // });
-    Route::get('/password/reset', 'AuthController@passwordReset');
-    Route::get('/password/recovery', 'AuthController@passwordRecovery');
+    Route::post('/password/reset', 'AuthController@passwordReset');
+    Route::post('/password/recovery', 'AuthController@passwordRecovery');
 
     Route::get('users', 'UserController@index');
     Route::get('users/{id}', 'UserController@show');

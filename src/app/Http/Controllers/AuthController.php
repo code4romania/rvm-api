@@ -190,10 +190,10 @@ class AuthController extends Controller
     } 
 
     /**
-     * @SWG\Get(
+     * @SWG\Post(
      *   tags={"Auth"},
      *   path="/api/password/reset",
-     *   summary="Get user reset pw",
+     *   summary="User reset pw",
      *   operationId="passwordReset",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
@@ -209,10 +209,10 @@ class AuthController extends Controller
     } 
 
     /**
-     * @SWG\Get(
+     * @SWG\Post(
      *   tags={"Auth"},
      *   path="/api/password/recovery",
-     *   summary="Get user recovery password ",
+     *   summary="User recovery password ",
      *   operationId="passwordRecovery",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
