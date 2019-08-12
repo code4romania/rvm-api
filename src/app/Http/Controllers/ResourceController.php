@@ -71,52 +71,52 @@ class ResourceController extends Controller
         return response()->json($resources, 200);
     }
 
-    /**
-    * @SWG\POST(
-    *   tags={"Organisations"},
-    *   path="/api/resources/organisations",
-    *   summary="Show all resources of an Organisation ",
-    *   operationId="show",
-    *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found")
-    * )
-    *
-    */
+    // 
+    // 
+    // *   tags={"Organisations"},
+    // *   path="/api/resources/organisations",
+    // *   summary="Show all Organisations that have this resoruce  ",
+    // *   operationId="show",
+    // *  response=200, description="successful operation"),
+    // *   response=404, description="not found")
+    // * )
+    // *
+    // 
 
-    public function showOrganisations(Request $request)
-    {
-        $params = $request->query();
-        $resources = Resource::query();
+    // public function showOrganisations(Request $request)
+    // {
+    //     $params = $request->query();
+    //     $resources = Resource::query();
 
-        // applySort($resources, $params, array(
-        //     '1' => 'organisation.name',
-        //     '2' => 'organisation.address',
-        //     '3' => 'organisation.county',
-        // ));
+    //     // applySort($resources, $params, array(
+    //     //     '1' => 'organisation.name',
+    //     //     '2' => 'organisation.address',
+    //     //     '3' => 'organisation.county',
+    //     // ));
 
-        // applyFilters($resources, $params, array(
-        //     '1' => array( 'name', 'ilike' ),
-        //     '2' => array( 'organisation.address', 'ilike' )
-        // ));
+    //     // applyFilters($resources, $params, array(
+    //     //     '1' => array( 'name', 'ilike' ),
+    //     //     '2' => array( 'organisation.address', 'ilike' )
+    //     // ));
 
-        $pager = applyPaginate($resources, $params);
+    //     $pager = applyPaginate($resources, $params);
        
-        $results = $resources->get(['quantity',
-            'name',
-            'updated_at',
-            'organisation._id',
-            'organisation.name',
-            'organisation.address',
-            'organisation.county']);
-        //->unique('organisation._id');
+    //     $results = $resources->get(['quantity',
+    //         'name',
+    //         'updated_at',
+    //         'organisation._id',
+    //         'organisation.name',
+    //         'organisation.address',
+    //         'organisation.county']);
+    //     //->unique('organisation._id');
 
-        return response()->json(
-            array(
-                "pager" => $pager,
-                "data" => $results
-            )
-        , 200); 
-    }
+    //     return response()->json(
+    //         array(
+    //             "pager" => $pager,
+    //             "data" => $results
+    //         )
+    //     , 200); 
+    // }
 
     /**
      * @SWG\Post(
