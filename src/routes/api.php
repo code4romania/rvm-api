@@ -23,7 +23,6 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::middleware(['auth:api'])->group(function () {
         Route::get('/profile', 'AuthController@profile')->name('profile.api');
         Route::get('/logout', 'AuthController@logout')->name('logout');
-    });
 
     // Route::middleware('checkRole')->group(function () {
     //     Route::get('/profile', 'AuthController@profile')->name('profile.api');
@@ -67,4 +66,5 @@ Route::group(['middleware' => ['json.response']], function () {
 
     Route::get('filter/resources/type_name', 'FilterController@filterResourcesTypeName');
     Route::get('filter/organisations/name', 'FilterController@filterOrganisationsName');
+    });
 });

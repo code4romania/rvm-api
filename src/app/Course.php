@@ -9,7 +9,7 @@ class Course extends Eloquent
     protected $connection = 'courses';
     protected $collection = 'courses';
     protected $fillable = [
-        'volunteer_id', 'name', 'acredited', 'obatained', 
+        'volunteer_id', 'name', 'acredited', 'obtained', 
     ];
 
 }

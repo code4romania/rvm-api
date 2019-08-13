@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Volunteer;
+use App\Course;
 
 class VolunteerController extends Controller
 {
@@ -157,7 +158,8 @@ class VolunteerController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+        $rules = [
             'organisation_id' => 'required',
             'name' => 'required|string|max:255',
             'ssn' => 'required|string|unique:volunteers.volunteers',
@@ -165,19 +167,39 @@ class VolunteerController extends Controller
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'
-        ]);
+        ];
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return response(['errors'=>$validator->errors()->all()], 400);
+            return response(['errors' => $validator->errors()->all()], 400);
         }
+
+        $data = convertData($validator->validated(), $rules);
         $organisation_id = $request->organisation_id;
+
         $organisation = \DB::connection('organisations')->collection('organisations')
             ->where('_id', '=', $organisation_id)
             ->get(['_id', 'name', 'website'])
             ->first();
 
-        $request->request->add(['organisation' => $organisation]);    
-        $volunteer = Volunteer::create($request->all());
+        $data['organisation'] = $organisation;
+        $request->has('courses') ? $data['courses'] = $request->courses : '';
+        $request->has('address') ? $data['address'] = $request->address : '';
+        $request->has('comments') ? $data['comments'] = $request->comments : '';
+        $request->has('job') ? $data['job'] = $request->job : '';
+        !is_null($request->user()) ? $data['added_by'] = $request->user()->_id : null;
+
+        $volunteer = Volunteer::create($data);
+
+        foreach ($volunteer->courses as $course) {
+            $newCourse = Course::firstOrNew([
+                'volunteer_id' => $volunteer->_id,
+                'name' => $course['name'],
+                'acredited' => $course['acredited'],
+                'obtained' => $course['obtained'],
+            ]);
+            $newCourse->save();
+        }
 
         return response()->json($volunteer, 201); 
     }
