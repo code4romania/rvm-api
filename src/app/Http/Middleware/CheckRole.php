@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\User;
 
 class CheckRole
 {
@@ -14,17 +13,27 @@ class CheckRole
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+
+    public function handle($request, Closure $next, ...$roles)
     {
-        // $roles = config('roles.role');
 
-        // if (!$user->role == $roles['dsu']) {
-        //     $response = "Permission denied";
-        //     return response($response, 401);
-        // } else {
+        $roleIds = config('roles.role');
 
-        // }
+        $allowedRoleIds = [];
+        foreach ($roles as $role)
+        {
+            if(isset($roleIds[$role])) {
+               $allowedRoleIds[] = $roleIds[$role];
+            }
+        }
+        $allowedRoleIds = array_unique($allowedRoleIds); 
 
-        return $next($request);
+        if(\Auth::check()) {
+            if(in_array(\Auth::user()->role, $allowedRoleIds)) {
+                return $next($request);
+            }
+        }
+
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 }

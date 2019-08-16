@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Organisation;
 use App\Volunteer;
 use App\Resource;
+use App\User;
 
 class OrganisationController extends Controller
 {
@@ -224,7 +225,8 @@ class OrganisationController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+        $rules = [
             'name' => 'required|string|max:255',
             'website' => 'required|max:255',
             'contact_person' => 'required|string|max:255',
@@ -232,13 +234,28 @@ class OrganisationController extends Controller
             'phone' => 'required|string|min:6|',
             'county' => 'required|string|min:4|',
             'city' => 'required|string|min:4|'
-        ]);
+        ];
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return response(['errors'=>$validator->errors()->all()], 400);
+            return response(['errors' => $validator->errors()->all()], 400);
         }
-        
-        $organisation = Organisation::create($request->all());
+
+        $data = convertData($validator->validated(), $rules);
+        $organisation = Organisation::create($data);
+
+        $newNgoAdmin = User::firstOrNew([
+            'email' => $data['email'],
+        ]);
+        $newNgoAdmin->name = $data['contact_person'];
+        $newNgoAdmin->password = bcrypt('test1234'); //should change with Email change pass
+        $newNgoAdmin->role = config('roles.role.ngo');
+        $newNgoAdmin->phone = $data['phone'];
+        $newNgoAdmin->admin_at = $data['name'];
+        //$newNgoAdmin->county = $data['county'];
+        //$newNgoAdmin->city = $data['city'];
+        $newNgoAdmin->save();
+
         return response()->json($organisation, 201); 
     }
 
