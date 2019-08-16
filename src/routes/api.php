@@ -18,16 +18,15 @@ Route::group(['middleware' => ['json.response']], function () {
     // public routes
     Route::post('/login', 'AuthController@login')->name('login.api');
     Route::post('/register', 'AuthController@register')->name('register.api');
+    Route::post('/password/reset', 'AuthController@passwordReset');
+    Route::post('/password/recovery', 'AuthController@passwordRecovery');
 
     // private routes
     Route::middleware(['auth:api'])->group(function () {
         Route::get('/profile', 'AuthController@profile')->name('profile.api');
         Route::get('/logout', 'AuthController@logout')->name('logout');
 
-        Route::post('/password/reset', 'AuthController@passwordReset');
-        Route::post('/password/recovery', 'AuthController@passwordRecovery');
-
-        Route::middleware(['checkRole:dsu'])->group(function () {
+        Route::middleware(['checkRole:dsu,institution'])->group(function () {
             Route::get('users', 'UserController@index');
             Route::get('users/{id}', 'UserController@show');
             Route::post('users', 'UserController@store');
