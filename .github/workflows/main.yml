@@ -15,5 +15,5 @@ jobs:
     steps:
     - uses: actions/checkout@stage
       run: 
-        cd $GITHUB_WORKSPACE
-        ls
+        echo $RVM_SSH_KEY > ssh_key.pem
+        ssh -i ssh_key.pem $RVM_USERNAME@$RVM_MACHINE 
