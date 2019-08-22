@@ -1,0 +1,19 @@
+name: rvm-api-cd
+
+on:
+  push:
+    branches: 
+      - stage
+  pull_request:
+    branches:
+      - stage
+
+jobs:
+  deploy:
+    name: deploy-to-aws
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@stage
+      run: 
+        cd $GITHUB_WORKSPACE
+        ls
