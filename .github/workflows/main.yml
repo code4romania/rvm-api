@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@stage
-      run: 
+      if: github.event_name == 'pull_request' and github.event.action == 'closed' and github.event.pull_request.merged == 'true'
+      run:
+        touch ssh_key.pem
         echo $RVM_SSH_KEY > ssh_key.pem
-        ssh -i ssh_key.pem $RVM_USERNAME@$RVM_MACHINE 
+        rsync -rv -e 'ssh -i ssh-key.pem' rvm-api $RVM_USERNAME@$RVM_MACHINE:/home/$RVM_USERNAME/
