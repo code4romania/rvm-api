@@ -176,7 +176,10 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
+        Robsonvn\CouchDB\ServiceProvider::class,
+        Robsonvn\CouchDB\Passport\PassportServiceProvider::class,
+        Robsonvn\CouchDB\Auth\PasswordResetServiceProvider::class,
+        Robsonvn\CouchDB\CouchDBQueueServiceProvider::class
     ],
 
     /*

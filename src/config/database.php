@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'rvm'),
 
     /*
     |--------------------------------------------------------------------------
@@ -78,6 +78,96 @@ return [
             'prefix' => '',
         ],
 
+        'rvm' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'rvm'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'users' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'users'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'organisations' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'organisations'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'courses' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'courses'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'resources' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'resources'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'volunteers' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'volunteers'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'allocations' => [    
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'allocations'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
     ],
 
     /*
