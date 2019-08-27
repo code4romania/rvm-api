@@ -5,7 +5,7 @@ workflow "Build and deploy" {
 
 workflow "Build and deploy for PR" {
   on = "pull_request"
-  resolves = ["new-action"]
+  resolves = ["contention/rsync-deployments@master-1"]
 }
 
 action "Filters for GitHub Actions - branch" {
@@ -43,7 +43,9 @@ action "MilesChou/composer-action" {
   args = "install"
 }
 
-action "new-action" {
-  uses = "owner/repo/path@ref"
+action "contention/rsync-deployments@master-1" {
+  uses = "contention/rsync-deployments@master"
   needs = ["MilesChou/composer-action"]
+  secrets = ["DEPLOY_KEY", "RVM_MACHINE", "RVM_USERNAME"]
+  args = "\"-rv\", \"--exclude /dev/ --exclude .gitignore\", \"$RVM_USERNAME@$RVM_MACHINE:/var/www/api\""
 }
