@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendRecoverPasswordMail;
+use App\Mail\PasswordChanged;
+use App\User;
+use App\PasswordReset;
 
 class AuthController extends Controller
 {
@@ -130,7 +135,8 @@ class AuthController extends Controller
             if (Hash::check($request->password, $user->password)) {
                 
                 $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-                $response = ['token' => $token];
+                $response = ['token' => $token,
+                    'user' => $user]; 
                 return response($response, 200);
             } else {
                 $response = "Password missmatch";
@@ -192,9 +198,16 @@ class AuthController extends Controller
     /**
      * @SWG\Post(
      *   tags={"Auth"},
-     *   path="/api/password/reset",
-     *   summary="User reset pw",
-     *   operationId="passwordReset",
+     *   path="/api/recoverpassword",
+     *   summary="Recover Password, Send Reset Password Mail",
+     *   operationId="recoverpassword",
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Emaill address.",
+     *     required=true,
+     *     type="string"
+     *   ),
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -202,29 +215,110 @@ class AuthController extends Controller
      *
      */
 
-    public function passwordReset() 
-    { 
-        $user = Auth::user(); 
-        return response()->json($user, 200); 
+    public function recoverpassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+        ]);
+        $user = User::whereEmail($request->email)->first();
+        if ($user) {
+            $passwordReset = PasswordReset::updateOrCreate(
+                ['email' => $user->email],
+                [
+                    'email' => $user->email,
+                    'token' => str_random(60)
+                ]
+            );
+            $url = url('/'.$passwordReset->token);
+
+            $data = array(
+                'name' => $user->name,
+                'url' => $url
+            );
+            Mail::to($user->email)->send(new SendRecoverPasswordMail($data));
+
+            return response()->json([
+                'message' => 'Mail was send succesfully.'
+            ], 200);
+        } else {
+            $response = "We can't find a user with that e-mail address.";
+            return response($response, 422);
+        }
     } 
 
     /**
      * @SWG\Post(
      *   tags={"Auth"},
-     *   path="/api/password/recovery",
-     *   summary="User recovery password ",
-     *   operationId="passwordRecovery",
+     *   path="/api/resetpassword",
+     *   summary="Reset the user password",
+     *   operationId="resetpassword",
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Email address.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     description="Password",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="passtoken",
+     *     in="query",
+     *     description="Password Token",
+     *     required=true,
+     *     type="string"
+     *   ),
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */
-    public function passwordRecovery() 
-    { 
-        $user = Auth::user(); 
-        return response()->json($user, 200); 
+
+    public function resetpassword(Request $request) 
+    {
+        $request->validate([
+            'password' => 'required|string|confirmed',
+            'token' => 'required|string'
+        ]);
+
+        $resetToken = PasswordReset::where('token', $request->token)->first();
+
+        if (!$resetToken)
+            return response()->json([
+                'message' => 'This password reset token is invalid.'
+            ], 404);
+
+        if (Carbon::parse($resetToken->updated_at)->addMinutes(600)->isPast()) {
+            $resetToken->delete();
+            return response()->json([
+                'message' => 'This password reset token is invalid.'
+            ], 404);
+        }
+
+        $user = User::whereEmail($resetToken->email)->first();
+
+        if (!$user)
+            return response()->json([
+                'message' => "We can't find a user with that e-mail address."
+            ], 404);
+
+        $user['password']=Hash::make($request['password']);
+
+        $user->save();
+
+        $resetToken->delete();
+
+        Mail::to($user->email)->send(new PasswordChanged);
+
+        return response()->json([
+            'message' => 'Mail was send succesfully.'
+        ], 200);
     } 
-    
 
 }
