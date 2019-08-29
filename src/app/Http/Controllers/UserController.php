@@ -66,7 +66,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //generate apssword
+        //generate password
         //send to mail 
         //manage users
 
@@ -76,10 +76,6 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users.users',
             'role' => 'required',
             'phone' => 'required|string|min:6|'
-            //'organisation_id' => 'required',
-            //'county' => 'required|string|min:4|',
-            //'city' => 'required|string|min:4|',
-            //'password' => 'required|string|min:6|confirmed',
         ];
 
         $validator = Validator::make($data, $rules);
@@ -88,7 +84,11 @@ class UserController extends Controller
         }
 
         $data = convertData($validator->validated(), $rules);
-        $request->has('admin_at') ? $data['admin_at'] = $request->admin_at : '';
+        $request->has('institution') ? $data['institution'] = $request->institution : '';
+        $request->has('organisation') ? $data['organisation'] = $request->organisation : '';
+        if(\Auth::check()) {
+           $data['added_by'] = \Auth::user()->_id;
+        }
         $data['password'] = bcrypt('test1234'); //should change with Email change pass;
 
         $user = User::create($data);

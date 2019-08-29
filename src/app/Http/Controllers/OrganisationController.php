@@ -9,6 +9,8 @@ use App\Organisation;
 use App\Volunteer;
 use App\Resource;
 use App\User;
+use App\County;
+use App\City;
 
 class OrganisationController extends Controller
 {
@@ -29,9 +31,6 @@ class OrganisationController extends Controller
         $params = $request->query();
         $organisations = Organisation::query();
 
-        // $volunteers = Volunteer::query();
-        // dd($organisations->get(['_id']));
-        // dd(countByOrgId($organisations->get(['_id']),$volunteers));
         applyFilters($organisations, $params, array(
             '1' => array( 'county', 'ilike' ),
             // '2' => array( 'county', 'ilike' ),
@@ -231,9 +230,7 @@ class OrganisationController extends Controller
             'website' => 'required|max:255',
             'contact_person' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:organisations.organisations',
-            'phone' => 'required|string|min:6|',
-            'county' => 'required|string|min:4|',
-            'city' => 'required|string|min:4|'
+            'phone' => 'required|string|min:6|'
         ];
         $validator = Validator::make($data, $rules);
 
@@ -242,6 +239,25 @@ class OrganisationController extends Controller
         }
 
         $data = convertData($validator->validated(), $rules);
+
+        if ($request->has('county')) {
+            $county = County::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->county)
+                ->toArray();
+            $data['county'] = $county[0];
+        }
+        if ($request->has('city')) {            
+            $city = City::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->city)
+                ->toArray();
+            $data['city'] = $city[0];
+        }
+        
+        $request->has('comments') ? $data['comments'] = $request->comments : '';
+        \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
+
         $organisation = Organisation::create($data);
 
         $newNgoAdmin = User::firstOrNew([
@@ -251,9 +267,8 @@ class OrganisationController extends Controller
         $newNgoAdmin->password = bcrypt('test1234'); //should change with Email change pass
         $newNgoAdmin->role = config('roles.role.ngo');
         $newNgoAdmin->phone = $data['phone'];
-        $newNgoAdmin->admin_at = $data['name'];
-        //$newNgoAdmin->county = $data['county'];
-        //$newNgoAdmin->city = $data['city'];
+        $newNgoAdmin->organisation = array('_id' => $organisation->_id, 'name' => $organisation->name);
+        $newNgoAdmin->added_by = $data['added_by'];
         $newNgoAdmin->save();
 
         return response()->json($organisation, 201); 

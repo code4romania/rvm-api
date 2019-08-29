@@ -4,12 +4,12 @@ namespace App;
 
 use Robsonvn\CouchDB\Eloquent\Model as Eloquent;
 
-class Course extends Eloquent
+class CourseName extends Eloquent
 {
     protected $connection = 'courses';
-    protected $collection = 'courses';
+    protected $collection = 'course_names';
     protected $fillable = [
-        'volunteer_id', 'course_name', 'acredited', 'obtained', 'added_by'
+        'id','name', 'slug', 'accreditors',
     ];
-
 }
+

@@ -31,7 +31,7 @@ class ResourceController extends Controller
             '2' => array( 'county', 'ilike' ),
             '3' => array( 'organisation.name', 'ilike')
         ));
-       // dd("test");
+
         applySort($resources, $params, array(
             '1' => 'name',
             '2' => 'type_name',
@@ -70,53 +70,6 @@ class ResourceController extends Controller
 
         return response()->json($resources, 200);
     }
-
-    // 
-    // 
-    // *   tags={"Organisations"},
-    // *   path="/api/resources/organisations",
-    // *   summary="Show all Organisations that have this resoruce  ",
-    // *   operationId="show",
-    // *  response=200, description="successful operation"),
-    // *   response=404, description="not found")
-    // * )
-    // *
-    // 
-
-    // public function showOrganisations(Request $request)
-    // {
-    //     $params = $request->query();
-    //     $resources = Resource::query();
-
-    //     // applySort($resources, $params, array(
-    //     //     '1' => 'organisation.name',
-    //     //     '2' => 'organisation.address',
-    //     //     '3' => 'organisation.county',
-    //     // ));
-
-    //     // applyFilters($resources, $params, array(
-    //     //     '1' => array( 'name', 'ilike' ),
-    //     //     '2' => array( 'organisation.address', 'ilike' )
-    //     // ));
-
-    //     $pager = applyPaginate($resources, $params);
-       
-    //     $results = $resources->get(['quantity',
-    //         'name',
-    //         'updated_at',
-    //         'organisation._id',
-    //         'organisation.name',
-    //         'organisation.address',
-    //         'organisation.county']);
-    //     //->unique('organisation._id');
-
-    //     return response()->json(
-    //         array(
-    //             "pager" => $pager,
-    //             "data" => $results
-    //         )
-    //     , 200); 
-    // }
 
     /**
      * @SWG\Post(
@@ -195,14 +148,21 @@ class ResourceController extends Controller
      */
     public function store(Request $request)
     {
+       // 'category', 'subcategory' required
+       // dimensions - not required 
+        // daca numele ii la fel -> fac update 
+        //added_by
+        //verificat comments
+        //adresa
+
         $data = $request->all();
         $rules = [
             'organisation_id' => 'required',
             'name' => 'required|string|max:255',
             'type_name' => 'required|string',
             'quantity' => 'required|integer',
-            'county' => 'required|string|min:4|',
-            'city' => 'required|string|min:4|'
+            'county' => 'required|min:4|',
+            'city' => 'required|min:4|'
         ];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
@@ -214,8 +174,12 @@ class ResourceController extends Controller
 
         $organisation = \DB::connection('organisations')->collection('organisations')
             ->where('_id', '=', $organisation_id)
-            ->get(['_id', 'name', 'website', 'address', 'county'])
+            ->get(['_id', 'name', 'slug', 'website'])
             ->first();
+
+        if(\Auth::check()) {
+            $data['added_by'] = \Auth::user()->_id;
+        }
 
         $data['organisation'] = $organisation;
         $resource = Resource::create($data);

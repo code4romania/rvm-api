@@ -16,7 +16,7 @@ class CheckRole
 
     public function handle($request, Closure $next, ...$roles)
     {
-
+        $paramId = $request->route()->parameter('id');
         $roleIds = config('roles.role');
 
         $allowedRoleIds = [];
@@ -29,7 +29,15 @@ class CheckRole
         $allowedRoleIds = array_unique($allowedRoleIds); 
 
         if(\Auth::check()) {
-            if(in_array(\Auth::user()->role, $allowedRoleIds)) {
+            if(!is_null($paramId)) {
+                $userOrgId = \Auth::user()->organisation['_id'];
+                $userInstId = \Auth::user()->institution['_id'];
+                if($paramId == $userOrgId || $paramId == $userInstId) {
+                    return $next($request);
+                } elseif(\Auth::user()->role == config('roles.role.dsu')) {
+                    return $next($request);
+                }
+            } elseif (in_array(\Auth::user()->role, $allowedRoleIds)) {
                 return $next($request);
             }
         }
