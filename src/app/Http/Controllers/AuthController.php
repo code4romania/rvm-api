@@ -229,8 +229,7 @@ class AuthController extends Controller
                     'token' => str_random(60)
                 ]
             );
-            $url = url('/'.$passwordReset->token);
-
+            $url = url('/auth/reset/'.$passwordReset->token);
             $data = array(
                 'name' => $user->name,
                 'url' => $url
@@ -252,13 +251,6 @@ class AuthController extends Controller
      *   path="/api/resetpassword",
      *   summary="Reset the user password",
      *   operationId="resetpassword",
-     *   @SWG\Parameter(
-     *     name="email",
-     *     in="query",
-     *     description="Email address.",
-     *     required=true,
-     *     type="string"
-     *   ),
      *   @SWG\Parameter(
      *     name="password",
      *     in="query",

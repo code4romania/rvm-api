@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
+use App\Mail\SetUpPassword;
 use App\User;
+use App\PasswordReset;
 
 class UserController extends Controller
 {
@@ -58,6 +62,41 @@ class UserController extends Controller
      *   path="/api/users",
      *   summary="Create volunteer",
      *   operationId="store",
+     *   @SWG\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Customer name.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Customer email.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="phone",
+     *     in="query",
+     *     description="Customer Phone.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="role",
+     *     in="query",
+     *     description="Customer Role.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="institution",
+     *     in="query",
+     *     description="Customer Institution.",
+     *     required=false,
+     *     type="string"
+     *   ),
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -66,34 +105,43 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //generate password
-        //send to mail 
-        //manage users
-
         $data = $request->all();
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users.users',
             'role' => 'required',
-            'phone' => 'required|string|min:6|'
+            'phone' => 'required|string|min:6|',
         ];
 
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
-
         $data = convertData($validator->validated(), $rules);
         $request->has('institution') ? $data['institution'] = $request->institution : '';
-        $request->has('organisation') ? $data['organisation'] = $request->organisation : '';
         if(\Auth::check()) {
            $data['added_by'] = \Auth::user()->_id;
         }
-        $data['password'] = bcrypt('test1234'); //should change with Email change pass;
-
+        $passwordReset = PasswordReset::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'email' => $data['email'],
+                'token' => str_random(60)
+            ]
+        );
+        $url = url('/auth/reset/'.$passwordReset->token);
+        $set_password_data = array(
+            'name' => $data['name'],
+            'url' => $url
+        );
+        Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
+        $data['password'] = Hash::make(str_random(16));
         $user = User::create($data);
-
-        return response()->json($user, 201); 
+        $response = array(
+            "message" => 'Password sent to email.',
+            "user" => $user
+        );
+        return response()->json($response, 201); 
     }
 
     /**

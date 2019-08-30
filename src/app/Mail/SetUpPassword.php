@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendRecoverPasswordMail extends Mailable
+class SetUpPassword extends Mailable
 {
     use Queueable, SerializesModels;
     public $data;
@@ -28,6 +28,6 @@ class SendRecoverPasswordMail extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Password Reset')->view('mails.password_reset')->with('data', $this->data);
+        return $this->from(env('MAIL_USERNAME'))->subject('Set up your account password')->view('mails.set_up_password')->with('data', $this->data);
     }
 }

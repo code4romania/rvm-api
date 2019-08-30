@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
+use App\Mail\SetUpPassword;
+use App\PasswordReset;
 use App\Organisation;
 use App\Volunteer;
 use App\Resource;
@@ -257,21 +261,38 @@ class OrganisationController extends Controller
         
         $request->has('comments') ? $data['comments'] = $request->comments : '';
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
-
+        $passwordReset = PasswordReset::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'email' => $data['email'],
+                'token' => str_random(60)
+            ]
+        );
+        $url = url('/auth/reset/'.$passwordReset->token);
+        $set_password_data = array(
+            'name' => $data['contact_person'],
+            'url' => $url
+        );
+        $data['password'] = Hash::make(str_random(16));
+        Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
         $organisation = Organisation::create($data);
 
         $newNgoAdmin = User::firstOrNew([
             'email' => $data['email'],
         ]);
         $newNgoAdmin->name = $data['contact_person'];
-        $newNgoAdmin->password = bcrypt('test1234'); //should change with Email change pass
         $newNgoAdmin->role = config('roles.role.ngo');
         $newNgoAdmin->phone = $data['phone'];
         $newNgoAdmin->organisation = array('_id' => $organisation->_id, 'name' => $organisation->name);
         $newNgoAdmin->added_by = $data['added_by'];
+        $newNgoAdmin->password = $data['password'];
         $newNgoAdmin->save();
 
-        return response()->json($organisation, 201); 
+        $response = array(
+            "message" => 'Password sent to email.',
+            "organisation" => $organisation
+        );
+        return response()->json($response, 201); 
     }
 
     /**

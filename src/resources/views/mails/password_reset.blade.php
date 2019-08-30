@@ -1,5 +1,5 @@
 <div style="width: 50%; margin: 0 auto;">
-  <h2 style="height: 30px; padding:20px; text-align: center; color: #008CBA; width: 50%; margin: 15px auto;">Hello, <strong>{{$data['name']}}</strong></h2>
+  <h2 style="height: auto; padding:20px; text-align: center; color: #008CBA; width: 50%; margin: 15px auto;">Hello, <strong>{{$data['name']}}</strong></h2>
   <p style="text-align: center;">You are receiving this email because we received a password reset request for your account.</p>
   <a style="background-color: #008CBA; width: 100%; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;" href="{{ $data['url'] }}" target="_blank" rel="noopener">Reset Password</a>
   <p>If you did not request a password reset, no further action is required.</p>
