@@ -18,7 +18,7 @@ function applyFilters($query, $params, $filterKeys = array()){
 
     if($filters && count($filters) > 0 && $filterKeys && count($filterKeys) > 0){
         foreach($filters as $key => $filter_value){
-            if(empty($filter_value)){
+            if(is_null($filter_value)){
                 continue;
             }
             $values = explode(",", $filter_value);
