@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Volunteer;
 use App\Course;
+use App\City;
+use App\County;
 
 class VolunteerController extends Controller
 {
@@ -161,33 +163,48 @@ class VolunteerController extends Controller
         $data = $request->all();
         $rules = [
             'organisation_id' => 'required',
-            'name' => 'required|string|max:255',
-            'ssn' => 'required|string|unique:volunteers.volunteers',
             'email' => 'required|string|email|max:255|unique:volunteers.volunteers',
             'phone' => 'required|string|min:6|',
-            'county' => 'required|string|min:4|',
-            'city' => 'required|string|min:4|'
+            'ssn' => 'required|string|unique:volunteers.volunteers',
+            'name' => 'required|string|max:255',
         ];
         $validator = Validator::make($data, $rules);
-
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
-
         $data = convertData($validator->validated(), $rules);
-        $organisation_id = $request->organisation_id;
 
+        $request->has('courses') ? $data['courses'] = $request->courses : '';
+        $request->has('allocation') ? $data['allocation'] = $request->allocation : '';
+        $request->has('comments') ? $data['comments'] = $request->comments : '';
+        $request->has('job') ? $data['job'] = $request->job : '';
+
+        //Add Organisation
+        $organisation_id = $request->organisation_id;
         $organisation = \DB::connection('organisations')->collection('organisations')
             ->where('_id', '=', $organisation_id)
             ->get(['_id', 'name', 'website'])
             ->first();
-
         $data['organisation'] = $organisation;
-        $request->has('courses') ? $data['courses'] = $request->courses : '';
-        $request->has('address') ? $data['address'] = $request->address : '';
-        $request->has('comments') ? $data['comments'] = $request->comments : '';
-        $request->has('job') ? $data['job'] = $request->job : '';
-        !is_null($request->user()) ? $data['added_by'] = $request->user()->_id : null;
+
+        //Add City and County
+        if ($request->has('county')) {
+            $county = County::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->county)
+                ->toArray();
+            $data['county'] = $county[0];
+        }
+        if ($request->has('city')) {            
+            $city = City::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->city)
+                ->toArray();
+            $data['city'] = $city[0];
+        }
+
+        //Added by
+        \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
 
         $volunteer = Volunteer::create($data);
 
@@ -195,8 +212,10 @@ class VolunteerController extends Controller
             $newCourse = Course::firstOrNew([
                 'volunteer_id' => $volunteer->_id,
                 'name' => $course['name'],
+                'slug' => removeDiacritics($course['name']),
                 'acredited' => $course['acredited'],
                 'obtained' => $course['obtained'],
+                'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
             ]);
             $newCourse->save();
         }

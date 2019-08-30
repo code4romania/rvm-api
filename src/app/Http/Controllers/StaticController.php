@@ -26,23 +26,18 @@ class StaticController extends Controller
         $cities = City::query();
 
         applyFilters($cities, $params, array(
-            '1' => array( 'county_id', 'ilike' ),
+            '1' => array( 'county_id', '=' ),
             '2' => array( 'slug', 'ilike' ),
-            //'3' => array( 'organisation.name', 'ilike')
         ));
 
         applySort($cities, $params, array(
             '1' => 'name',
-            //'2' => 'type_name',
-            //'3' => 'quantity',
-            //'4' => 'organisation', //change to nr_org
         ));
 
-        $pager = applyPaginate($cities, $params);
-
+       $pager = applyPaginate($cities, $params);
         return response()->json(array(
             "pager" => $pager,
-            "data" => $cities->get()
+            "data" => $cities->get(['name','_id'])
         ), 200); 
     }
 
@@ -65,15 +60,11 @@ class StaticController extends Controller
 
         applyFilters($counties, $params, array(
             '1' => array( 'slug', 'ilike' ),
-            //'2' => array( 'county', 'ilike' ),
-            //'3' => array( 'organisation.name', 'ilike')
+            '2' => array( 'country_id', '=' ),
         ));
 
         applySort($counties, $params, array(
             '1' => 'name',
-            //'2' => 'type_name',
-            //'3' => 'quantity',
-            //'4' => 'organisation', //change to nr_org
         ));
 
         $pager = applyPaginate($counties, $params);

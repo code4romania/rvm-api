@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Resource;
+use App\ResourceCategory;
+use App\City;
+use App\County;
 
 class ResourceController extends Controller
 {
@@ -148,42 +151,56 @@ class ResourceController extends Controller
      */
     public function store(Request $request)
     {
-       // 'category', 'subcategory' required
-       // dimensions - not required 
-        // daca numele ii la fel -> fac update 
-        //added_by
-        //verificat comments
-        //adresa
-
         $data = $request->all();
         $rules = [
             'organisation_id' => 'required',
             'name' => 'required|string|max:255',
-            'type_name' => 'required|string',
+            'resource_type' => 'required|string',
             'quantity' => 'required|integer',
-            'county' => 'required|min:4|',
-            'city' => 'required|min:4|'
+            'county' => 'required',
+            'city' => 'required',
         ];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
-
         $data = convertData($validator->validated(), $rules);
-        $organisation_id = $request->organisation_id;
 
+        $request->has('categories') ? $data['categories'] = $request->categories : '';
+        $request->has('unit') ? $data['unit'] = $request->unit : '';
+        $request->has('size') ? $data['size'] = $request->size : '';
+        $request->has('comments') ? $data['comments'] = $request->comments : '';
+        $request->has('address') ? $data['address'] = $request->address : '';
+
+        //Add City and County
+        if ($request->has('county')) {
+            $county = County::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->county)
+                ->toArray();
+            $data['county'] = $county[0];
+        }
+        if ($request->has('city')) {            
+            $city = City::query()
+                ->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $request->city)
+                ->toArray();
+            $data['city'] = $city[0];
+        }
+
+        //Add Organisation
+        $organisation_id = $request->organisation_id;
         $organisation = \DB::connection('organisations')->collection('organisations')
             ->where('_id', '=', $organisation_id)
             ->get(['_id', 'name', 'slug', 'website'])
             ->first();
-
-        if(\Auth::check()) {
-            $data['added_by'] = \Auth::user()->_id;
-        }
-
         $data['organisation'] = $organisation;
-        $resource = Resource::create($data);
 
+        //Added by
+        \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
+
+        dd($data);
+        $resource = Resource::create($data);
         return response()->json($resource, 201); 
     }
 
@@ -243,33 +260,6 @@ class ResourceController extends Controller
     }
 
 
-    // public function listGroupByType()
-    // {
-    //     $items = [];
-    //     $resOrgsIds = [];
-
-    //     $resources = Resource::all();
-    //     $resType = $resources->groupBy(['type_name']);
-
-
-    //     foreach($resType as $key => $resource) {
-    //         foreach($resource as $item) {
-    //             $resOrgsIds[$key][$item->name]['organisation_ids'][] = $item->organisation['_id'];
-    //             if(isset($items[$key]) && array_key_exists($item->name,$items[$key])) {
-    //                 $items[$key][$item->name]['quantity'] +=  (int)$item->quantity;
-    //                 $items[$key][$item->name]['organisations_nr'] = count(array_unique($resOrgsIds[$key][$item->name]['organisation_ids']));
-    //             } else {
-    //                 $items[$key][$item->name]['quantity']  =  (int)$item->quantity;
-    //                 $items[$key][$item->name]['organisations_nr'] =  1;
-    //             }
-    //         }
-    //     }
-    //     //$paginare = Resource::simplePaginate();
-    //     //var_Dump($paginare);
-
-    //     return response()->json($items, 201);
-    // }
-
     /**
      * @SWG\Get(
      *   tags={"Resources"},
@@ -308,5 +298,43 @@ class ResourceController extends Controller
        // $items = rvmPaginate($items);
 
         return response()->json($items, 200);
+    }
+    /**
+     * @SWG\Get(
+     *   tags={"Resources"},
+     *   path="/api/resources/categories",
+     *   summary="List resource categories",
+     *   operationId="delete",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
+    public function getAllResourceCategories(Request $request)
+    {
+        $params = $request->query();
+        $resources = ResourceCategory::query();
+
+        applyFilters($resources, $params, array(
+            '1' => array( 'slug', 'ilike' ),
+            '2' => array( 'parent_id', '=' )
+        ));
+
+        return response()->json(array(
+            "data" => $resources->get(['_id', 'parent_id', 'name', 'slug'])
+        ), 200); 
+    }
+
+    public function getResourceCategory($id) {
+        $resourceCat = ResourceCategory::find($id);
+
+        if(empty($resourceCat)) {
+            return response()->json(404);
+        }
+
+        return response()->json($resourceCat, 200);
+
     }
 }

@@ -22,6 +22,7 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::post('/resetpassword', 'AuthController@resetpassword');
     Route::get('/cities','StaticController@getAllCities');
     Route::get('/counties','StaticController@getAllCounties');
+    Route::get('/resources/categories', 'ResourceController@getAllResourceCategories');
 
     // private routes
     Route::middleware(['auth:api'])->group(function () {
