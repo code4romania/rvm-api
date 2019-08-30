@@ -11,12 +11,12 @@ class CountiesTableSeeder extends Seeder {
    * @return void
    */
   public function run() {
-    $country =  Country::where('country_id', '=', '1')->get(['_id'])->first();
+    $country =  Country::where('country_id', '=', '1')->get(['_id','slug'])->first();
 
     if($country->id){
       $id = strval($country->id);
 
-      County::insert([
+      $counties = [
         ['county_id' => '1',  'country_id' => $id, 'slug'  => 'Dolj',            'name' => 'Dolj'],
         ['county_id' => '2',  'country_id' => $id, 'slug'  => 'Bacau',           'name' => 'Bacău'],
         ['county_id' => '3',  'country_id' => $id, 'slug'  => 'Harghita',        'name' => 'Harghita'],
@@ -59,7 +59,13 @@ class CountiesTableSeeder extends Seeder {
         ['county_id' => '40', 'country_id' => $id, 'slug'  => 'Mures',           'name' => 'Mureș'],
         ['county_id' => '41', 'country_id' => $id, 'slug'  => 'Sibiu',           'name' => 'Sibiu'],
         ['county_id' => '42', 'country_id' => $id, 'slug'  => 'Olt',             'name' => 'Olt']
-      ]);
+      ];
+
+      foreach( $counties as $index => $county){
+        $counties[$index]['_id'] = 'county_'.strtolower(str_replace(' ','',$country->slug)).'_'.strtolower(str_replace(' ','',$county['slug'])).'_'.$index;
+      }
+
+      County::insert($counties);
     }
   }
 }

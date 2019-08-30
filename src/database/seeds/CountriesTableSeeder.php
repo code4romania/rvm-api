@@ -10,6 +10,6 @@ class CountriesTableSeeder extends Seeder {
    * @return void
    */
   public function run() {
-    Country::firstOrCreate(['country_id' => '1', 'slug' => 'Romania', 'name' => 'România']);
+    Country::firstOrCreate(['_id' => 'country_romania_1', 'country_id' => '1', 'slug' => 'Romania', 'name' => 'România']);
   }
 }
