@@ -173,8 +173,12 @@ class ResourceController extends Controller
                 $resCat = ResourceCategory::query()
                     ->where('_id', '=', $val)
                     ->get(['_id', 'name', 'slug'])
-                    ->toArray();
-                $data['categories'][$key] = $resCat[0];
+                    ->first();
+                    
+                $data['categories'][$key] = array('_id' => $resCat->_id,
+                    'name' => $resCat->name,
+                    'slug' => $resCat->slug
+                );
             }
         } 
 
@@ -188,15 +192,23 @@ class ResourceController extends Controller
             $county = County::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->county)
-                ->toArray();
-            $data['county'] = $county[0];
+                ->first();
+
+                $data['county'] = array('_id' => $county->_id,
+                    'name' => $county->name,
+                    'slug' => $county->slug
+                );
         }
+
         if ($request->has('city')) {            
             $city = City::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->city)
-                ->toArray();
-            $data['city'] = $city[0];
+                ->first();
+            $data['city'] = array('_id' => $city->_id,
+                'name' => $city->name,
+                'slug' => $city->slug
+            );
         }
 
         //Add Organisation
