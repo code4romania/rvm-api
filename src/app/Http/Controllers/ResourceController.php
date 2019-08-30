@@ -165,8 +165,19 @@ class ResourceController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
+        
+        if($request->has('categories'))
+        {
+            $data['categories'] = array();
+            foreach ($request->categories as $key =>$val) {
+                $resCat = ResourceCategory::query()
+                    ->where('_id', '=', $val)
+                    ->get(['_id', 'name', 'slug'])
+                    ->toArray();
+                $data['categories'][$key] = $resCat[0];
+            }
+        } 
 
-        $request->has('categories') ? $data['categories'] = $request->categories : '';
         $request->has('unit') ? $data['unit'] = $request->unit : '';
         $request->has('size') ? $data['size'] = $request->size : '';
         $request->has('comments') ? $data['comments'] = $request->comments : '';
@@ -199,7 +210,6 @@ class ResourceController extends Controller
         //Added by
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
 
-        dd($data);
         $resource = Resource::create($data);
         return response()->json($resource, 201); 
     }
