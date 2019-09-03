@@ -269,6 +269,7 @@ class OrganisationController extends Controller
             ]
         );
         $url = url('/auth/reset/'.$passwordReset->token);
+        $url = str_replace('-api','',$url);
         $set_password_data = array(
             'name' => $data['contact_person'],
             'url' => $url

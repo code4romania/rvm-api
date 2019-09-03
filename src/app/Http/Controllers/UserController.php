@@ -130,6 +130,7 @@ class UserController extends Controller
             ]
         );
         $url = url('/auth/reset/'.$passwordReset->token);
+        $url = str_replace('-api','',$url);
         $set_password_data = array(
             'name' => $data['name'],
             'url' => $url
