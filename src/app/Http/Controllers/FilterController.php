@@ -16,8 +16,8 @@ class FilterController extends Controller
     public function filterResourcesTypeName(Request $request)
     {
         $filters = Resource::query()
-            ->get(['type_name'])
-            ->unique('type_name')
+            ->get(['resource_type'])
+            ->unique('resource_type')
             ->values()
             ->all();
 

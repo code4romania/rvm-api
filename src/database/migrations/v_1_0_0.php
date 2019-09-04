@@ -17,6 +17,7 @@ function migrate(){
   createDB('volunteers');
   createDB('courses');
   createDB('allocations');
+  createDB('institutions');
 }
 
 
@@ -26,6 +27,7 @@ function migrate(){
  * @return void
  */
 function rollback(){
+  deleteDB('institutions');
   deleteDB('allocations');
   deleteDB('courses');
   deleteDB('volunteers');

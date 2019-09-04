@@ -4,10 +4,10 @@ namespace App;
 
 use Robsonvn\CouchDB\Eloquent\Model as Eloquent;
 
-class InstitutionName extends Eloquent
+class Institution extends Eloquent
 {
-    protected $connection = 'statics';
-    protected $collection = 'institution_names';
+    protected $connection = 'institutions';
+    protected $collection = 'institution';
     protected $fillable = [
         'id','name', 'slug',
     ];

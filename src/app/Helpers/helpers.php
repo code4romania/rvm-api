@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
 use Illuminate\Validation\ValidationRuleParser;
 use App\Volunteer;
+use App\Institution;
+use App\Organisation;
 /**
  * Pagination helper
  *
@@ -69,15 +71,16 @@ function applyPaginate($query, $params){
 function convertData($data, $validator){
     $newData = array();
     foreach($data as $key => $val){
-        $rules = explode("|", $validator[$key]);
-        if(in_array('integer',$rules)){
-            $val = intval($val);
-        }
-        $newData[$key] = $val;
-
-        //Inset slug after name
-        if($key === 'name') {
-            $newData['slug'] = removeDiacritics($data['name']);
+        if(is_string( $validator[$key])){
+            $rules = explode("|", $validator[$key]);
+            if(in_array('integer',$rules)){
+                $val = intval($val);
+            }
+            $newData[$key] = $val;
+            //Insert slug after name
+            if($key === 'name') {
+                $newData['slug'] = removeDiacritics($data['name']);
+            }
         }
     }
 
@@ -137,4 +140,74 @@ function removeDiacritics($post_name) {
     $post_name = strtr( $post_name, $diacritics_array );
 
     return $post_name;
+}
+
+function allowResourceAccess($resource) {
+    $r = is_array($resource) ? $resource : $resource->toArray();
+
+    if(isRole('dsu')) {
+        return true;
+    }
+    if(isRole('institution') && (!isset($r['institution']) || $r['institution']['_id'] != getAffiliationId())) {
+        isDenied();
+    }
+    if(isRole('ngo') && (!isset($r['organisation']) ||  $r['organisation']['_id'] != getAffiliationId())) {
+        isDenied();
+    }
+
+    return true;
+}
+
+function isRole($role, $user = null) {
+    $user = $user ? $user : \Auth::user();
+
+    $roleIds = config('roles.role');
+    $roleId = $roleIds[$role];
+
+    if($roleId === $user->role && $role=='institution' && (!isset($user->institution) || !$user->institution || !isset($user->institution['_id']))) return false;
+    if($roleId === $user->role && $role=='ngo' && (!isset($user->organisation) || !$user->organisation || !isset($user->organisation['_id']))) return false;
+    if($roleId === $user->role) return true;
+
+    return false;
+}
+
+// Returns Institution id Organization id of the admin
+function getAffiliationId() {
+    $user = \Auth::user();
+    if(isRole('institution')) {
+        return $user->institution['_id'];
+    }
+    if(isRole('ngo')){
+        return $user->organisation['_id'];
+    }
+
+    return null;
+}
+
+function isDenied() {
+    abort(403, 'Permission denied');
+}
+
+function setAffiliate($data) {
+    $affiliate= null;
+
+    if(isRole('institution')) {
+        $affiliate = Institution::where('_id', getAffiliationId())->first();
+        if(is_array($data)) {
+            $data['institution'] = array('_id' => $affiliate->_id, 'name' => $affiliate->name);
+        } else if(is_object($data)) {
+            $data->institution = array('_id' => $affiliate->_id, 'name' => $affiliate->name);
+        }
+    }
+
+    if(isRole('ngo')) {
+        $affiliate = Organisation::where('_id', getAffiliationId())->first();
+        if(is_array($data)) {
+            $data['organisation'] = array('_id' => $affiliate->_id, 'name' => $affiliate->name);
+        } else if(is_object($data)) {
+            $data->organisation = array('_id' => $affiliate->_id, 'name' => $affiliate->name);
+        }
+    } 
+    
+    return $data;
 }

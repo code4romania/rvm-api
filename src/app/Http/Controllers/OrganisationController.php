@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Mail\SetUpPassword;
+use App\Mail\NotifyTheOrganisation;
 use App\PasswordReset;
 use App\Organisation;
 use App\Volunteer;
@@ -34,7 +36,9 @@ class OrganisationController extends Controller
     {
         $params = $request->query();
         $organisations = Organisation::query();
-
+        if(isRole('ngo')) {
+            $organisations->where('_id', '=', getAffiliationId());
+        }
         applyFilters($organisations, $params, array(
             '1' => array( 'county', 'ilike' ),
             // '2' => array( 'county', 'ilike' ),
@@ -44,16 +48,27 @@ class OrganisationController extends Controller
         applySort($organisations, $params, array(
             '1' => 'name',
             '2' => 'county',
-            // '2' => 'type_name',
+            // '2' => 'resource_type',
             // '3' => 'quantity',
             // '4' => 'organisation', //change to nr_org
         ));
 
         $pager = applyPaginate($organisations, $params);
 
+        $organisations = $organisations->get();
+        $organisationsIds = array_map(function($o){ return $o['_id']; }, $organisations->toArray());
+
+        $volunteers = Volunteer::query()->whereIn('organisation._id', $organisationsIds)->get(['_id', 'organisation._id']);
+        $resources = Resource::query()->whereIn('organisation._id', $organisationsIds)->get(['_id', 'organisation._id']);
+
+        foreach($organisations as $organisation){
+           $organisation->volunteers = $volunteers->where('organisation._id', '=', $organisation->_id)->count();
+           $organisation->resources = $resources->where('organisation._id', '=', $organisation->_id)->count();
+        }
+
         return response()->json(array(
             "pager" => $pager,
-            "data" => $organisations->get()
+            "data" => $organisations
         ), 200); 
     }
      /**
@@ -70,8 +85,30 @@ class OrganisationController extends Controller
 
     public function show($id)
     {
-        return response()->json(Organisation::findOrFail($id), 200); 
+        $user = Organisation::findOrFail($id);
+        if(isRole('ngo')) {
+            $user->where($user->organisation['_id'], '=', getAffiliationId());
+        }
+        return response()->json($user, 200); 
+    }
 
+    /**
+    * @SWG\Get(
+    *   tags={"Organisations"},
+    *   path="/api/organisations/{id}/email",
+    *   summary="Send notification via email to a organisation admin",
+    *   operationId="send",
+    *   @SWG\Response(response=200, description="successful operation"),
+    *   @SWG\Response(response=404, description="not found")
+    * )
+    *
+    */
+    public function sendNotification($id) {
+        $organisation = Organisation::findOrFail($id);
+        allowResourceAccess($organisation);
+        $data = ['url' => url('/auth')];
+        Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
+        return response()->json('Email send succesfully', 200); 
     }
 
     /**
@@ -93,7 +130,7 @@ class OrganisationController extends Controller
             ->where('organisation._id', '=', $id);
 
         // applyFilters($volunteers, $params, array(
-        //     '1' => array( 'type_name', 'ilike' ),
+        //     '1' => array( 'resource_type', 'ilike' ),
         //     '2' => array( 'county', 'ilike' ),
         //     '3' => array( 'organisation.name', 'ilike')
         // ));
@@ -132,7 +169,7 @@ class OrganisationController extends Controller
             ->where('organisation._id', '=', $id);
 
         applyFilters($resources, $params, array(
-            '1' => array( 'type_name', 'ilike' ),
+            '1' => array( 'resource_type', 'ilike' ),
             '2' => array( 'county', 'ilike' ),
         ));
 
@@ -234,7 +271,8 @@ class OrganisationController extends Controller
             'website' => 'required|max:255',
             'contact_person' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:organisations.organisations',
-            'phone' => 'required|string|min:6|'
+            'phone' => 'required|string|min:6|',
+            'cover' => 'required'
         ];
         $validator = Validator::make($data, $rules);
 
@@ -243,6 +281,7 @@ class OrganisationController extends Controller
         }
 
         $data = convertData($validator->validated(), $rules);
+        $data['status'] = 'Active';
 
         if ($request->has('county')) {
             $county = County::query()
@@ -271,13 +310,17 @@ class OrganisationController extends Controller
         $url = url('/auth/reset/'.$passwordReset->token);
         $url = str_replace('-api','',$url);
         $set_password_data = array(
-            'name' => $data['contact_person'],
             'url' => $url
         );
         $data['password'] = Hash::make(str_random(16));
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
         $organisation = Organisation::create($data);
-
+        if(!isRole('dsu')){
+            if(isset($data['organisation'])){
+                unset($data['organisation']);
+            }
+        }
+        $data = setAffiliate($data);
         $newNgoAdmin = User::firstOrNew([
             'email' => $data['email'],
         ]);
@@ -312,6 +355,8 @@ class OrganisationController extends Controller
     public function update(Request $request, $id)
     {
         $organisation = Organisation::findOrFail($id);
+        allowResourceAccess($organisation);
+        $organisation = setAffiliate($organisation);
         $organisation->update($request->all());
 
         return $organisation;
@@ -333,6 +378,10 @@ class OrganisationController extends Controller
     public function delete(Request $request, $id)
     {
         $organisation = Organisation::findOrFail($id);
+        allowResourceAccess($organisation);
+        if(isRole('ngo') && isRole('ngo', $organisation)){
+            isDenied();
+        }
         $organisation->delete();
 
         $response = array("message" => 'Organisation deleted.');

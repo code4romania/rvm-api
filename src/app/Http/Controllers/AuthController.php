@@ -230,10 +230,11 @@ class AuthController extends Controller
                 ]
             );
             $url = url('/auth/reset/'.$passwordReset->token);
+            $url = str_replace('-api','',$url);
             $data = array(
-                'name' => $user->name,
                 'url' => $url
             );
+            $url = str_replace('/api','',$url);
             Mail::to($user->email)->send(new SendRecoverPasswordMail($data));
 
             return response()->json([
@@ -286,7 +287,7 @@ class AuthController extends Controller
                 'message' => 'This password reset token is invalid.'
             ], 404);
 
-        if (Carbon::parse($resetToken->updated_at)->addMinutes(600)->isPast()) {
+        if (Carbon::parse($resetToken->updated_at)->addMinutes(2880)->isPast()) {
             $resetToken->delete();
             return response()->json([
                 'message' => 'This password reset token is invalid.'

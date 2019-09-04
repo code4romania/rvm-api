@@ -9,6 +9,7 @@ use App\Volunteer;
 use App\Course;
 use App\City;
 use App\County;
+use App\Rules\Cnp;
 
 class VolunteerController extends Controller
 {
@@ -30,7 +31,7 @@ class VolunteerController extends Controller
         $volunteers = Volunteer::query();
 
         applyFilters($volunteers, $params, array(
-            //'1' => array( 'type_name', 'ilike' ),
+            //'1' => array( 'resource_type', 'ilike' ),
             '2' => array( 'county', 'ilike' ),
             '3' => array( 'organisation.name', 'ilike'),
            // '4' => array( 'specialization', 'ilike')
@@ -38,7 +39,7 @@ class VolunteerController extends Controller
 
         applySort($volunteers, $params, array(
             '1' => 'name',
-            '2' => 'type_name',
+            '2' => 'resource_type',
             '3' => 'quantity',
             '4' => 'organisation', //change to nr_org
         ));
@@ -165,7 +166,7 @@ class VolunteerController extends Controller
             'organisation_id' => 'required',
             'email' => 'required|string|email|max:255|unique:volunteers.volunteers',
             'phone' => 'required|string|min:6|',
-            'ssn' => 'required|string|unique:volunteers.volunteers',
+            'ssn' => new Cnp,
             'name' => 'required|string|max:255',
         ];
         $validator = Validator::make($data, $rules);
@@ -192,15 +193,20 @@ class VolunteerController extends Controller
             $county = County::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->county)
+                ->first()
                 ->toArray();
-            $data['county'] = $county[0];
+
+            $data['county'] = $county ? $county : null;
         }
+
         if ($request->has('city')) {            
             $city = City::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->city)
+                ->first()
                 ->toArray();
-            $data['city'] = $city[0];
+
+            $data['city'] = $city ?  $city : null;
         }
 
         //Added by
@@ -208,16 +214,18 @@ class VolunteerController extends Controller
 
         $volunteer = Volunteer::create($data);
 
-        foreach ($volunteer->courses as $course) {
-            $newCourse = Course::firstOrNew([
-                'volunteer_id' => $volunteer->_id,
-                'name' => $course['name'],
-                'slug' => removeDiacritics($course['name']),
-                'acredited' => $course['acredited'],
-                'obtained' => $course['obtained'],
-                'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
-            ]);
-            $newCourse->save();
+        if($volunteer->courses){
+            foreach ($volunteer->courses as $course) {
+                $newCourse = Course::firstOrNew([
+                    'volunteer_id' => $volunteer->_id,
+                    'name' => $course['name'],
+                    'slug' => removeDiacritics($course['name']),
+                    'acredited' => $course['acredited'],
+                    'obtained' => $course['obtained'],
+                    'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
+                ]);
+                $newCourse->save();
+            }
         }
 
         return response()->json($volunteer, 201); 

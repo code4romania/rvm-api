@@ -9,7 +9,7 @@ class Resource extends Eloquent
     protected $connection = 'resources';
     protected $collection = 'resources';
     protected $fillable = [
-        'name', 'type_name', 'slug', 'categories', 'quantity', 'unit', 'size', 'comments',
+        'name', 'resource_type', 'slug', 'categories', 'quantity', 'unit', 'size', 'comments',
         'county', 'city', 'address', 'organisation', 'added_by',
     ];
   

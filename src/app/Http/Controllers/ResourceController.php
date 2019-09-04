@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Resource;
+use App\Organisation;
 use App\ResourceCategory;
 use App\City;
 use App\County;
@@ -30,14 +31,14 @@ class ResourceController extends Controller
         $resources = Resource::query();
 
         applyFilters($resources, $params, array(
-            '1' => array( 'type_name', 'ilike' ),
+            '1' => array( 'resource_type', 'ilike' ),
             '2' => array( 'county', 'ilike' ),
             '3' => array( 'organisation.name', 'ilike')
         ));
 
         applySort($resources, $params, array(
             '1' => 'name',
-            '2' => 'type_name',
+            '2' => 'resource_type',
             '3' => 'quantity',
             '4' => 'organisation', //change to nr_org
         ));
@@ -95,9 +96,9 @@ class ResourceController extends Controller
      *     type="string"
      *   ),
      *  @SWG\Parameter(
-     *     name="type_name",
+     *     name="resource_type",
      *     in="query",
-     *     description="Resource type_name.",
+     *     description="Resource resource_type.",
      *     required=true,
      *     type="string"
      *   ),
@@ -174,8 +175,9 @@ class ResourceController extends Controller
                     ->where('_id', '=', $val)
                     ->get(['_id', 'name', 'slug'])
                     ->first();
-                    
-                $data['categories'][$key] = array('_id' => $resCat->_id,
+
+                $data['categories'][$key] = array(
+                    '_id' => $resCat->_id,
                     'name' => $resCat->name,
                     'slug' => $resCat->slug
                 );
@@ -307,11 +309,11 @@ class ResourceController extends Controller
             foreach($resource as $item) {
                 $resOrgsIds[$key]['organisation_ids'][] = $item->organisation['_id'];
                 if(isset($items[$key]) && array_key_exists($key, $items)) {
-                    $items[$key]['type_name'] = $item->type_name;
+                    $items[$key]['resource_type'] = $item->resource_type;
                     $items[$key]['quantity'] +=  (int)$item->quantity;
                     $items[$key]['organisations_nr'] = count(array_unique($resOrgsIds[$key]['organisation_ids']));
                 } else {
-                    $items[$key]['type_name'] = $item->type_name;
+                    $items[$key]['resource_type'] = $item->resource_type;
                     $items[$key]['quantity']  =  (int)$item->quantity;
                     $items[$key]['organisations_nr'] =  1;
                 }

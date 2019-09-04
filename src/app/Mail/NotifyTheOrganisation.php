@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SetUpPassword extends Mailable
+class NotifyTheOrganisation extends Mailable
 {
     use Queueable, SerializesModels;
     public $data;
@@ -28,6 +28,6 @@ class SetUpPassword extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Create Password')->view('mails.set_up_password')->with('data', $this->data);
+        return $this->from(env('MAIL_USERNAME'))->subject('Update your datas')->view('mails.notify_the_organisation')->with('data', $this->data);
     }
 }

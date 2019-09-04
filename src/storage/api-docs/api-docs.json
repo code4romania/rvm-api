@@ -491,6 +491,23 @@
                 }
             }
         },
+        "/api/organisations/{id}/email": {
+            "get": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Send notification via email to a organisation admin",
+                "operationId": "send",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not found"
+                    }
+                }
+            }
+        },
         "/api/organisations/{id}/volunteers": {
             "get": {
                 "tags": [
@@ -690,6 +707,26 @@
                     "Resources"
                 ],
                 "summary": "List resources",
+                "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/resources/categories": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "List resource categories",
                 "operationId": "delete",
                 "responses": {
                     "200": {

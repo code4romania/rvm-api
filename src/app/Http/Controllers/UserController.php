@@ -7,9 +7,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Mail\SetUpPassword;
 use App\User;
 use App\PasswordReset;
+use App\Institution;
+use App\Organisation;
+use App\Volunteer;
 
 class UserController extends Controller
 {
@@ -30,6 +34,11 @@ class UserController extends Controller
     { 
         $params = $request->query();
         $users = User::query();
+        if(isRole('institution')) {
+            $users->where('role', '=', '0')
+                  ->where('institution._id', '=', getAffiliationId());
+        }
+        $volunteers = Volunteer::query()->get();
         $pager = applyPaginate($users, $params);
 
         return response()->json(array(
@@ -53,7 +62,9 @@ class UserController extends Controller
 
     public function show($id)
     {
-        return response()->json(User::findOrFail($id), 200);
+        $user = User::findOrFail($id);
+        allowResourceAccess($user);
+        return response()->json($user, 200);
     }
 
     /**
@@ -118,7 +129,16 @@ class UserController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
-        $request->has('institution') ? $data['institution'] = $request->institution : '';
+
+        if(!isRole('dsu')){
+            if(isset($data['institution'])) {
+                unset($data['institution']);
+            }
+            if(isset($data['organisation'])){
+                unset($data['organisation']);
+            }
+        }
+        $data = setAffiliate($data);
         if(\Auth::check()) {
            $data['added_by'] = \Auth::user()->_id;
         }
@@ -132,7 +152,6 @@ class UserController extends Controller
         $url = url('/auth/reset/'.$passwordReset->token);
         $url = str_replace('-api','',$url);
         $set_password_data = array(
-            'name' => $data['name'],
             'url' => $url
         );
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
@@ -161,6 +180,9 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        allowResourceAccess($user);
+        $user = setAffiliate($user);
+
         $user->update($request->all());
 
         return response()->json($user, 201); 
@@ -182,8 +204,11 @@ class UserController extends Controller
     public function delete(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        allowResourceAccess($user);
+        if(isRole('institution') && isRole('institution', $user)){
+            isDenied();
+        }
         $user->delete();
-
         $response = array("message" => 'User deleted.');
 
         return response()->json($response, 200);
