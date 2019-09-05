@@ -195,11 +195,14 @@ class ResourceController extends Controller
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->county)
                 ->first();
-
+            if($count){
                 $data['county'] = array('_id' => $county->_id,
                     'name' => $county->name,
                     'slug' => $county->slug
                 );
+            } else {
+                $data['county'] = null;
+            }
         }
 
         if ($request->has('city')) {            
@@ -207,10 +210,15 @@ class ResourceController extends Controller
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->city)
                 ->first();
-            $data['city'] = array('_id' => $city->_id,
-                'name' => $city->name,
-                'slug' => $city->slug
-            );
+                
+            if($city){
+                $data['city'] = array('_id' => $city->_id,
+                    'name' => $city->name,
+                    'slug' => $city->slug
+                );
+            }else {
+                $data['city'] = null;
+            }
         }
 
         //Add Organisation
