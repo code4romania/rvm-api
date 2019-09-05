@@ -130,8 +130,7 @@ class AuthController extends Controller
             ->orWhere('phone', $request->phone)
             ->first();
 
-        if ($user) {
-            
+        if (($user && $user->role!= 0 && (is_null($request->device)||empty($request->device)||$request->device!='mobile')) || ($request->has('device')=="mobile" && $user->role == 0)) {
             if (Hash::check($request->password, $user->password)) {
                 
                 $token = $user->createToken('Laravel Password Grant Client')->accessToken;

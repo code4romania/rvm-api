@@ -340,7 +340,7 @@
                 "tags": [
                     "Filters"
                 ],
-                "summary": "Show organisations name.",
+                "summary": "Show organisations name/id.",
                 "operationId": "filter_org_name",
                 "responses": {
                     "200": {
@@ -360,7 +360,7 @@
                 "tags": [
                     "Filters"
                 ],
-                "summary": "Show all courses names from a volunteer.",
+                "summary": "Show courses by name/id.",
                 "operationId": "filter_courses",
                 "responses": {
                     "200": {
@@ -380,7 +380,7 @@
                 "tags": [
                     "Filters"
                 ],
-                "summary": "Show all users from a institution.",
+                "summary": "Show all institutions.",
                 "operationId": "filter_institution_users",
                 "responses": {
                     "200": {

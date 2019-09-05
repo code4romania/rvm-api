@@ -21,7 +21,7 @@ class FilterController extends Controller
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/organisations",
-     *   summary="Show organisations name.",
+     *   summary="Show organisations name/id.",
      *   operationId="filter_org_name",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),
@@ -38,7 +38,7 @@ class FilterController extends Controller
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/volunteers/courses",
-     *   summary="Show all courses names from a volunteer.",
+     *   summary="Show courses by name/id.",
      *   operationId="filter_courses",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),
@@ -55,7 +55,7 @@ class FilterController extends Controller
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/users/institutions",
-     *   summary="Show all users from a institution.",
+     *   summary="Show all institutions.",
      *   operationId="filter_institution_users",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),

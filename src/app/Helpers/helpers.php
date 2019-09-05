@@ -31,6 +31,18 @@ function applyFilters($query, $params, $filterKeys = array()){
                     if($filterKeys[$key][1]=='ilike' || $filterKeys[$key][1]=='like'){
                         $value = '%'.$value.'%';
                     }
+
+                    if($filterKeys[$key][1]=='elemmatch' && 
+                        isset($filterKeys[$key][2]) && $filterKeys[$key][2] && 
+                        isset($filterKeys[$key][3]) && $filterKeys[$key][3]){
+
+                        if($filterKeys[$key][3]=='ilike' || $filterKeys[$key][3]=='like'){
+                            $value = '%'.$value.'%';
+                        }
+                        
+                        $value = array($filterKeys[$key][2] => likeOp($filterKeys[$key][3], $value));
+                    }
+
                     if($kval < 1) {
                         $query->where($filterKeys[$key][0], $filterKeys[$key][1], $value);                        
                     } else {
@@ -92,9 +104,9 @@ function convertData($data, $validator){
 function countByOrgId($org_ids, $model) {
     foreach($org_ids as $id) {
         
-    dd($id);
+    // dd($id);
         $test = $model::where('organisation._id', '=', $id)->count();
-        dd($test);
+        // dd($test);
     }
 }
 
@@ -215,15 +227,43 @@ function setAffiliate($data) {
 }
 
 function getFiltersByIdAndName($name ,$model) {
-    if(isset($name)) {
-        $filters = $model->get(['_id', 'name'])
-            ->values()
-            ->where('name', '=', $name)
-            ->all();
-    } else if(is_null($name) && empty($name)) {
-        $filters = $model->get(['_id', 'name'])
-            ->values()
-            ->all();
+    if(isset($name) && $name) {
+        $model->where('name', 'ilike', '%'.$name.'%');
     }
-    return $filters;
+    return $model->get(['_id', 'name']);
+}
+
+function getCityOrCounty($params,$model) {
+    $city_or_county = $model->get(['_id', 'name', 'slug'])
+                ->where('_id', '=', $params)->first();    
+    if($city_or_county) {
+        $place = array('_id' => $city_or_county->_id,
+            'name' => $city_or_county->name,
+            'slug' => $city_or_county->slug
+        );
+    }else {
+        $place = null;
+    }
+    return $place;
+}
+
+function likeOp($operator, $value){
+    if (in_array($operator, ['like', 'not like', 'ilike', 'not ilike'])) {
+        // Convert to regular expression.
+        $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+
+        // Convert like to regular expression.
+        if (!starts_with($value, '%')) {
+            $regex = '^'.$regex;
+        }
+        if (!ends_with($value, '%')) {
+            $regex = $regex.'$';
+        }
+        //add case insensitive modifier for ilike operation
+        $value = (ends_with($operator, 'ilike')) ? '(?i)'.$regex : $regex;
+        $operator = preg_replace('/(i|)(like)/', '$regex', $operator);
+        
+        return array($operator => $value);
+    }
+    return array($operator => $value);
 }

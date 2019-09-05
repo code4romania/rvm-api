@@ -284,34 +284,10 @@ class OrganisationController extends Controller
         $data['status'] = 'Active';
 
         if ($request->has('county')) {
-            $county = County::query()
-                ->get(['_id', 'name', 'slug'])
-                ->where('_id', '=', $request->county)
-                ->first();
-            if($count){
-                $data['county'] = array('_id' => $county->_id,
-                    'name' => $county->name,
-                    'slug' => $county->slug
-                );
-            } else {
-                $data['county'] = null;
-            }
+            $data['county'] = getCityOrCounty($request->county,County::query());
         }
-
         if ($request->has('city')) {            
-            $city = City::query()
-                ->get(['_id', 'name', 'slug'])
-                ->where('_id', '=', $request->city)
-                ->first();
-                
-            if($city){
-                $data['city'] = array('_id' => $city->_id,
-                    'name' => $city->name,
-                    'slug' => $city->slug
-                );
-            }else {
-                $data['city'] = null;
-            }
+            $data['city'] = getCityOrCounty($request->city,City::query());
         }
         
         $request->has('comments') ? $data['comments'] = $request->comments : '';
