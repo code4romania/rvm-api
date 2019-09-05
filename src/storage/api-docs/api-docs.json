@@ -335,6 +335,66 @@
                 }
             }
         },
+        "/filter/organisations": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show organisations name.",
+                "operationId": "filter_org_name",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/volunteers/courses": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show all courses names from a volunteer.",
+                "operationId": "filter_courses",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/users/institutions": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show all users from a institution.",
+                "operationId": "filter_institution_users",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/api/organisations": {
             "get": {
                 "tags": [
@@ -583,9 +643,9 @@
                         "type": "string"
                     },
                     {
-                        "name": "type_name",
+                        "name": "resource_type",
                         "in": "query",
-                        "description": "Resource type_name.",
+                        "description": "Resource resource_type.",
                         "required": true,
                         "type": "string"
                     },

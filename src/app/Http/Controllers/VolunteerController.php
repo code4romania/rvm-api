@@ -39,7 +39,7 @@ class VolunteerController extends Controller
 
         applySort($volunteers, $params, array(
             '1' => 'name',
-            '2' => 'resource_type',
+            '2' => 'county',
             '3' => 'quantity',
             '4' => 'organisation', //change to nr_org
         ));

@@ -205,7 +205,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
-        if(isRole('institution') && isRole('institution', $user)){
+        if(isRole('institution') && isRole('institution', $user) && !$user){
             isDenied();
         }
         $user->delete();

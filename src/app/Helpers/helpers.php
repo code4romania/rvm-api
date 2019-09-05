@@ -8,6 +8,8 @@ use Illuminate\Validation\ValidationRuleParser;
 use App\Volunteer;
 use App\Institution;
 use App\Organisation;
+use App\Course;
+use App\CourseName;
 /**
  * Pagination helper
  *
@@ -210,4 +212,18 @@ function setAffiliate($data) {
     } 
     
     return $data;
+}
+
+function getFiltersByIdAndName($name ,$model) {
+    if(isset($name)) {
+        $filters = $model->get(['_id', 'name'])
+            ->values()
+            ->where('name', '=', $name)
+            ->all();
+    } else if(is_null($name) && empty($name)) {
+        $filters = $model->get(['_id', 'name'])
+            ->values()
+            ->all();
+    }
+    return $filters;
 }

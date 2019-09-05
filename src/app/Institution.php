@@ -7,7 +7,7 @@ use Robsonvn\CouchDB\Eloquent\Model as Eloquent;
 class Institution extends Eloquent
 {
     protected $connection = 'institutions';
-    protected $collection = 'institution';
+    protected $collection = 'institutions';
     protected $fillable = [
         'id','name', 'slug',
     ];

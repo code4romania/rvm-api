@@ -71,30 +71,30 @@ class AuthController extends Controller
      *
      */
 
-    public function register (Request $request) {
+    // public function register (Request $request) {
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users.users',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required',
-            'phone' => 'required|string|min:6|'
-        ]);
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|string|email|max:255|unique:users.users',
+    //         'password' => 'required|string|min:6|confirmed',
+    //         'role' => 'required',
+    //         'phone' => 'required|string|min:6|'
+    //     ]);
     
-        if ($validator->fails())
-        {
-            return response(['errors'=>$validator->errors()->all()], 422);
-        }
+    //     if ($validator->fails())
+    //     {
+    //         return response(['errors'=>$validator->errors()->all()], 422);
+    //     }
     
-        $request['password']=Hash::make($request['password']);
-        $user = User::create($request->toArray());
+    //     $request['password']=Hash::make($request['password']);
+    //     $user = User::create($request->toArray());
     
-        $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        $response = ['token' => $token];
+    //     $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+    //     $response = ['token' => $token];
     
-        return response($response, 200);
+    //     return response($response, 200);
     
-    }
+    // }
 
 
     /**
@@ -307,10 +307,10 @@ class AuthController extends Controller
 
         $resetToken->delete();
 
-        Mail::to($user->email)->send(new PasswordChanged);
+        // Mail::to($user->email)->send(new PasswordChanged);
 
         return response()->json([
-            'message' => 'Mail was send succesfully.'
+            'message' => 'Password changed succesfully.'
         ], 200);
     } 
 

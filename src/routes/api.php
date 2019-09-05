@@ -17,7 +17,7 @@ Route::group(['middleware' => ['json.response']], function () {
 
     // public routes
     Route::post('/login', 'AuthController@login')->name('login.api');
-    Route::post('/register', 'AuthController@register')->name('register.api');
+    // Route::post('/register', 'AuthController@register')->name('register.api');
     Route::post('/recoverpassword', 'AuthController@recoverpassword')->name('recoverpassword');
     Route::post('/resetpassword', 'AuthController@resetpassword');
     Route::get('/cities','StaticController@getAllCities');
@@ -73,10 +73,8 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::get('volunteers', 'VolunteerController@index');
             Route::get('volunteers/{id}', 'VolunteerController@show');
         });
-
-        Route::get('filter/resources/type_name', 'FilterController@filterResourcesTypeName');
-        Route::get('filter/organisations/name', 'FilterController@filterOrganisationsName');
-        // Route::get('filter/specialization/name', 'FilterController@filterSpecialziationsName');
-        // Route::get('filter/job/name', 'FilterController@filterJobsName');
+        Route::get('filter/organisations', 'FilterController@filterOrganisationsName');
+        Route::get('filter/volunteers/courses', 'FilterController@filterVolunteerCourses');
+        Route::get('filter/users/institutions', 'FilterController@filterInstitutionUsers');
     });
 });
