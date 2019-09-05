@@ -287,27 +287,17 @@ class OrganisationController extends Controller
             $county = County::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->county)
-                ->first();
-
-                if($county){
-                    $data['county'] = array('_id' => $county->_id,
-                        'name' => $county->name,
-                        'slug' => $county->slug
-                    );
-                }
+                ->toArray();
+                //dd($county);
+            $data['county'] = $county[0];
         }
-
         if ($request->has('city')) {            
             $city = City::query()
                 ->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $request->city)
-                ->first();
-            if( $city){
-                $data['city'] = array('_id' => $city->_id,
-                    'name' => $city->name,
-                    'slug' => $city->slug
-                );
-            }
+                ->toArray();
+                dd($city);
+            $data['city'] = $city[0];
         }
         
         $request->has('comments') ? $data['comments'] = $request->comments : '';
