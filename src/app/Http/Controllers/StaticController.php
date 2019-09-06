@@ -33,7 +33,7 @@ class StaticController extends Controller
         $query = $client->createViewQuery('cities', 'slug');
 
         $startKey = array($request->county);
-        $endKey = array($request->county, []);
+        $endKey = array($request->county, (object)[]);
 
         if($request->slug){
             $startKey[1] = $request->slug;
@@ -85,6 +85,7 @@ class StaticController extends Controller
     public function getAllCounties(Request $request)
     {
         $params = $request->query();
+        $counties = County::query();
 
         applyFilters($counties, $params, array(
             '1' => array( 'slug', 'ilike' ),
