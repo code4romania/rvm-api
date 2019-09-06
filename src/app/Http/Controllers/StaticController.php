@@ -54,7 +54,7 @@ class StaticController extends Controller
 
         //TEMPORARY
         return response()->json( array(
-            "pager" => $pager,
+            "pager" => null,
             "data" => $docs->toArray()
         ));
        
