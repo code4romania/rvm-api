@@ -82,8 +82,33 @@ class ResourceController extends Controller
 
     public function show(Request $request, $id)
     {   
+        $resource = Resource::find($id);
+       
+        if(empty($resource)) {
+            return response()->json(404);
+        }
+
+        return $resource;
+    }
+
+
+     /**
+     * @SWG\Get(
+     *   tags={"Resources"},
+     *   path="/api/resources/by_slug/{slug}",
+     *   summary="Show resource info grouped by slug ",
+     *   operationId="show",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+
+    public function by_slug(Request $request, $slug)
+    {   
         $params =  $request->query();
-        $resources = Resource::query();
+        $resources = Resource::query()->where('slug', '=', $slug);
         applySort($resources, $params, array(
             '1' => 'organisation.name',
             '2' => 'quantity',
@@ -92,10 +117,9 @@ class ResourceController extends Controller
             '5' => 'updated_at'
         ));
         $pager = applyPaginate($resources,$params);
-        $resources = $resources->where('slug', '=', $id)->get();
-        foreach ($resources as $resource) {
-            $resource->organisation = Organisation::query()->where('_id', '=', $resource->organisation['_id'])->get();
-        }
+
+        $resources = $resources->get();
+
         if(empty($resources)) {
             return response()->json(404);
         }

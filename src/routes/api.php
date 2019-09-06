@@ -54,6 +54,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::get('resources/list', 'ResourceController@list');
             Route::get('resources/organisations', 'ResourceController@showOrganisations');
             Route::get('resources/{id}', 'ResourceController@show');
+            Route::get('resources/by_slug/{slug}', 'ResourceController@by_slug');
             Route::post('resources', 'ResourceController@store');
             Route::put('resources/{id}', 'ResourceController@update');
             Route::delete('resources/{id}', 'ResourceController@delete');

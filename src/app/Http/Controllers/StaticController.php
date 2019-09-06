@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\City;
 use App\County;
+use App\DBViews\StaticCitiesBySlugView;
 
 class StaticController extends Controller
 {
@@ -25,20 +26,48 @@ class StaticController extends Controller
         $params = $request->query();
         $cities = City::query();
 
-        applyFilters($cities, $params, array(
+        $client = \DB::connection('statics')->getCouchDBClient();
+
+        $client->createDesignDocument('cities', new StaticCitiesBySlugView());
+
+        $query = $client->createViewQuery('cities', 'slug');
+
+        $startKey = array($request->county);
+        $endKey = array($request->county, []);
+
+        if($request->slug){
+            $startKey[1] = $request->slug;
+        }
+
+        if($request->slug){
+            $endKey[1] = $request->slug.$client::COLLATION_END;
+        }
+
+        $query->setStartKey($startKey);
+        $query->setEndKey($endKey);
+        $docs = $query->execute();
+
+        return response()->json( $docs->toArray());
+       
+
+        /*
+        ** OLD QUERY
+
+        $cities = applyFilters($cities, $params, array(
             '1' => array( 'county_id', '=' ),
-            '2' => array( 'slug', 'ilike' ),
+            '2' => array( 'slug', 'ilike' )
         ));
 
-        applySort($cities, $params, array(
-            '1' => 'name',
+        $cities = applySort($cities, $params, array(
+            '1' => 'name'
         ));
 
-       $pager = applyPaginate($cities, $params);
+        $pager = applyPaginate($cities, $params);
+
         return response()->json(array(
             "pager" => $pager,
             "data" => $cities->get(['name','_id'])
-        ), 200); 
+        ), 200); */
     }
 
     /**
@@ -56,7 +85,6 @@ class StaticController extends Controller
     public function getAllCounties(Request $request)
     {
         $params = $request->query();
-        $counties = County::query();
 
         applyFilters($counties, $params, array(
             '1' => array( 'slug', 'ilike' ),
