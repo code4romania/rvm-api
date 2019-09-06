@@ -32,22 +32,31 @@ class StaticController extends Controller
 
         $query = $client->createViewQuery('cities', 'slug');
 
-        $startKey = array($request->county);
-        $endKey = array($request->county, (object)[]);
+        $startKey = null;
+        $endKey = null;
 
-        if($request->slug){
-            $startKey[1] = $request->slug;
+        if(isset($request->filters[1])){
+            $startKey = array($request->filters[1]);
+            $endKey = array($request->filters[1], (object)[]);
         }
 
-        if($request->slug){
-            $endKey[1] = $request->slug.$client::COLLATION_END;
+        if(isset($request->filters[1]) && isset($request->filters[2]) && $request->filters[2]){
+            $startKey[1] = $request->filters[2];
+        }
+
+        if(isset($request->filters[1]) && isset($request->filters[2]) && $request->filters[2]){
+            $endKey[1] = $request->filters[2].$client::COLLATION_END;
         }
 
         $query->setStartKey($startKey);
         $query->setEndKey($endKey);
         $docs = $query->execute();
 
-        return response()->json( $docs->toArray());
+        //TEMPORARY
+        return response()->json( array(
+            "pager" => $pager,
+            "data" => $docs->toArray()
+        ));
        
 
         /*
