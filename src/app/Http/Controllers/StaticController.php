@@ -58,7 +58,7 @@ class StaticController extends Controller
             "data" => array_map(function($doc){
                 return array(
                     "_id" => $doc['id'],
-                    "name" =>  $doc['name']
+                    "name" =>  $doc['value']
                 );
             }, $docs->toArray())
         ));
