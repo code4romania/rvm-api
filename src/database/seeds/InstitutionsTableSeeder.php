@@ -1,16 +1,16 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\InstitutionName;
+use App\Institution;
 
-class InstitutionNamesTableSeeder extends Seeder {
+class InstitutionsTableSeeder extends Seeder {
   /**
    * Run the database seeds.
    *
    * @return void
    */
   public function run() {
-    InstitutionName::insert([
+    Institution::insert([
       ['slug' => 'Departamentul pentru Situatii de Urgenta',         'name' => 'Departamentul pentru Situații de Urgență'],
       ['slug' => 'Inspectoratul General pentru Situatii de Urgenta', 'name' => 'Inspectoratul General pentru Situații de Urgență'],
       ['slug' => 'Inspectoratul pentru Situatii de Urgenta',         'name' => 'Inspectoratul pentru Situații de Urgență'],
