@@ -12,6 +12,9 @@ use App\Mail\SetUpPassword;
 use App\Mail\NotifyTheOrganisation;
 use App\PasswordReset;
 use App\Organisation;
+use App\Course;
+use App\CourseAccreditor;
+use App\CourseName;
 use App\Volunteer;
 use App\Resource;
 use App\User;
@@ -40,17 +43,23 @@ class OrganisationController extends Controller
             $organisations->where('_id', '=', getAffiliationId());
         }
         applyFilters($organisations, $params, array(
-            '1' => array( 'county', 'ilike' ),
-            // '2' => array( 'county', 'ilike' ),
-            // '3' => array( 'organisation.name', 'ilike')
+            '1' => array( 'county._id', 'ilike' )
         ));
+
+        if($request->course){
+            $matchOrganisations = Volunteer::query()
+                ->where('courses', 'elemmatch', array("_id" => $request->course))
+                ->get(['organisation._id'])
+                ->pluck('organisation._id')
+                ->unique('organisation._id')
+                ->toArray();
+            
+            $organisations->whereIn('_id', $matchOrganisations);
+        }
 
         applySort($organisations, $params, array(
             '1' => 'name',
             '2' => 'county',
-            // '2' => 'resource_type',
-            // '3' => 'quantity',
-            // '4' => 'organisation', //change to nr_org
         ));
 
         $pager = applyPaginate($organisations, $params);

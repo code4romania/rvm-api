@@ -67,6 +67,21 @@ function applySort($query, $params, $sortKeys = array()){
     return $query;
 }
 
+function applyCollectionPaginate($collection, $params){
+    $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
+    $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
+    $total = $collection->count();
+
+    return array(
+        'pager' => array(
+            'page' => $page,
+            'size' => $size,
+            'total' => $total
+        ),
+        'data' => $collection->forPage(intval($page ), intval($size))
+    );
+}
+
 function applyPaginate($query, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;

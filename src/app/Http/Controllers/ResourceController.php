@@ -31,24 +31,40 @@ class ResourceController extends Controller
         $resources = Resource::query();
 
         applyFilters($resources, $params, array(
-            '1' => array( 'resource_type', 'ilike' ),
-            '2' => array( 'county', 'ilike' ),
-            '3' => array( 'organisation.name', 'ilike')
+            '0' => array( 'categories', 'elemmatch', '_id', 'ilike' ),
+            '1' => array( 'county._id', 'ilike' )
         ));
 
         applySort($resources, $params, array(
             '1' => 'name',
             '2' => 'resource_type',
             '3' => 'quantity',
-            '4' => 'organisation', //change to nr_org
+            '4' => 'organisation',
         ));
 
-        $pager = applyPaginate($resources, $params);
+        $resources = $resources->get()->groupBy('slug');
 
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $resources->get()
-        ), 200); 
+        $resources = applyCollectionPaginate($resources, $params);
+
+        foreach($resources['data'] as $key => &$resource){
+            $res = $resource->toArray();
+            $categories = array_filter( $resource->pluck('categories')->toArray());
+            $organisations = $resource->unique('organisation._id')->pluck('organisation');
+
+            $resources['data'][$key] = array(
+                "slug" => $key,
+                "name" => $res[0]['name'],
+                "resources" => $res,
+                "quantity" => $resource->sum('quantity'),
+                "organisations_total" => $organisations->count(),
+                "organisations" => $organisations,
+                "categories" =>  $categories ? array_values( array_unique( call_user_func_array('array_merge',$categories) , SORT_REGULAR) ) : array()
+            );
+        }
+
+        $resources['data'] = array_values($resources['data']->toArray());
+
+        return response()->json($resources, 200); 
     }
 
      /**
@@ -64,15 +80,30 @@ class ResourceController extends Controller
      *
      */
 
-    public function show($id)
-    {
-        $resources = Resource::find($id);
-
+    public function show(Request $request, $id)
+    {   
+        $params =  $request->query();
+        $resources = Resource::query();
+        applySort($resources, $params, array(
+            '1' => 'organisation.name',
+            '2' => 'quantity',
+            '3' => 'address',
+            '4' => 'county_id',
+            '5' => 'updated_at'
+        ));
+        $pager = applyPaginate($resources,$params);
+        $resources = $resources->where('slug', '=', $id)->get();
+        foreach ($resources as $resource) {
+            $resource->organisation = Organisation::query()->where('_id', '=', $resource->organisation['_id'])->get();
+        }
         if(empty($resources)) {
             return response()->json(404);
         }
 
-        return response()->json($resources, 200);
+        return response()->json(array(
+            "pager" => $pager,
+            "data" => $resources
+        ), 200);
     }
 
     /**
@@ -191,34 +222,10 @@ class ResourceController extends Controller
 
         //Add City and County
         if ($request->has('county')) {
-            $county = County::query()
-                ->get(['_id', 'name', 'slug'])
-                ->where('_id', '=', $request->county)
-                ->first();
-            if($count){
-                $data['county'] = array('_id' => $county->_id,
-                    'name' => $county->name,
-                    'slug' => $county->slug
-                );
-            } else {
-                $data['county'] = null;
-            }
+            $data['county'] = getCityOrCounty($request->county,County::query());
         }
-
         if ($request->has('city')) {            
-            $city = City::query()
-                ->get(['_id', 'name', 'slug'])
-                ->where('_id', '=', $request->city)
-                ->first();
-                
-            if($city){
-                $data['city'] = array('_id' => $city->_id,
-                    'name' => $city->name,
-                    'slug' => $city->slug
-                );
-            }else {
-                $data['city'] = null;
-            }
+            $data['city'] = getCityOrCounty($request->city,City::query());
         }
 
         //Add Organisation

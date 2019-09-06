@@ -10,7 +10,9 @@ use App\Organisation;
 use App\Volunteer;
 use App\Course;
 use App\CourseName;
+use App\CourseAccreditor;
 use App\Institution;
+use App\County;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -66,5 +68,46 @@ class FilterController extends Controller
     public function filterInstitutionUsers(Request $request) 
     {
         return response()->json(getFiltersByIdAndName($request->name, Institution::query()), 200);
+    }
+    
+    /**
+     * @SWG\Get(
+     *   tags={"Filters"},
+     *   path="/filter/accreditedby",
+     *   summary="Show all Accreditors.",
+     *   operationId="filter_accreditedby",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function filterAccreditedBy(Request $request)
+    {
+        return response()->json(getFiltersByIdAndName($request->name, CourseAccreditor::query()), 200);
+    }
+
+     /**
+     * @SWG\Get(
+     *   tags={"Filters"},
+     *   path="/filter/map",
+     *   summary="Show number of resources and volunteers for each county.",
+     *   operationId="filter_accreditedby",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function filterMap(Request $request)
+    {
+        $countys = County::query()->get();
+        foreach ($countys as $county) {
+            $nr_resources = Resource::query()->get()->where('county._id', '=', $county->_id)->count();
+            $nr_voluntari = Volunteer::query()->get()->where('county._id', '=', $county->_id)->count();
+            $county->nrResurse = $nr_resources;
+            $county->nrVoluntari = $nr_voluntari;
+        }
+        return $countys;
     }
 }

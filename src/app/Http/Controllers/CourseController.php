@@ -67,7 +67,7 @@ class CourseController extends Controller
      *  @SWG\Parameter(
      *     name="ssn",
      *     in="query",
-     *     description="Course acredited.",
+     *     description="Course accredited.",
      *     required=true,
      *     type="string"
      *   ),
@@ -90,7 +90,7 @@ class CourseController extends Controller
         $validator = Validator::make($request->all(), [
             'volunteer_id' => 'required|string',
             'name' => 'required|string|max:255',
-            'acredited' => 'required|string',
+            'accredited' => 'required|string',
             'obatained' => 'required|string',
         ]);
 

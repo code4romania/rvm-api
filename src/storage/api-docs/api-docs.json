@@ -254,7 +254,7 @@
                     {
                         "name": "ssn",
                         "in": "query",
-                        "description": "Course acredited.",
+                        "description": "Course accredited.",
                         "required": true,
                         "type": "string"
                     },
@@ -382,6 +382,46 @@
                 ],
                 "summary": "Show all institutions.",
                 "operationId": "filter_institution_users",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/accreditedby": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show all Accreditors.",
+                "operationId": "filter_accreditedby",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/map": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show number of resources and volunteers for each county.",
+                "operationId": "filter_accreditedby",
                 "responses": {
                     "200": {
                         "description": "successful operation"

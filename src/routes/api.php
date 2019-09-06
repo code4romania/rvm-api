@@ -76,5 +76,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::get('filter/organisations', 'FilterController@filterOrganisationsName');
         Route::get('filter/volunteers/courses', 'FilterController@filterVolunteerCourses');
         Route::get('filter/users/institutions', 'FilterController@filterInstitutionUsers');
+        Route::get('filter/accreditedby', 'FilterController@filterAccreditedBy');
+        Route::get('filter/map', 'FilterController@filterMap');
     });
 });
