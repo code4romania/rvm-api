@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\City;
 use App\County;
 use App\DBViews\StaticCitiesBySlugAndNameView;
-use App\DBViews\StaticCitiesByNameView;
+use App\DBViews\StaticCountiesBySlugAndNameView;
 
 class StaticController extends Controller
 {
@@ -94,6 +94,37 @@ class StaticController extends Controller
         $params = $request->query();
         $counties = County::query();
 
+        $client = \DB::connection('statics')->getCouchDBClient();
+
+        $client->createDesignDocument('counties', new StaticCitiesBySlugAndNameView());
+
+        $query = $client->createViewQuery('counties', 'slug');
+
+        $startKey = null;
+        $endKey = null;
+
+        if(isset($request->filters[1])){
+            $startKey = array($request->filters[1]);
+            $endKey = array($request->filters[1], (object)[]);
+        }
+
+        if(isset($request->filters[1]) && isset($request->filters[2]) && $request->filters[2]){
+            $startKey[1] = $request->filters[2];
+        }
+
+        if(isset($request->filters[1]) && isset($request->filters[2]) && $request->filters[2]){
+            $endKey[1] = $request->filters[2].$client::COLLATION_END;
+        }
+
+        $query->setStartKey($startKey);
+        $query->setEndKey($endKey);
+        $docs = $query->execute();
+
+        //TEMPORARY
+        return response()->json($docs->toArray());
+       
+        /*
+        ** OLD QUERY
         applyFilters($counties, $params, array(
             '1' => array( 'slug', 'ilike' ),
             '2' => array( 'country_id', '=' ),
@@ -108,7 +139,7 @@ class StaticController extends Controller
         return response()->json(array(
             "pager" => $pager,
             "data" => $counties->get()
-        ), 200); 
+        ), 200); */
     }
 
 }

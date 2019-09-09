@@ -136,7 +136,7 @@ class UserController extends Controller
         $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
         $data['institution'] = [
             '_id' => $institution->_id,
-            'name' => $institution ->name
+            'name' => $institution->name
         ];
         if(!isRole('dsu')){
             if(isset($data['institution'])) {
