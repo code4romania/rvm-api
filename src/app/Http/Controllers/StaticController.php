@@ -53,15 +53,7 @@ class StaticController extends Controller
         $docs = $query->execute();
 
         //TEMPORARY
-        return response()->json( array(
-            "pager" => null,
-            "data" => array_map(function($doc){
-                return array(
-                    "_id" => $doc['id'],
-                    "name" =>  $doc['value']
-                );
-            }, $docs->toArray())
-        ));
+        return response()->json($docs->toArray());
        
 
         /*
