@@ -62,7 +62,19 @@ class OrganisationController extends Controller
             '1' => 'name',
             '2' => 'county',
         ));
-
+        if($request->filters[2]) {
+            $courses = Course::query()->where('course_name._id', '=', $request->filters[2])->get();
+            foreach($courses as $course) {
+                $volunteers = Volunteer::query()->where('_id', '=', $course->volunteer_id)->get();
+                foreach($volunteers as $volunteer) {
+                    $organisations = Organisation::query()->where('_id', '=', $volunteer->organisation['_id'])->get();
+                    return response()->json(array(
+                        "pager" => $pager,
+                        "data" => $organisations
+                    ), 200);
+                }
+            }
+        }
         $pager = applyPaginate($organisations, $params);
 
         $organisations = $organisations->get();

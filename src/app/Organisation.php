@@ -10,7 +10,7 @@ class Organisation extends Eloquent
   protected $collection = 'organisations';
 
   protected $fillable = [
-    'name', 'website', 'contact_person', 'email', 'phone','address', 'county', 'city', 'comments', 'added_by'
+    'name', 'website', 'contact_person', 'email', 'phone','address', 'county', 'city', 'comments', 'added_by', 'cover'
   ];
 
 }
