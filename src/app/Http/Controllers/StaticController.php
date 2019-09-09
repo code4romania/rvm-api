@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\City;
 use App\County;
 use App\DBViews\StaticCitiesBySlugView;
+use App\DBViews\StaticCitiesByNameView;
 
 class StaticController extends Controller
 {
