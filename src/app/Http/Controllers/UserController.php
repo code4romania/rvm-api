@@ -208,6 +208,14 @@ class UserController extends Controller
         if(isRole('institution') && isRole('institution', $user) && !$user){
             isDenied();
         }
+        $rescue_officers = User::query()->where('institution._id', '=', $user->institution['_id'])->get();
+        if($rescue_officers){
+            foreach ($rescue_officers as $rescue_officer) {
+                if($rescue_officer->role == 0) {
+                    $rescue_officer->delete();
+                }
+            }
+        }
         $user->delete();
         $response = array("message" => 'User deleted.');
 

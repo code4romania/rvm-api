@@ -383,6 +383,18 @@ class OrganisationController extends Controller
         if(isRole('ngo') && isRole('ngo', $organisation)){
             isDenied();
         }
+        $volunteers = Volunteer::query()->where('organisation._id', '=', $organisation->_id)->get();
+        if($volunteers) {
+            foreach ($volunteers as $volunteer) {
+                $courses = Course::query()->where('volunteer_id', '=', $volunteer->_id)->get();
+                if($courses) {
+                    foreach ($courses as $course) {
+                        $course->delete();
+                    }
+                }
+                $volunteer->delete();
+            }
+        }
         $organisation->delete();
 
         $response = array("message" => 'Organisation deleted.');
