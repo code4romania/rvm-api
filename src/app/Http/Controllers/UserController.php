@@ -38,8 +38,12 @@ class UserController extends Controller
             $users->where('role', '=', '0')
                   ->where('institution._id', '=', getAffiliationId());
         }
+        applyFilters($users, $params, array(
+            '1' => array( 'name', 'ilike' ),
+        ));
         $volunteers = Volunteer::query()->get();
         $pager = applyPaginate($users, $params);
+        
 
         return response()->json(array(
             "pager" => $pager,

@@ -32,7 +32,8 @@ class ResourceController extends Controller
 
         applyFilters($resources, $params, array(
             '0' => array( 'categories', 'elemmatch', '_id', 'ilike' ),
-            '1' => array( 'county._id', 'ilike' )
+            '1' => array( 'county._id', 'ilike' ),
+            '2' => array( 'name', 'ilike')
         ));
 
         applySort($resources, $params, array(

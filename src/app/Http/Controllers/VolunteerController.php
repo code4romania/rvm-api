@@ -36,7 +36,7 @@ class VolunteerController extends Controller
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'courses._id', 'ilike' ),
             '3' => array( 'organisation._id', 'ilike'),
-           // '4' => array( 'specialization', 'ilike')
+            '4' => array ( 'name', 'ilike')
         ));
 
         applySort($volunteers, $params, array(

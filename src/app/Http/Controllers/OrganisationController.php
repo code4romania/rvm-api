@@ -43,7 +43,8 @@ class OrganisationController extends Controller
             $organisations->where('_id', '=', getAffiliationId());
         }
         applyFilters($organisations, $params, array(
-            '1' => array( 'county._id', 'ilike' )
+            '1' => array( 'county._id', 'ilike' ),
+            '2' => array( 'name', 'ilike')
         ));
 
         if($request->course){
