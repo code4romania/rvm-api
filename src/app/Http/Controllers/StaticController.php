@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\City;
 use App\County;
-use App\DBViews\StaticCitiesBySlugView;
+use App\DBViews\StaticCitiesBySlugAndNameView;
 use App\DBViews\StaticCitiesByNameView;
 
 class StaticController extends Controller
@@ -29,8 +29,7 @@ class StaticController extends Controller
 
         $client = \DB::connection('statics')->getCouchDBClient();
 
-        $client->createDesignDocument('cities', new StaticCitiesBySlugView());
-        $client->createDesignDocument('cities', new StaticCitiesByNameView());
+        $client->createDesignDocument('cities', new StaticCitiesBySlugAndNameView());
 
         $query = $client->createViewQuery('cities', 'slug');
 
