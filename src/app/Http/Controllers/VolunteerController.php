@@ -12,6 +12,7 @@ use App\CourseAccreditor;
 use App\City;
 use App\County;
 use App\Rules\Cnp;
+use Carbon\Carbon;
 
 class VolunteerController extends Controller
 {
@@ -205,19 +206,17 @@ class VolunteerController extends Controller
         if($volunteer->courses && !is_null($volunteer->courses) && !empty($volunteer->courses)){
             foreach ($volunteer->courses as $course) {
                 $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
-                if($course_name && !is_null($course_name) && !empty($course_name)) {
-                    $newCourse = Course::firstOrNew([
-                        'volunteer_id' => $volunteer->_id,
-                        'course_name' => [
-                            '_id' => $course_name['_id'],
-                            'name' => $course_name['name'],
-                            'slug' => removeDiacritics($course_name['name'])
-                        ],
-                        'obtained' => $course['obtained'],
-                        'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
-                    ]);
-                    $newCourse->save();
-                }
+                $newCourse = Course::firstOrNew([
+                    'volunteer_id' => $volunteer->_id,
+                    'course_name' => [
+                        '_id' => $course_name['_id'],
+                        'name' => $course_name['name'],
+                        'slug' => removeDiacritics($course_name['name'])
+                    ],
+                    'obtained' => Carbon::createFromFormat('d.m.Y', $course['obtained']),
+                    'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
+                ]);
+                $newCourse->save();
                 $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
                 $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
                 if($accreditor && !is_null($accreditor)) {
