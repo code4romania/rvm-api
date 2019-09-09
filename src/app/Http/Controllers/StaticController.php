@@ -96,7 +96,7 @@ class StaticController extends Controller
 
         $client = \DB::connection('statics')->getCouchDBClient();
 
-        $client->createDesignDocument('counties', new StaticCitiesBySlugAndNameView());
+        $client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
 
         $query = $client->createViewQuery('counties', 'slug');
 
