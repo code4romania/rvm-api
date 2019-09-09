@@ -133,7 +133,11 @@ class UserController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
-
+        $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
+        $data['institution'] = [
+            '_id' => $institution->_id,
+            'name' => $institution ->name
+        ];
         if(!isRole('dsu')){
             if(isset($data['institution'])) {
                 unset($data['institution']);
