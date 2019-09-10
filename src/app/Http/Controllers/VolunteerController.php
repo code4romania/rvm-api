@@ -33,10 +33,10 @@ class VolunteerController extends Controller
         $volunteers = Volunteer::query();
 
         applyFilters($volunteers, $params, array(
-            '1' => array( 'county._id', 'ilike' ),
-            '2' => array( 'courses._id', 'ilike' ),
-            '3' => array( 'organisation._id', 'ilike'),
-            '4' => array ( 'name', 'ilike')
+            '0' => array( 'county._id', 'ilike' ),
+            '1' => array( 'courses._id', 'ilike' ),
+            '2' => array( 'organisation._id', 'ilike'),
+            '3' => array ( 'name', 'ilike')
         ));
 
         applySort($volunteers, $params, array(
@@ -212,7 +212,7 @@ class VolunteerController extends Controller
                         'name' => $course_name['name'],
                         'slug' => removeDiacritics($course_name['name'])
                     ],
-                    'obtained' => $course['obtained'],
+                    'obtained' => Carbon::parse($course['obtained'])->format('d-m-Y'),
                     'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
                 ]);
                 $newCourse->save();
