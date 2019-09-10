@@ -205,37 +205,40 @@ class VolunteerController extends Controller
         $volunteer = Volunteer::create($data);
         if($volunteer->courses && !is_null($volunteer->courses) && !empty($volunteer->courses)){
             foreach ($volunteer->courses as $course) {
-                $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
-                $newCourse = Course::firstOrNew([
-                    'volunteer_id' => $volunteer->_id,
-                    'course_name' => [
-                        '_id' => $course_name['_id'],
-                        'name' => $course_name['name'],
-                        'slug' => removeDiacritics($course_name['name'])
-                    ],
-                    'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s'),
-                    'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
-                ]);
-                $newCourse->save();
-                $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
-                $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
-                if($accreditor && !is_null($accreditor)) {
-                    $getCreatedCourse->accredited = [
-                        '_id' => $accreditor->_id,
-                        'name' => $accreditor->name
-                    ];
-                } else {
-                    $course_accreditor_data = [
-                        'name' => $course['accredited_by'],
-                        'courses' => $getCreatedCourse->id
-                    ];
-                    $courseAccreditor = CourseAccreditor::create($course_accreditor_data);
-                    $getCreatedCourse->accredited = [
-                        '_id' => $courseAccreditor['_id'],
-                        'name' => $courseAccreditor['name']
-                    ];
+                if(!is_null($course['course_name_id']) && !empty($volunteer->courses)) {
+                    $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
+                    $newCourse = Course::firstOrNew([
+                        'volunteer_id' => $volunteer->_id,
+                        'course_name' => [
+                            '_id' => $course_name['_id'],
+                            'name' => $course_name['name'],
+                            'slug' => removeDiacritics($course_name['name'])
+                        ],
+                        'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s'),
+                        'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
+                    ]);
+                    $newCourse->save();
+                    
+                    $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
+                    $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
+                    if($accreditor && !is_null($accreditor)) {
+                        $getCreatedCourse->accredited = [
+                            '_id' => $accreditor->_id,
+                            'name' => $accreditor->name
+                        ];
+                    } else {
+                        $course_accreditor_data = [
+                            'name' => $course['accredited_by'],
+                            'courses' => $getCreatedCourse->id
+                        ];
+                        $courseAccreditor = CourseAccreditor::create($course_accreditor_data);
+                        $getCreatedCourse->accredited = [
+                            '_id' => $courseAccreditor['_id'],
+                            'name' => $courseAccreditor['name']
+                        ];
+                    }
+                    $getCreatedCourse->save();
                 }
-                $getCreatedCourse->save();
             }
         }
 
@@ -258,11 +261,17 @@ class VolunteerController extends Controller
     public function update(Request $request, $id)
     {
         $volunteer = Volunteer::findOrFail($id);
+        if($request->has('courses') && $request->courses) {
+            $courses = Course::query()->where('volunteer_id', '=', $id);
+            foreach ($courses as $course) {
+                $course->delete();
+            }
+        }
         $data = $request->all();
-        if ($data['county']) {
+        if ($data['county'] && !is_null($data['county'])) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }
-        if ($data['city']) {            
+        if ($data['city'] && !is_null($data['city'])) {            
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
         $organisation_id = $request['organisation_id'];
@@ -274,37 +283,39 @@ class VolunteerController extends Controller
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
         if($data['courses'] && !is_null($data['courses']) && !empty($data['courses'])){
             foreach ($data['courses'] as $course) {
-                $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
-                $newCourse = Course::firstOrNew([
-                    'volunteer_id' => $volunteer->_id,
-                    'course_name' => [
-                        '_id' => $course_name['_id'],
-                        'name' => $course_name['name'],
-                        'slug' => removeDiacritics($course_name['name'])
-                    ],
-                    'obtained' => $course['obtained'],
-                    'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
-                ]);
-                $newCourse->save();
-                $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
-                $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
-                if($accreditor && !is_null($accreditor)) {
-                    $getCreatedCourse->accredited = [
-                        '_id' => $accreditor->_id,
-                        'name' => $accreditor->name
-                    ];
-                } else {
-                    $course_accreditor_data = [
-                        'name' => $course['accredited_by'],
-                        'courses' => $getCreatedCourse->id
-                    ];
-                    $courseAccreditor = CourseAccreditor::create($course_accreditor_data);
-                    $getCreatedCourse->accredited = [
-                        '_id' => $courseAccreditor['_id'],
-                        'name' => $courseAccreditor['name']
-                    ];
+                if(!is_null($course['course_name_id']) && !empty($volunteer->courses)) {
+                    $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
+                    $newCourse = Course::firstOrNew([
+                        'volunteer_id' => $volunteer->_id,
+                        'course_name' => [
+                            '_id' => $course_name['_id'],
+                            'name' => $course_name['name'],
+                            'slug' => removeDiacritics($course_name['name'])
+                        ],
+                        'obtained' => $course['obtained'],
+                        'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
+                    ]);
+                    $newCourse->save();
+                    $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
+                    $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
+                    if($accreditor && !is_null($accreditor)) {
+                        $getCreatedCourse->accredited = [
+                            '_id' => $accreditor->_id,
+                            'name' => $accreditor->name
+                        ];
+                    } else {
+                        $course_accreditor_data = [
+                            'name' => $course['accredited_by'],
+                            'courses' => $getCreatedCourse->id
+                        ];
+                        $courseAccreditor = CourseAccreditor::create($course_accreditor_data);
+                        $getCreatedCourse->accredited = [
+                            '_id' => $courseAccreditor['_id'],
+                            'name' => $courseAccreditor['name']
+                        ];
+                    }
+                    $getCreatedCourse->save();
                 }
-                $getCreatedCourse->save();
             }
         }
         $volunteer->update($data);

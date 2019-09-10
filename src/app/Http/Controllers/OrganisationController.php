@@ -367,13 +367,10 @@ class OrganisationController extends Controller
         if ($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }
-        if ($data['city']) {            
+        if ($data['city']) {
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
-        $org_user = User::query()->where('organisation._id', '=', $organisation['_id'])->get();
         $organisation->update($data);
-        $org_user->organisation = array('_id' => $organisation->_id, 'name' => $organisation->name);
-        $org_user->save();
         
         return $organisation;
     }

@@ -39,7 +39,12 @@ class UserController extends Controller
                   ->where('institution._id', '=', getAffiliationId());
         }
         applyFilters($users, $params, array(
+            '0' => array( 'institution._id', 'ilike'),
             '1' => array( 'name', 'ilike' ),
+        ));
+        applySort($users, $params, array(
+            '1' => 'name',
+            '3' => 'email'
         ));
         $volunteers = Volunteer::query()->get();
         $pager = applyPaginate($users, $params);

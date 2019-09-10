@@ -285,9 +285,9 @@ class ResourceController extends Controller
     {
         $resource = Resource::findOrFail($id);
         $data = $request->all();
-        if(isset($data['organisation']) && $data['organisation']) {
-            $organisation_id = $data['organisation'];
-            $organisation = \DB::connection('organisations')->collection('organisations')
+        if(isset($data['organisation_id']) && $data['organisation_id']) {
+            $organisation_id = $data['organisation_id'];
+            $organisation = Organisation::query()
                 ->where('_id', '=', $organisation_id)
                 ->get(['_id', 'name', 'website', 'address'])
                 ->first();
