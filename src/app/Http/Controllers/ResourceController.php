@@ -233,9 +233,9 @@ class ResourceController extends Controller
                     ->first();
 
                 $data['categories'][$key] = array(
-                    '_id' => $resCat->_id,
-                    'name' => $resCat->name,
-                    'slug' => $resCat->slug
+                    '_id' => $resCat['_id'],
+                    'name' => $resCat['name'],
+                    'slug' => $resCat['slug']
                 );
             }
         } 

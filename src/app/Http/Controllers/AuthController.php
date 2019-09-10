@@ -237,7 +237,7 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new SendRecoverPasswordMail($data));
 
             return response()->json([
-                'message' => 'Mail was send succesfully.'
+                'message' => 'Mail was sent succesfully.'
             ], 200);
         } else {
             $response = "We can't find a user with that e-mail address.";

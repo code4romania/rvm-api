@@ -130,7 +130,7 @@ class OrganisationController extends Controller
         allowResourceAccess($organisation);
         $data = ['url' => url('/auth')];
         Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
-        return response()->json('Email send succesfully', 200); 
+        return response()->json('Email sent succesfully', 200); 
     }
 
     /**
@@ -151,17 +151,9 @@ class OrganisationController extends Controller
         $volunteers = Volunteer::query()
             ->where('organisation._id', '=', $id);
 
-        // applyFilters($volunteers, $params, array(
-        //     '1' => array( 'resource_type', 'ilike' ),
-        //     '2' => array( 'county', 'ilike' ),
-        //     '3' => array( 'organisation.name', 'ilike')
-        // ));
-
         applySort($volunteers, $params, array(
             '1' => 'name',
-            '2' => 'county',
-           // '3' => 'specialization', //Specialization
-          //  '4' => 'training', //data ultimului training
+            '2' => 'county'
         ));
 
         $pager = applyPaginate($volunteers, $params);

@@ -24,7 +24,7 @@ class ResourceCategoriesTableSeeder extends Seeder {
     ResourceCategory::create(['parent_id' => '0',  'slug' => 'Caini utilitari', 'name' => 'Câini utilitari']);
 
     $parent = ResourceCategory::create(['parent_id' => '0',  'slug' => 'Transport',                                                              'name' => 'Transport']);
-    ResourceCategory::create(['parent_id' => strval($parent->id), 'slug' => 'Masini (dube 7 locuri, microbuze, masini 44, masini mici, etc)',    'name' => 'Mașini (dube 7 locuri, microbuze, mașini 44, mașini mici, etc)']);
+    ResourceCategory::create(['parent_id' => strval($parent->id), 'slug' => 'Masini (dube 7 locuri, microbuze, masini 4x4, masini mici, etc)',    'name' => 'Mașini (dube 7 locuri, microbuze, mașini 4x4, mașini mici, etc)']);
     ResourceCategory::create(['parent_id' => strval($parent->id), 'slug' => 'Motociclete (motociclete, scutere, alte vehicule motorizate, etc)', 'name' => 'Motociclete (motociclete, scutere, alte vehicule motorizate, etc)']);
     ResourceCategory::create(['parent_id' => strval($parent->id), 'slug' => 'Rulote',                                                            'name' => 'Rulote']);
     ResourceCategory::create(['parent_id' => strval($parent->id), 'slug' => 'Masini specializate (ambulante, etc)',                              'name' => 'Mașini specializate (ambulanțe, etc)']);
