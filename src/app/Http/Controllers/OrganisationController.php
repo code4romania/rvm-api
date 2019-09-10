@@ -410,6 +410,12 @@ class OrganisationController extends Controller
                 $volunteer->delete();
             }
         }
+        $resources = Resource::query()->where('organisation._id', '=', $organisation->_id)->get();
+        if($resources) {
+            foreach ($resources as $resource) {
+                $resource->delete();
+            }
+        }
         $organisation->delete();
 
         $response = array("message" => 'Organisation deleted.');

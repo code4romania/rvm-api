@@ -12,6 +12,7 @@ use App\CourseAccreditor;
 use App\City;
 use App\County;
 use App\Rules\Cnp;
+use Carbon\Carbon;
 
 class VolunteerController extends Controller
 {
@@ -212,7 +213,7 @@ class VolunteerController extends Controller
                         'name' => $course_name['name'],
                         'slug' => removeDiacritics($course_name['name'])
                     ],
-                    'obtained' => Carbon::parse($course['obtained'])->format('d-m-Y'),
+                    'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s'),
                     'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
                 ]);
                 $newCourse->save();
