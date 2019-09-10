@@ -62,8 +62,8 @@ class OrganisationController extends Controller
             '1' => 'name',
             '2' => 'county',
         ));
-        if($request->filters[2]) {
-            $courses = Course::query()->where('course_name._id', '=', $request->filters[2])->get();
+        if(array_key_exists(3,$request->filters)) {
+            $courses = Course::query()->where('course_name._id', '=', $request->filters[3])->get();
             foreach($courses as $course) {
                 $volunteers = Volunteer::query()->where('_id', '=', $course->volunteer_id)->get();
                 foreach($volunteers as $volunteer) {

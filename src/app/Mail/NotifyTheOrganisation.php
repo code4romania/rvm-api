@@ -28,6 +28,6 @@ class NotifyTheOrganisation extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Update your datas')->view('mails.notify_the_organisation')->with('data', $this->data);
+        return $this->from(env('MAIL_USERNAME'))->subject('Vă rugăm să vă actualizați informațiile din aplicație')->view('mails.notify_the_organisation')->with('data', $this->data);
     }
 }

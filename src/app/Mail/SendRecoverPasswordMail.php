@@ -28,6 +28,6 @@ class SendRecoverPasswordMail extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Password Reset')->view('mails.password_reset')->with('data', $this->data);
+        return $this->from(env('MAIL_USERNAME'))->subject('Resetarea parolei')->view('mails.password_reset')->with('data', $this->data);
     }
 }
