@@ -62,7 +62,8 @@ class OrganisationController extends Controller
             '1' => 'name',
             '2' => 'county',
         ));
-        if(array_key_exists(3,$request->filters)) {
+
+        if(isset($request->filters[3]) && $request->filters[3]) {
             $courses = Course::query()->where('course_name._id', '=', $request->filters[3])->get();
             foreach($courses as $course) {
                 $volunteers = Volunteer::query()->where('_id', '=', $course->volunteer_id)->get();
@@ -151,6 +152,12 @@ class OrganisationController extends Controller
         $volunteers = Volunteer::query()
             ->where('organisation._id', '=', $id);
 
+        applyFilters($volunteers, $params, array(
+            '0' => array( 'county._id', 'ilike' ),
+            '1' => array( 'courses._id', 'ilike' ),
+            '3' => array ( 'name', 'ilike')
+        ));
+    
         applySort($volunteers, $params, array(
             '1' => 'name',
             '2' => 'county'
