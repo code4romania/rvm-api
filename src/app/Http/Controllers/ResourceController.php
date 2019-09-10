@@ -284,18 +284,37 @@ class ResourceController extends Controller
     public function update(Request $request, $id)
     {
         $resource = Resource::findOrFail($id);
-
-        if($request->has('organisation_id')) {
-            $organisation_id = $request->organisation_id;
+        $data = $request->all();
+        if(isset($data['organisation']) && $data['organisation']) {
+            $organisation_id = $data['organisation'];
             $organisation = \DB::connection('organisations')->collection('organisations')
                 ->where('_id', '=', $organisation_id)
-                ->get(['_id', 'name', 'website', 'address', 'county'])
+                ->get(['_id', 'name', 'website', 'address'])
                 ->first();
 
-            $request->request->add(['organisation' => $organisation]);
+            $data['organisation'] = $organisation;
         }
-
-        $resource->update($request->all());
+        if(isset($data['categories']) && $data['categories']) {
+            foreach ($data['categories'] as $key =>$val) {
+                $resCat = ResourceCategory::query()
+                    ->where('_id', '=', $val)
+                    ->get(['_id', 'name', 'slug'])
+                    ->first();
+    
+                $data['categories'][$key] = array(
+                    '_id' => $resCat->_id,
+                    'name' => $resCat->name,
+                    'slug' => $resCat->slug
+                );
+            }
+        }
+        if($data['county']) {
+            $data['county'] = getCityOrCounty($request['county'],County::query());
+        }
+        if($data['city']) {            
+            $data['city'] = getCityOrCounty($request['city'],City::query());
+        }
+        $resource->update($data);
  
         return response()->json($resource, 200); 
     }

@@ -343,7 +343,7 @@ class OrganisationController extends Controller
         $newNgoAdmin->phone = $data['phone'];
         $newNgoAdmin->organisation = array('_id' => $organisation->_id, 'name' => $organisation->name);
         $newNgoAdmin->added_by = $data['added_by'];
-        $newNgoAdmin->password = $data['password'];
+        $newNgoAdmin->password = Hash::make(str_random(16));
         $newNgoAdmin->save();
 
         $response = array(
@@ -371,8 +371,18 @@ class OrganisationController extends Controller
         $organisation = Organisation::findOrFail($id);
         allowResourceAccess($organisation);
         $organisation = setAffiliate($organisation);
-        $organisation->update($request->all());
-
+        $data = $request->all();
+        if ($data['county']) {
+            $data['county'] = getCityOrCounty($request['county'],County::query());
+        }
+        if ($data['city']) {            
+            $data['city'] = getCityOrCounty($request['city'],City::query());
+        }
+        $org_user = User::query()->where('organisation._id', '=', $organisation['_id'])->get();
+        $organisation->update($data);
+        $org_user->organisation = array('_id' => $organisation->_id, 'name' => $organisation->name);
+        $org_user->save();
+        
         return $organisation;
     }
 

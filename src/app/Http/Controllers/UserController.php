@@ -190,8 +190,15 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         allowResourceAccess($user);
         $user = setAffiliate($user);
-
-        $user->update($request->all());
+        $data = $request->all();
+        if(isset($data['institution']) && $data['institution']) {
+            $institution = Institution::findOrFail($data['institution']);
+            $data['institution'] = [
+                '_id' => $institution->_id,
+                'name' => $institution->name
+            ];
+        }
+        $user->update($data);
 
         return response()->json($user, 201); 
     }

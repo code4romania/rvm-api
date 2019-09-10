@@ -178,7 +178,7 @@ class VolunteerController extends Controller
         $data = convertData($validator->validated(), $rules);
         $request->has('ssn') ? $data['ssn'] = $request->ssn : '';
         $request->has('courses') ? $data['courses'] = $request->courses : '';
-        $request->has('allocation') ? $data['allocation'] = $request->allocation : '';
+        $data['allocation'] = '';
         $request->has('comments') ? $data['comments'] = $request->comments : '';
         $request->has('job') ? $data['job'] = $request->job : '';
 
