@@ -73,6 +73,14 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
+
+        if(isset($user->organisation['_id'])){
+            $user->organisation = Organisation::find($user->organisation['_id']);
+        }
+
+        if(isset($user->institution['_id'])){
+            $user->institution = Institution::find($user->organisation['_id']);
+        }
         return response()->json($user, 200);
     }
 

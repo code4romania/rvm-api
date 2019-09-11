@@ -31,7 +31,7 @@ class ResourceController extends Controller
         $resources = Resource::query();
 
         applyFilters($resources, $params, array(
-            '0' => array( 'categories', 'elemmatch', '_id', 'ilike' ),
+            '0' => array( 'categories', 'elemmatch', '_id', '$eq' ),
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'name', 'ilike')
         ));
@@ -405,9 +405,7 @@ class ResourceController extends Controller
             '2' => array( 'parent_id', '=' )
         ));
 
-        return response()->json(array(
-            "data" => $resources->get(['_id', 'parent_id', 'name', 'slug'])
-        ), 200); 
+        return response()->json($resources->get(['_id', 'parent_id', 'name', 'slug']), 200); 
     }
 
     public function getResourceCategory($id) {

@@ -25,8 +25,35 @@ function applyFilters($query, $params, $filterKeys = array()){
             if(is_null($filter_value)){
                 continue;
             }
-            $values = explode(",", $filter_value);
-            foreach ($values as $kval => $value) {
+            
+
+            if(strpos($filter_value,",") !== false){
+                $array_values = explode(",", $filter_value);
+ 
+                    $query->where(function($query) use( $filterKeys, $key, $array_values)
+                    {
+                        foreach($array_values as $value){
+                            if(isset($filterKeys[$key])){
+                                if($filterKeys[$key][1]=='ilike' || $filterKeys[$key][1]=='like'){
+                                    $value = '%'.$value.'%';
+                                }
+                                
+                                if($filterKeys[$key][1]=='elemmatch' && 
+                                    isset($filterKeys[$key][2]) && $filterKeys[$key][2] && 
+                                    isset($filterKeys[$key][3]) && $filterKeys[$key][3]){
+                
+                                    if($filterKeys[$key][3]=='ilike' || $filterKeys[$key][3]=='like'){
+                                        $value = '%'.$value.'%';
+                                    }
+                                    
+                                    $value = array($filterKeys[$key][2] => likeOp($filterKeys[$key][3], $value));
+                                }
+                                $query->orWhere($filterKeys[$key][0], $filterKeys[$key][1], $value);
+                            }
+                        }
+                    }); 
+            } else {
+                $value = $filter_value;
                 if(isset($filterKeys[$key])){
                     if($filterKeys[$key][1]=='ilike' || $filterKeys[$key][1]=='like'){
                         $value = '%'.$value.'%';
@@ -43,11 +70,7 @@ function applyFilters($query, $params, $filterKeys = array()){
                         $value = array($filterKeys[$key][2] => likeOp($filterKeys[$key][3], $value));
                     }
 
-                    if($kval < 1) {
-                        $query->where($filterKeys[$key][0], $filterKeys[$key][1], $value);                        
-                    } else {
-                        $query->orWhere($filterKeys[$key][0], $filterKeys[$key][1], $value);
-                    }
+                    $query->where($filterKeys[$key][0], $filterKeys[$key][1], $value);                        
                 }
             }
         }
@@ -89,6 +112,18 @@ function applyPaginate($query, $params){
 
     $query->skip(intval(($page - 1) * $size))
         ->take(intval($size));
+
+    return array(
+        'page' => $page,
+        'size' => $size,
+        'total' => $total
+    );
+}
+
+function emptyPager($params){
+    $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
+    $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
+    $total = 0;
 
     return array(
         'page' => $page,

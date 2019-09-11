@@ -43,19 +43,45 @@ class OrganisationController extends Controller
             $organisations->where('_id', '=', getAffiliationId());
         }
         applyFilters($organisations, $params, array(
+            '0' => array( 'cover', 'ilike'),
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'name', 'ilike')
         ));
 
-        if($request->course){
+        if(isset($request->filters[3])){
             $matchOrganisations = Volunteer::query()
-                ->where('courses', 'elemmatch', array("_id" => $request->course))
+                ->where('courses', 'elemmatch', array("course_name._id" => $request->filters[3]))
                 ->get(['organisation._id'])
                 ->pluck('organisation._id')
                 ->unique('organisation._id')
                 ->toArray();
             
+            if(!$matchOrganisations){
+                return response()->json(array(
+                    "pager" =>  emptyPager($params),
+                    "data" => []
+                ), 200); 
+            }
+
             $organisations->whereIn('_id', $matchOrganisations);
+        }
+
+        if(isset($request->filters[4])){
+            $matchOrganisations2 = Resource::query()
+                ->where('categories', 'elemmatch', array("_id" => $request->filters[4]))
+                ->get(['organisation._id'])
+                ->pluck('organisation._id')
+                ->unique('organisation._id')
+                ->toArray();
+
+            if(!$matchOrganisations2){
+                return response()->json(array(
+                    "pager" => emptyPager($params),
+                    "data" => []
+                ), 200); 
+            }
+
+            $organisations->whereIn('_id', $matchOrganisations2);
         }
 
         applySort($organisations, $params, array(
@@ -63,21 +89,7 @@ class OrganisationController extends Controller
             '2' => 'county',
         ));
 
-        if(isset($request->filters[3]) && $request->filters[3]) {
-            $courses = Course::query()->where('course_name._id', '=', $request->filters[3])->get();
-            foreach($courses as $course) {
-                $volunteers = Volunteer::query()->where('_id', '=', $course->volunteer_id)->get();
-                foreach($volunteers as $volunteer) {
-                    $organisations = Organisation::query()->where('_id', '=', $volunteer->organisation['_id'])->get();
-                    return response()->json(array(
-                        "pager" => $pager,
-                        "data" => $organisations
-                    ), 200);
-                }
-            }
-        }
         $pager = applyPaginate($organisations, $params);
-
         $organisations = $organisations->get();
         $organisationsIds = array_map(function($o){ return $o['_id']; }, $organisations->toArray());
 
@@ -150,17 +162,19 @@ class OrganisationController extends Controller
     {
         $params = $request->query();
         $volunteers = Volunteer::query()
-            ->where('organisation._id', '=', $id);
+            ->where('organisation._id', 'ilike', $id);
 
         applyFilters($volunteers, $params, array(
             '0' => array( 'county._id', 'ilike' ),
-            '1' => array( 'courses._id', 'ilike' ),
-            '3' => array ( 'name', 'ilike')
+            '1' => array( 'courses', 'elemmatch' , "course_name._id", '$eq'),
+            '2' => array ( 'name', 'ilike')
         ));
     
         applySort($volunteers, $params, array(
             '1' => 'name',
-            '2' => 'county'
+            '2' => 'courses',
+            '3' => 'county._id',
+            '4' => 'updated_at'
         ));
 
         $pager = applyPaginate($volunteers, $params);
@@ -190,14 +204,16 @@ class OrganisationController extends Controller
             ->where('organisation._id', '=', $id);
 
         applyFilters($resources, $params, array(
-            '1' => array( 'resource_type', 'ilike' ),
-            '2' => array( 'county', 'ilike' ),
+            '0' => array( 'categories', 'elemmatch', '_id', '$eq' ),
+            '1' => array( 'county._id', 'ilike' ),
+            '2' => array( 'name', 'ilike')
         ));
 
         applySort($resources, $params, array(
             '1' => 'name',
-            '2' => 'quantity',
-            '3' => 'county',
+            '2' => 'categories',
+            '3' => 'quantity',
+            '4' => 'county'
         ));
 
         $pager = applyPaginate($resources, $params);
@@ -311,7 +327,8 @@ class OrganisationController extends Controller
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
         
-        $request->has('comments') ? $data['comments'] = $request->comments : '';
+        $data['comments'] = $request->has('comments') ? $request->comments : '';
+        $data['address'] = $request->has('address') ? $request->address : '';
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
         $passwordReset = PasswordReset::updateOrCreate(
             ['email' => $data['email']],
