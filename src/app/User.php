@@ -9,14 +9,15 @@ use Robsonvn\CouchDB\Auth\User as Authenticatable;
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
-
+    protected $connection = 'users';
+    protected $collection = 'users';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'phone', 'role', 'phone', 'organisation', 'institution', 'added_by'
     ];
 
     /**
