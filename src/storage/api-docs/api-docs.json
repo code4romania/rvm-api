@@ -1115,6 +1115,27 @@
                         "type": "string"
                     },
                     {
+                        "name": "course_name_id",
+                        "in": "query",
+                        "description": "Name of course from DB .",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "obtained",
+                        "in": "query",
+                        "description": "Obtained.",
+                        "required": true,
+                        "type": "date-time"
+                    },
+                    {
+                        "name": "accredited_by",
+                        "in": "query",
+                        "description": "Accredited by.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
                         "name": "address",
                         "in": "query",
                         "description": "Volunteer address.",
@@ -1225,7 +1246,14 @@
                         "in": "query",
                         "description": "CSV file.",
                         "required": true,
-                        "type": "file"
+                        "type": "File"
+                    },
+                    {
+                        "name": "Coloanele din CSV",
+                        "in": "query",
+                        "description": "nume,cnp,email,telefon,judet,localitate,profesie,comentarii,acreditari",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {

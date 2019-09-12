@@ -55,6 +55,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::post('resources', 'ResourceController@store');
             Route::put('resources/{id}', 'ResourceController@update');
             Route::delete('resources/{id}', 'ResourceController@delete');
+            Route::post('resources/import', 'ResourceController@importResources');
 
             Route::get('courses', 'CourseController@index');
             Route::get('courses/{id}', 'CourseController@show');
@@ -65,7 +66,8 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
-            Route::post('volunteers/import', 'VolunteerController@parseImportFile');
+            Route::get('volunteers/{id}/allocations', 'VolunteerController@allocations');
+            Route::post('volunteers/import', 'VolunteerController@importVolunteers');
         });
 
         Route::middleware(['checkRole:dsu,ngo,institution'])->group(function () {

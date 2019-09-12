@@ -154,26 +154,27 @@ class UserController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
-        $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
-        if(isset($institution)) {
-            $data['institution'] = [
-                '_id' => $institution->_id,
-                'name' => $institution->name
-            ];
-        }
-        $request->has('organisation') ? $organisation = Organisation::findOrFail($request->organisation) : '';
-        if(isset($organisation)) {
-            $data['organisation'] = [
-                '_id' => $organisation->_id,
-                'name' => $organisation->name
-            ]; 
-        }
         if(!isRole('dsu')){
             if(isset($data['institution'])) {
                 unset($data['institution']);
             }
             if(isset($data['organisation'])){
                 unset($data['organisation']);
+            }
+        } else {
+            $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
+            if(isset($institution)) {
+                $data['institution'] = [
+                    '_id' => $institution->_id,
+                    'name' => $institution->name
+                ];
+            }
+            $request->has('organisation') ? $organisation = Organisation::findOrFail($request->organisation) : '';
+            if(isset($organisation)) {
+                $data['organisation'] = [
+                    '_id' => $organisation->_id,
+                    'name' => $organisation->name
+                ]; 
             }
         }
         $data = setAffiliate($data);

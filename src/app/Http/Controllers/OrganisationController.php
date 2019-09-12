@@ -429,6 +429,12 @@ class OrganisationController extends Controller
                 $resource->delete();
             }
         }
+        $users = User::query()->where('organisation._id', '=', $organisation->_id)->get();
+        if($users) {
+            foreach ($users as $user) {
+                $user->delete();
+            }
+        }
         $organisation->delete();
 
         $response = array("message" => 'Organisation deleted.');

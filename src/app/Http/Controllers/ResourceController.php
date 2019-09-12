@@ -240,8 +240,6 @@ class ResourceController extends Controller
             }
         } 
 
-        $request->has('unit') ? $data['unit'] = $request->unit : '';
-        $request->has('size') ? $data['size'] = $request->size : '';
         $request->has('comments') ? $data['comments'] = $request->comments : '';
         $request->has('address') ? $data['address'] = $request->address : '';
 
@@ -417,5 +415,115 @@ class ResourceController extends Controller
 
         return response()->json($resourceCat, 200);
 
+    }
+
+    public function importResources(Request $request) {
+        $file = $request->file('file');
+        $filename = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $tempPath = $file->getRealPath();
+        $fileSize = $file->getSize();
+        $mimeType = $file->getMimeType();
+
+        $valid_extension = array("csv");
+        $errors = array();
+        if(in_array(strtolower($extension),$valid_extension)) {
+            $location = 'uploads';
+            $file->move($location,$filename);
+            $filepath = public_path($location."/".$filename);
+            $file = fopen($filepath,"r");
+            $i = 0;
+            $countys = County::all(['_id', "slug", "name"]);
+            $county_map = array_column($countys->toArray(), null, 'slug');
+            \Auth::check() ? $authenticatedUser = \Auth::user() : '';
+            if(isset($authenticatedUser) && $authenticatedUser && $authenticatedUser['role']==2) {
+                $organisation_id = $authenticatedUser['organisation']['_id'];
+                $organisationData = Organisation::find('e5f87d565a1b20f14ea00f7c43b01d3a');
+                $organisation = (object) [
+                    '_id' => $organisationData['_id'],
+                    '_rev' => $organisationData['_rev'],
+                    'name' => $organisationData['name'],
+                    'website' => $organisationData['website'],
+                    'type' => $organisationData['type']
+                ];
+            } else {
+                $organisation = null;
+            }
+// dd($file);
+            while (($setUpData = fgetcsv($file, 1000, ",")) !== FALSE) {
+                $error = array();
+                $num = count($setUpData);
+                if($i == 0){
+                   $i++;
+                   continue; 
+                }
+                $category = ResourceCategory::query()
+                    ->where('slug', '=', removeDiacritics($setUpData[2]))
+                    ->first(['_id', 'name', 'slug']);
+                if($category) {
+                    $category = $category->toArray();
+                }
+                $subcategory = ResourceCategory::query()
+                    ->where('slug', '=', removeDiacritics($setUpData[3]))
+                    ->where('parent_id', '=', $category['_id'])
+                    ->first(['_id', 'name', 'slug']);
+                if($subcategory) {
+                    $subcategory = $subcategory->toArray();
+                }
+// dd($category, $subcategory);
+
+                // $error = verifyErrors($error, $setUpData[0],'Nume');
+                // $error = verifyErrors($error, $setUpData[1],'CNP');
+                // $error = verifyErrors($error, $setUpData[2],'Email');
+                // $error = verifyErrors($error, $setUpData[3],'Telefon');
+                // $error = verifyErrors($error, $setUpData[4],'Judet');
+                // $error = verifyErrors($error, $setUpData[5],'Localitate');
+
+                $countySlug = removeDiacritics($setUpData[5]);
+                $citySlug = removeDiacritics($setUpData[6]);
+                if(isset($county_map[$countySlug]) && $county_map[$countySlug]) {
+                    $getCity = \DB::connection('statics')->getCouchDBClient()
+                        ->createViewQuery('cities', 'name')
+                        ->setKey(array($county_map[$countySlug]['_id'],$citySlug))
+                        ->execute();
+
+                    if($getCity->offsetExists(0)){
+                        $city = array(
+                            "_id" => $getCity->offsetGet(0)['id'],
+                            "name" =>  $getCity->offsetGet(0)['value']
+                        );
+                    }
+                } else {
+                    $error = verifyErrors($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                }
+
+                if( count($error) == 0 ){
+                    $insertData = array(
+                        "name" => $setUpData[0],
+                        "resource_type" => $setUpData[1],
+                        "categories" => [(object) $category, (object) $subcategory],
+                        "quantity" => $setUpData[4],
+                        "organisation" => $organisation,
+                        "county" => array(
+                            '_id' => $county_map[$countySlug]['_id'],
+                            'name' => $county_map[$countySlug]['name']
+                        ),
+                        "city" =>  $city,
+                        "address" => $setUpData[7],
+                        "comments" => $setUpData[8]
+                    );
+dd($insertData);
+                    // Volunteer::insert($insertData);
+                }else{
+                    $errors[] =  [
+                        'line' => $i,
+                        'error' => $error
+                    ];
+                }
+                $i++;
+            }
+            fclose($file);
+            return response($errors);
+        }
     }
 }
