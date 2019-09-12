@@ -8,7 +8,6 @@ use Illuminate\Validation\ValidationRuleParser;
 use App\Volunteer;
 use App\Institution;
 use App\Organisation;
-use App\Course;
 use App\CourseName;
 /**
  * Pagination helper
@@ -316,4 +315,13 @@ function likeOp($operator, $value){
         return array($operator => $value);
     }
     return array($operator => $value);
+}
+
+function verifyErrors($errors, $value, $message) {
+    
+    if(!isset($value) || is_null($value) || empty($value)) {
+        $errors[] = array("value" => $value, "error" => $message);
+    }
+
+    return $errors;
 }

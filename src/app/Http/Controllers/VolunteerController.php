@@ -6,13 +6,16 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Volunteer;
-use App\Course;
 use App\CourseName;
 use App\CourseAccreditor;
 use App\City;
 use App\County;
+use App\Organisation;
+use App\Allocation;
 use App\Rules\Cnp;
 use Carbon\Carbon;
+use App\DBViews\StaticCitiesBySlugAndNameView;
+use App\DBViews\StaticCountiesBySlugAndNameView;
 
 class VolunteerController extends Controller
 {
@@ -43,8 +46,7 @@ class VolunteerController extends Controller
         applySort($volunteers, $params, array(
             '1' => 'name',
             '2' => 'county',
-            '3' => 'quantity',
-            '4' => 'organisation', //change to nr_org
+            '3' => 'organisation.name'
         ));
 
         $pager = applyPaginate($volunteers, $params);
@@ -125,6 +127,27 @@ class VolunteerController extends Controller
      *     name="city",
      *     in="query",
      *     description="Volunteer city.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="course_name_id",
+     *     in="query",
+     *     description="Name of course from DB .",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="obtained",
+     *     in="query",
+     *     description="Obtained.",
+     *     required=true,
+     *     type="date-time"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="accredited_by",
+     *     in="query",
+     *     description="Accredited by.",
      *     required=true,
      *     type="string"
      *   ),
@@ -270,12 +293,6 @@ class VolunteerController extends Controller
     public function update(Request $request, $id)
     {
         $volunteer = Volunteer::findOrFail($id);
-        if($request->has('courses') && $request->courses) {
-            $courses = Course::query()->where('volunteer_id', '=', $id);
-            foreach ($courses as $course) {
-                $course->delete();
-            }
-        }
         $data = $request->all();
         if ($data['county'] && !is_null($data['county'])) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
@@ -290,42 +307,46 @@ class VolunteerController extends Controller
             ->first();
         $data['organisation'] = $organisation;
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
-        if($data['courses'] && !is_null($data['courses']) && !empty($data['courses'])){
-            foreach ($data['courses'] as $course) {
-                if(!is_null($course['course_name_id']) && !empty($volunteer->courses)) {
-                    $course_name = CourseName::query()->where('_id', '=', $course['course_name_id'])->first();
-                    $newCourse = Course::firstOrNew([
-                        'volunteer_id' => $volunteer->_id,
-                        'course_name' => [
-                            '_id' => $course_name['_id'],
-                            'name' => $course_name['name'],
-                            'slug' => removeDiacritics($course_name['name'])
-                        ],
-                        'obtained' => $course['obtained'],
-                        'added_by' => $data['added_by'] ? $data['added_by'] : '' ,
-                    ]);
-                    $newCourse->save();
-                    $accreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
-                    $getCreatedCourse = Course::query()->where('_id', '=', $newCourse['_id'])->first();
-                    if($accreditor && !is_null($accreditor)) {
-                        $getCreatedCourse->accredited = [
-                            '_id' => $accreditor->_id,
-                            'name' => $accreditor->name
+        $courses =  $request->has('courses') ? $request->courses : '';
+        $data['courses'] = [];
+        if($courses && !is_null($courses) && !empty($courses)){
+            foreach ($courses as $course) {
+                if(isset($course['course_name_id']) && !is_null($course['course_name_id'])) {
+                    $course_name = CourseName::find($course['course_name_id']);
+                    if($course_name){
+                        $newCourse = [
+                            'course_name' => [
+                                '_id' => $course_name['_id'],
+                                'name' => $course_name['name'],
+                                'slug' => removeDiacritics($course_name['name'])
+                            ],
+                            'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s')
                         ];
-                    } else {
-                        $course_accreditor_data = [
-                            'name' => $course['accredited_by'],
-                            'courses' => $getCreatedCourse->id
+
+                        $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
+                        
+                        if(!$courseAccreditor) {
+                            $courseAccreditor = CourseAccreditor::create([
+                                'name' => $course['accredited_by'],
+                                'courses' => [$course_name['_id']]
+                            ]);
+                        } else {
+                            if(is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)){
+                                $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
+                                $courseAccreditor->save();
+                            }
+                        }
+
+                        $newCourse['accredited'] = [
+                            '_id' => $courseAccreditor->_id,
+                            'name' => $courseAccreditor->name
                         ];
-                        $courseAccreditor = CourseAccreditor::create($course_accreditor_data);
-                        $getCreatedCourse->accredited = [
-                            '_id' => $courseAccreditor['_id'],
-                            'name' => $courseAccreditor['name']
-                        ];
+
+                        $data['courses'][] = $newCourse;
                     }
-                    $getCreatedCourse->save();
                 }
             }
+            $volunteer->courses = $data['courses'];
         }
         $volunteer->update($data);
 
@@ -353,6 +374,197 @@ class VolunteerController extends Controller
         $response = array("message" => 'Volunteer deleted.');
 
         return response()->json($response, 200);
+    }
+
+    /**
+     * @SWG\Post(
+     *   tags={"Volunteers"},
+     *   path="/api/volunteers/import",
+     *   summary="Import CSV with volunteers",
+     *   operationId="post",
+     *   @SWG\Parameter(
+     *     name="file",
+     *     in="query",
+     *     description="CSV file.",
+     *     required=true,
+     *     type="File"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="Coloanele din CSV",
+     *     in="query",
+     *     description="nume,cnp,email,telefon,judet,localitate,profesie,comentarii,acreditari",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *  
+     *
+     */
+    public function importVolunteers(Request $request) {
+        $file = $request->file('file');
+        $filename = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $tempPath = $file->getRealPath();
+        $fileSize = $file->getSize();
+        $mimeType = $file->getMimeType();
+
+        $valid_extension = array("csv");
+        $errors = array();
+        if(in_array(strtolower($extension),$valid_extension)) {
+            $location = 'uploads';
+            $file->move($location,$filename);
+            $filepath = public_path($location."/".$filename);
+            $file = fopen($filepath,"r");
+            $i = 0;
+            $countys = County::all(['_id', "slug", "name"]);
+            $county_map = array_column($countys->toArray(), null, 'slug');
+            \Auth::check() ? $authenticatedUser = \Auth::user() : '';
+            if(isset($authenticatedUser) && $authenticatedUser && $authenticatedUser['role']==2) {
+                $organisation_id = $authenticatedUser['organisation']['_id'];
+                $organisationData = Organisation::find('e5f87d565a1b20f14ea00f7c43b01d3a');
+                $organisation = (object) [
+                    '_id' => $organisationData['_id'],
+                    '_rev' => $organisationData['_rev'],
+                    'name' => $organisationData['name'],
+                    'website' => $organisationData['website'],
+                    'type' => $organisationData['type']
+                ];
+            } else {
+                $organisation = null;
+            }
+            while (($setUpData = fgetcsv($file, 1000, ",")) !== FALSE) {
+                $error = array();
+                $num = count($setUpData);
+                if($i == 0){
+                   $i++;
+                   continue; 
+                }
+                $error = verifyErrors($error, $setUpData[0],'Nume');
+                $error = verifyErrors($error, $setUpData[1],'CNP');
+                $error = verifyErrors($error, $setUpData[2],'Email');
+                $error = verifyErrors($error, $setUpData[3],'Telefon');
+                $error = verifyErrors($error, $setUpData[4],'Judet');
+                $error = verifyErrors($error, $setUpData[5],'Localitate');
+                if(isset($setUpData[8]) && $setUpData[8]) {
+                    $courses = explode(';', $setUpData[8]);
+                    $error = verifyErrors($error, $courses, 'Acreditarile au fost separate gresit.');
+                    $coursesData = array();
+
+                    foreach ($courses as $course) {
+                        $each = explode(':', $course);
+                        $error = verifyErrors($error, $each, 'Datele acreditarii separate gresit.');
+                        $course_values = [
+                            'course_name_id' => removeDiacritics($each[0]),
+                            'obtained' => $each[1],
+                            'accredited_by' => $each[2]
+                        ];
+
+                        if(isset($course_values['course_name_id']) && !is_null($course_values['course_name_id'])) {
+                            $course_name = CourseName::query()->where('slug', '=', $course_values['course_name_id'])->first();
+                            if($course_name){
+                                $newCourse = (object) [
+                                    'course_name' =>(object) [
+                                        '_id' => $course_name['_id'],
+                                        'name' => $course_name['name'],
+                                        'slug' => removeDiacritics($course_name['name'])
+                                    ],
+                                    'obtained' => Carbon::parse($course_values['obtained'])->format('Y-m-d H:i:s')
+                                ];
+                                $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course_values['accredited_by'])->first();
+
+                                if(!$courseAccreditor) {
+                                    $courseAccreditor = CourseAccreditor::create([
+                                        'name' => $course_values['accredited_by'],
+                                        'courses' => [$course_name['_id']]
+                                    ]);
+                                } else {
+                                    if(is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)){
+                                        $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
+                                        $courseAccreditor->save();
+                                    }
+                                }
+
+                                $newCourse->accredited = (object) [
+                                    '_id' => $courseAccreditor['_id'],
+                                    'name' => $courseAccreditor['name']
+                                ];
+        
+                                $coursesData[] = (object) $newCourse;
+                            } else {
+                                $error = verifyErrors($error, $course_name, 'Numele acreditarii nu se afla in baza de date.');
+                            }
+                        } else {
+                            $error = verifyErrors($error, $course_values['course_name_id'], 'Numele acreditarii setat gresit.');
+                        }
+                    }
+                }
+
+                $countySlug = removeDiacritics($setUpData[4]);
+                $citySlug = removeDiacritics($setUpData[5]);
+                if(isset($county_map[$countySlug]) && $county_map[$countySlug]) {
+                    $getCity = \DB::connection('statics')->getCouchDBClient()
+                        ->createViewQuery('cities', 'name')
+                        ->setKey(array($county_map[$countySlug]['_id'],$citySlug))
+                        ->execute();
+
+                    if($getCity->offsetExists(0)){
+                        $city = array(
+                            "_id" => $getCity->offsetGet(0)['id'],
+                            "name" =>  $getCity->offsetGet(0)['value']
+                        );
+                    }
+                } else {
+                    $error = verifyErrors($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                }
+                $email = Volunteer::query()->where('email', '=', $setUpData[2])->get()->count();
+
+                if($email > 0){
+                    $error = verifyErrors($error, $setUpData[2], 'Email-ul exista deja');
+                    $errors[] =  [
+                        'line' => $i,
+                        'error' => $error
+                    ];
+                    $i++;
+                }
+
+                if( count($error) == 0 && $email == 0){
+                    $insertData = array(
+                        "name" => $setUpData[0],
+                        "ssn" => $setUpData[1],
+                        "email" => $setUpData[2],
+                        "phone" => $setUpData[3],
+                        "organisation" => $organisation,
+                        "county" => array(
+                            '_id' => $county_map[$countySlug]['_id'],
+                            'name' => $county_map[$countySlug]['name']
+                        ),
+                        "city" =>  $city,
+                        "job" => $setUpData[6],
+                        "courses" => $coursesData,
+                        "comments" => $setUpData[7],
+                        "allocation" => ""
+                    );
+
+                    Volunteer::insert($insertData);
+                }else{
+                    $errors[] =  [
+                        'line' => $i,
+                        'error' => $error
+                    ];
+                }
+                $i++;
+            }
+            fclose($file);
+            return response($errors);
+        }
+    }
+
+    public function allocations(Request $request, $id) {
+        $allocations = Allocation::query()->where('volunteer._id', '=', $id)->get();
+        return response()->json($allocations, 200);
     }
 }
  

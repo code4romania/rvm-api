@@ -35,10 +35,7 @@ Route::group(['middleware' => ['json.response']], function () {
 
         Route::middleware(['checkRole:dsu,institution'])->group(function () {
             Route::get('users', 'UserController@index');
-            Route::get('users/{id}', 'UserController@show');
             Route::post('users', 'UserController@store');
-            Route::put('users/{id}', 'UserController@update');
-            Route::delete('users/{id}', 'UserController@delete');
         });
 
         Route::middleware(['checkRole:dsu,ngo'])->group(function () {
@@ -58,6 +55,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::post('resources', 'ResourceController@store');
             Route::put('resources/{id}', 'ResourceController@update');
             Route::delete('resources/{id}', 'ResourceController@delete');
+            Route::post('resources/import', 'ResourceController@importResources');
 
             Route::get('courses', 'CourseController@index');
             Route::get('courses/{id}', 'CourseController@show');
@@ -68,11 +66,16 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
+            Route::get('volunteers/{id}/allocations', 'VolunteerController@allocations');
+            Route::post('volunteers/import', 'VolunteerController@importVolunteers');
         });
 
         Route::middleware(['checkRole:dsu,ngo,institution'])->group(function () {
             Route::get('volunteers', 'VolunteerController@index');
             Route::get('volunteers/{id}', 'VolunteerController@show');
+            Route::get('users/{id}', 'UserController@show');
+            Route::put('users/{id}', 'UserController@update');
+            Route::delete('users/{id}', 'UserController@delete');
         });
         Route::get('filter/organisations', 'FilterController@filterOrganisationsName');
         Route::get('filter/volunteers/courses', 'FilterController@filterVolunteerCourses');

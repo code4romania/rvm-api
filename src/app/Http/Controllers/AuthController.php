@@ -228,12 +228,10 @@ class AuthController extends Controller
                     'token' => str_random(60)
                 ]
             );
-            $url = url('/auth/reset/'.$passwordReset->token);
-            $url = str_replace('-api','',$url);
+            $url = env('FRONT_END_URL') . '/auth/reset/'.$passwordReset->token;
             $data = array(
                 'url' => $url
             );
-            $url = str_replace('/api','',$url);
             Mail::to($user->email)->send(new SendRecoverPasswordMail($data));
 
             return response()->json([
