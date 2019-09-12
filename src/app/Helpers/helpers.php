@@ -8,7 +8,6 @@ use Illuminate\Validation\ValidationRuleParser;
 use App\Volunteer;
 use App\Institution;
 use App\Organisation;
-use App\Course;
 use App\CourseName;
 /**
  * Pagination helper

@@ -8,7 +8,6 @@ use App\User;
 use App\Resource;
 use App\Organisation;
 use App\Volunteer;
-use App\Course;
 use App\CourseName;
 use App\CourseAccreditor;
 use App\Institution;

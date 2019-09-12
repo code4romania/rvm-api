@@ -12,7 +12,6 @@ use App\Mail\SetUpPassword;
 use App\Mail\NotifyTheOrganisation;
 use App\PasswordReset;
 use App\Organisation;
-use App\Course;
 use App\CourseAccreditor;
 use App\CourseName;
 use App\Volunteer;
@@ -141,7 +140,7 @@ class OrganisationController extends Controller
     public function sendNotification($id) {
         $organisation = Organisation::findOrFail($id);
         allowResourceAccess($organisation);
-        $data = ['url' => url('/auth')];
+        $data = ['url' => env('FRONT_END_URL').'auth'];
         Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
         return response()->json('Email sent succesfully', 200); 
     }
@@ -337,8 +336,7 @@ class OrganisationController extends Controller
                 'token' => str_random(60)
             ]
         );
-        $url = url('/auth/reset/'.$passwordReset->token);
-        $url = str_replace('-api','',$url);
+        $url = env('FRONT_END_URL') . '/auth/reset/'.$passwordReset->token;
         $set_password_data = array(
             'url' => $url
         );
@@ -422,12 +420,6 @@ class OrganisationController extends Controller
         $volunteers = Volunteer::query()->where('organisation._id', '=', $organisation->_id)->get();
         if($volunteers) {
             foreach ($volunteers as $volunteer) {
-                $courses = Course::query()->where('volunteer_id', '=', $volunteer->_id)->get();
-                if($courses) {
-                    foreach ($courses as $course) {
-                        $course->delete();
-                    }
-                }
                 $volunteer->delete();
             }
         }

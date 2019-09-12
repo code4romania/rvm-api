@@ -801,6 +801,26 @@
                 }
             }
         },
+        "/api/resources/by_slug/{slug}": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Show resource info grouped by slug ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/api/resources/list": {
             "get": {
                 "tags": [
@@ -939,6 +959,13 @@
                         "name": "institution",
                         "in": "query",
                         "description": "Customer Institution.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "organisation",
+                        "in": "query",
+                        "description": "Customer Organisation.",
                         "required": false,
                         "type": "string"
                     }
@@ -1172,6 +1199,35 @@
                 ],
                 "summary": "Delete volunteer",
                 "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/volunteers/import": {
+            "post": {
+                "tags": [
+                    "Volunteers"
+                ],
+                "summary": "Import CSV with volunteers",
+                "operationId": "post",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "description": "CSV file.",
+                        "required": true,
+                        "type": "file"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "successful operation"

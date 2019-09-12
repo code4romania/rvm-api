@@ -44,7 +44,8 @@ class UserController extends Controller
         ));
         applySort($users, $params, array(
             '1' => 'name',
-            '3' => 'email'
+            '2' => 'role',
+            '3' => 'institution.name'
         ));
         $volunteers = Volunteer::query()->get();
         $pager = applyPaginate($users, $params);
@@ -125,6 +126,13 @@ class UserController extends Controller
      *     required=false,
      *     type="string"
      *   ),
+     *   @SWG\Parameter(
+     *     name="organisation",
+     *     in="query",
+     *     description="Customer Organisation.",
+     *     required=false,
+     *     type="string"
+     *   ),
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -147,10 +155,19 @@ class UserController extends Controller
         }
         $data = convertData($validator->validated(), $rules);
         $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
-        $data['institution'] = [
-            '_id' => $institution->_id,
-            'name' => $institution->name
-        ];
+        if(isset($institution)) {
+            $data['institution'] = [
+                '_id' => $institution->_id,
+                'name' => $institution->name
+            ];
+        }
+        $request->has('organisation') ? $organisation = Organisation::findOrFail($request->organisation) : '';
+        if(isset($organisation)) {
+            $data['organisation'] = [
+                '_id' => $organisation->_id,
+                'name' => $organisation->name
+            ]; 
+        }
         if(!isRole('dsu')){
             if(isset($data['institution'])) {
                 unset($data['institution']);
@@ -170,8 +187,7 @@ class UserController extends Controller
                 'token' => str_random(60)
             ]
         );
-        $url = url('/auth/reset/'.$passwordReset->token);
-        $url = str_replace('-api','',$url);
+        $url = env('FRONT_END_URL') . '/auth/reset/'.$passwordReset->token;
         $set_password_data = array(
             'url' => $url
         );
@@ -211,6 +227,13 @@ class UserController extends Controller
                 'name' => $institution->name
             ];
         }
+        if(isset($data['organisation']) && $data['organisation']) {
+            $organisation = Organisation::findOrFail($data['organisation']);
+            $data['organisation'] = [
+                '_id' => $organisation->_id,
+                'name' => $organisation->name
+            ];
+        }
         $user->update($data);
 
         return response()->json($user, 201); 
@@ -234,6 +257,9 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         allowResourceAccess($user);
         if(isRole('institution') && isRole('institution', $user) && !$user){
+            isDenied();
+        }
+        if(isRole('organisation') && isRole('organisation', $user) && !$user){
             isDenied();
         }
         $user->delete();

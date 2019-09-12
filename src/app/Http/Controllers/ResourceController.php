@@ -114,7 +114,7 @@ class ResourceController extends Controller
             '1' => 'organisation.name',
             '2' => 'quantity',
             '3' => 'address',
-            '4' => 'county_id',
+            '4' => 'county._id',
             '5' => 'updated_at'
         ));
         $pager = applyPaginate($resources,$params);
