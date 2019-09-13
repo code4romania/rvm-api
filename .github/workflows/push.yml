@@ -9,7 +9,7 @@ jobs:
     - name: MilesChou/composer-action@master
       uses: MilesChou/composer-action@master
       with:
-        args: install
+        args: install --working-dir src
     - name: contention/rsync-deployments@master
       uses: contention/rsync-deployments@master
       env:
