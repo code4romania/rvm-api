@@ -1,0 +1,28 @@
+on: pull_request
+name: Build and deploy for PR
+jobs:
+  filtersForGitHubActions-1:
+    name: Filters for GitHub Actions-1
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Filters for GitHub Actions-1
+      uses: actions/bin/filter@master
+      with:
+        args: branch stage
+    - name: Filters for GitHub Actions-2
+      uses: actions/bin/filter@25b7b846d5027eac3315b50a8055ea675e2abd89
+      with:
+        args: merged true
+    - name: MilesChou/composer-action
+      uses: MilesChou/composer-action@master
+      with:
+        args: install
+    - name: contention/rsync-deployments@master-1
+      uses: contention/rsync-deployments@master
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        RVM_MACHINE: ${{ secrets.RVM_MACHINE }}
+        RVM_USERNAME: ${{ secrets.RVM_USERNAME }}
+      with:
+        args: '"-rv", "--exclude /dev/ --exclude .gitignore", "$RVM_USERNAME@$RVM_MACHINE:/var/www/api"'
