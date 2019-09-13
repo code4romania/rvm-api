@@ -17,4 +17,4 @@ jobs:
         RVM_MACHINE: ${{ secrets.RVM_MACHINE }}
         RVM_USERNAME: ${{ secrets.RVM_USERNAME }}
       with:
-        args: -arv src/ $RVM_USERNAME@$RVM_MACHINE:/var/www/api/
+        args: -arv --omit-dir-times src/ $RVM_USERNAME@$RVM_MACHINE:/var/www/api/
