@@ -43,6 +43,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::get('organisations/{id}', 'OrganisationController@show');
             Route::get('organisations/{id}/volunteers', 'OrganisationController@showVolunteers');
             Route::get('organisations/{id}/resources', 'OrganisationController@showResources');
+            Route::get('organisations/{id}/validate', 'OrganisationController@validateData');
             Route::post('organisations', 'OrganisationController@store');
             Route::put('organisations/{id}', 'OrganisationController@update');
             Route::delete('organisations/{id}', 'OrganisationController@delete');
@@ -66,7 +67,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
-            Route::get('volunteers/{id}/allocations', 'VolunteerController@allocations');
+            
             Route::post('volunteers/import', 'VolunteerController@importVolunteers');
         });
 
@@ -76,6 +77,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::get('users/{id}', 'UserController@show');
             Route::put('users/{id}', 'UserController@update');
             Route::delete('users/{id}', 'UserController@delete');
+            Route::get('volunteers/{id}/allocations', 'VolunteerController@allocations');
         });
         Route::get('filter/organisations', 'FilterController@filterOrganisationsName');
         Route::get('filter/volunteers/courses', 'FilterController@filterVolunteerCourses');

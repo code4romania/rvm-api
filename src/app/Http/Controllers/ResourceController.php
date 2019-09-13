@@ -30,6 +30,10 @@ class ResourceController extends Controller
         $params = $request->query();
         $resources = Resource::query();
 
+        if(isRole('ngo')) {
+            $resources->where('organisation._id', '=', getAffiliationId());
+        }
+
         applyFilters($resources, $params, array(
             '0' => array( 'categories', 'elemmatch', '_id', '$eq' ),
             '1' => array( 'county._id', 'ilike' ),
@@ -427,6 +431,7 @@ class ResourceController extends Controller
 
         $valid_extension = array("csv");
         $errors = array();
+        $imported = 0;
         if(in_array(strtolower($extension),$valid_extension)) {
             $location = 'uploads';
             $file->move($location,$filename);
@@ -436,9 +441,10 @@ class ResourceController extends Controller
             $countys = County::all(['_id', "slug", "name"]);
             $county_map = array_column($countys->toArray(), null, 'slug');
             \Auth::check() ? $authenticatedUser = \Auth::user() : '';
+            \Auth::check() ? $added_by = \Auth::user()->_id : '';
+            $organisation = null;
             if(isset($authenticatedUser) && $authenticatedUser && $authenticatedUser['role']==2) {
-                $organisation_id = $authenticatedUser['organisation']['_id'];
-                $organisationData = Organisation::find('e5f87d565a1b20f14ea00f7c43b01d3a');
+                $organisationData = Organisation::find($authenticatedUser['organisation']['_id']);
                 $organisation = (object) [
                     '_id' => $organisationData['_id'],
                     '_rev' => $organisationData['_rev'],
@@ -447,9 +453,29 @@ class ResourceController extends Controller
                     'type' => $organisationData['type']
                 ];
             } else {
-                $organisation = null;
+                if($request->organisation_id){
+                    $organisationData = Organisation::find($request->organisation_id);
+                    $organisation = (object) [
+                        '_id' => $organisationData['_id'],
+                        '_rev' => $organisationData['_rev'],
+                        'name' => $organisationData['name'],
+                        'website' => $organisationData['website'],
+                        'type' => $organisationData['type']
+                    ];
+                }
             }
-// dd($file);
+
+            if(!$organisation){
+                return response(array(
+                    "has_errors" => true,
+                    "total_errors" => 0,
+                    "rows_imported" => 0,
+                    "rows_discovered" => 0,
+                    "errors" => [],
+                    "message" => "Va rugam selectati organizatia"
+                ));
+            }
+
             while (($setUpData = fgetcsv($file, 1000, ",")) !== FALSE) {
                 $error = array();
                 $num = count($setUpData);
@@ -457,27 +483,28 @@ class ResourceController extends Controller
                    $i++;
                    continue; 
                 }
+
+                $categories = [];
                 $category = ResourceCategory::query()
                     ->where('slug', '=', removeDiacritics($setUpData[2]))
                     ->first(['_id', 'name', 'slug']);
-                if($category) {
-                    $category = $category->toArray();
-                }
-                $subcategory = ResourceCategory::query()
-                    ->where('slug', '=', removeDiacritics($setUpData[3]))
-                    ->where('parent_id', '=', $category['_id'])
-                    ->first(['_id', 'name', 'slug']);
-                if($subcategory) {
-                    $subcategory = $subcategory->toArray();
-                }
-// dd($category, $subcategory);
 
-                // $error = verifyErrors($error, $setUpData[0],'Nume');
-                // $error = verifyErrors($error, $setUpData[1],'CNP');
-                // $error = verifyErrors($error, $setUpData[2],'Email');
-                // $error = verifyErrors($error, $setUpData[3],'Telefon');
-                // $error = verifyErrors($error, $setUpData[4],'Judet');
-                // $error = verifyErrors($error, $setUpData[5],'Localitate');
+                if($category) {
+                    $categories[] = $category->toArray();
+              
+                    $subcategory = ResourceCategory::query()
+                        ->where('slug', '=', removeDiacritics($setUpData[3]))
+                        ->where('parent_id', '=', $category['_id'])
+                        ->first(['_id', 'name', 'slug']);
+
+                    if($subcategory) {
+                        $categories[] = $subcategory->toArray();
+                    }else{
+                        $error = addError($error, $setUpData[3], 'Subcategoria nu exista');
+                    }
+                }else{
+                    $error = addError($error, $setUpData[2], 'Categoria nu exista');
+                }
 
                 $countySlug = removeDiacritics($setUpData[5]);
                 $citySlug = removeDiacritics($setUpData[6]);
@@ -492,28 +519,34 @@ class ResourceController extends Controller
                             "_id" => $getCity->offsetGet(0)['id'],
                             "name" =>  $getCity->offsetGet(0)['value']
                         );
+                    }else{
+                        $error = addError($error, $county_map[$countySlug]['_id'], 'Orasul nu exista');
                     }
                 } else {
-                    $error = verifyErrors($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                    $error = addError($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
                 }
 
                 if( count($error) == 0 ){
                     $insertData = array(
                         "name" => $setUpData[0],
+                        "slug" => removeDiacritics($setUpData[0]),
                         "resource_type" => $setUpData[1],
-                        "categories" => [(object) $category, (object) $subcategory],
                         "quantity" => $setUpData[4],
-                        "organisation" => $organisation,
+                        
                         "county" => array(
                             '_id' => $county_map[$countySlug]['_id'],
                             'name' => $county_map[$countySlug]['name']
                         ),
                         "city" =>  $city,
+                        "categories" => $categories,
+                        "comments" => $setUpData[8],
                         "address" => $setUpData[7],
-                        "comments" => $setUpData[8]
+                        "organisation" => $organisation,
+                        'added_by' => $added_by
                     );
-dd($insertData);
-                    // Volunteer::insert($insertData);
+
+                     Resource::create($insertData);
+                     $imported++;
                 }else{
                     $errors[] =  [
                         'line' => $i,
@@ -523,7 +556,29 @@ dd($insertData);
                 $i++;
             }
             fclose($file);
-            return response($errors);
+
+            $total_errors = count($errors);
+
+            if(count($errors) > 0 && $imported == 0){
+                $message = "Importul nu a putut fi efectuat";
+            }
+
+            if(count($errors) > 0 && $imported > 0){
+                $message = "Import partial finalizat";
+            }
+
+            if(count($errors) == 0 && $imported == $i-1){
+                $message = "Import finalizat cu success";
+            }
+
+            return response(array(
+                "has_errors" => $total_errors != 0,
+                "total_errors" => $total_errors,
+                "rows_imported" => $imported,
+                "rows_discovered" => $i-1,
+                "errors" => $errors,
+                "message" => $message
+            ));
         }
     }
 }

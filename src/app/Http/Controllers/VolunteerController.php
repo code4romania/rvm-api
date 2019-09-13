@@ -421,10 +421,11 @@ class VolunteerController extends Controller
             $i = 0;
             $countys = County::all(['_id', "slug", "name"]);
             $county_map = array_column($countys->toArray(), null, 'slug');
+            $imported = 0;
             \Auth::check() ? $authenticatedUser = \Auth::user() : '';
+            $organisation = null;
             if(isset($authenticatedUser) && $authenticatedUser && $authenticatedUser['role']==2) {
-                $organisation_id = $authenticatedUser['organisation']['_id'];
-                $organisationData = Organisation::find('e5f87d565a1b20f14ea00f7c43b01d3a');
+                $organisationData = Organisation::find($authenticatedUser['organisation']['_id']);
                 $organisation = (object) [
                     '_id' => $organisationData['_id'],
                     '_rev' => $organisationData['_rev'],
@@ -433,8 +434,29 @@ class VolunteerController extends Controller
                     'type' => $organisationData['type']
                 ];
             } else {
-                $organisation = null;
+                if($request->organisation_id){
+                    $organisationData = Organisation::find($request->organisation_id);
+                    $organisation = (object) [
+                        '_id' => $organisationData['_id'],
+                        '_rev' => $organisationData['_rev'],
+                        'name' => $organisationData['name'],
+                        'website' => $organisationData['website'],
+                        'type' => $organisationData['type']
+                    ];
+                }
             }
+
+            if(!$organisation){
+                return response(array(
+                    "has_errors" => true,
+                    "total_errors" => 0,
+                    "rows_imported" => 0,
+                    "rows_discovered" => 0,
+                    "errors" => [],
+                    "message" => "Va rugam selectati organizatia"
+                ));
+            }
+
             while (($setUpData = fgetcsv($file, 1000, ",")) !== FALSE) {
                 $error = array();
                 $num = count($setUpData);
@@ -494,10 +516,10 @@ class VolunteerController extends Controller
         
                                 $coursesData[] = (object) $newCourse;
                             } else {
-                                $error = verifyErrors($error, $course_name, 'Numele acreditarii nu se afla in baza de date.');
+                                $error = addError($error, $course_name, 'Numele acreditarii nu se afla in baza de date.');
                             }
                         } else {
-                            $error = verifyErrors($error, $course_values['course_name_id'], 'Numele acreditarii setat gresit.');
+                            $error = addError($error, $course_values['course_name_id'], 'Numele acreditarii setat gresit.');
                         }
                     }
                 }
@@ -517,18 +539,9 @@ class VolunteerController extends Controller
                         );
                     }
                 } else {
-                    $error = verifyErrors($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                    $error = addError($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
                 }
                 $email = Volunteer::query()->where('email', '=', $setUpData[2])->get()->count();
-
-                if($email > 0){
-                    $error = verifyErrors($error, $setUpData[2], 'Email-ul exista deja');
-                    $errors[] =  [
-                        'line' => $i,
-                        'error' => $error
-                    ];
-                    $i++;
-                }
 
                 if( count($error) == 0 && $email == 0){
                     $insertData = array(
@@ -548,8 +561,11 @@ class VolunteerController extends Controller
                         "allocation" => ""
                     );
 
-                    Volunteer::insert($insertData);
+                    Volunteer::create($insertData);
+
+                    $imported++;
                 }else{
+                    $error = addError($error, $setUpData[2], 'Email-ul exista deja');
                     $errors[] =  [
                         'line' => $i,
                         'error' => $error
@@ -558,12 +574,36 @@ class VolunteerController extends Controller
                 $i++;
             }
             fclose($file);
-            return response($errors);
+            $total_errors = count($errors);
+
+            $message = "";
+
+            if(count($errors) > 0 && $imported == 0){
+                $message = "Importul nu a putut fi efectuat";
+            }
+
+            if(count($errors) > 0 && $imported > 0){
+                $message = "Import partial finalizat";
+            }
+
+            if(count($errors) == 0 && $imported == $i-1){
+                $message = "Import finalizat cu success";
+            }
+
+            return response(array(
+                "has_errors" => $total_errors != 0,
+                "total_errors" => $total_errors,
+                "rows_imported" => $imported,
+                "rows_discovered" => $i-1,
+                "errors" => $errors,
+                "message" => $message
+            ));
         }
     }
 
     public function allocations(Request $request, $id) {
         $allocations = Allocation::query()->where('volunteer._id', '=', $id)->get();
+
         return response()->json($allocations, 200);
     }
 }

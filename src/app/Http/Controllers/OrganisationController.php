@@ -19,6 +19,7 @@ use App\Resource;
 use App\User;
 use App\County;
 use App\City;
+use Carbon\Carbon;
 
 class OrganisationController extends Controller
 {
@@ -119,11 +120,17 @@ class OrganisationController extends Controller
 
     public function show($id)
     {
-        $user = Organisation::findOrFail($id);
-        if(isRole('ngo')) {
-            $user->where($user->organisation['_id'], '=', getAffiliationId());
+        $organisation = Organisation::findOrFail($id);
+        if(!$organisation){
+            return response()->json('Nu exista', 404);
         }
-        return response()->json($user, 200); 
+
+        if(isRole('ngo')){
+            if($organisation->_id != getAffiliationId()){
+                isDenied();
+            }
+        }
+        return response()->json($organisation, 200); 
     }
 
     /**
@@ -139,7 +146,15 @@ class OrganisationController extends Controller
     */
     public function sendNotification($id) {
         $organisation = Organisation::findOrFail($id);
-        allowResourceAccess($organisation);
+        if(!$organisation){
+            return response()->json('Nu exista', 404);
+        }
+
+        if(isRole('ngo')){
+            if($organisation->_id != getAffiliationId()){
+                isDenied();
+            }
+        }
         $data = ['url' => env('FRONT_END_URL').'auth'];
         Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
         return response()->json('Email sent succesfully', 200); 
@@ -160,6 +175,13 @@ class OrganisationController extends Controller
     public function showVolunteers(Request $request, $id)
     {
         $params = $request->query();
+
+        if(isRole('ngo')){
+            if( $id != getAffiliationId()){
+                isDenied();
+            }
+        }
+
         $volunteers = Volunteer::query()
             ->where('organisation._id', 'ilike', $id);
 
@@ -199,6 +221,13 @@ class OrganisationController extends Controller
     public function showResources(Request $request, $id)
     {
         $params = $request->query();
+        
+        if(isRole('ngo')){
+            if( $id != getAffiliationId()){
+                isDenied();
+            }
+        }
+
         $resources = Resource::query()
             ->where('organisation._id', '=', $id);
 
@@ -383,8 +412,17 @@ class OrganisationController extends Controller
     public function update(Request $request, $id)
     {
         $organisation = Organisation::findOrFail($id);
-        allowResourceAccess($organisation);
-        $organisation = setAffiliate($organisation);
+
+        if(!$organisation){
+            return response()->json('Nu exista', 404);
+        }
+
+        if(isRole('ngo')){
+            if($organisation->_id != getAffiliationId()){
+                isDenied();
+            }
+        }
+
         $data = $request->all();
         if ($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
@@ -413,10 +451,20 @@ class OrganisationController extends Controller
     public function delete(Request $request, $id)
     {
         $organisation = Organisation::findOrFail($id);
-        allowResourceAccess($organisation);
+        if(!$organisation){
+            return response()->json('Nu exista', 404);
+        }
+
+        if(isRole('ngo')){
+            if($organisation->_id != getAffiliationId()){
+                isDenied();
+            }
+        }
+
         if(isRole('ngo') && isRole('ngo', $organisation)){
             isDenied();
         }
+
         $volunteers = Volunteer::query()->where('organisation._id', '=', $organisation->_id)->get();
         if($volunteers) {
             foreach ($volunteers as $volunteer) {
@@ -440,5 +488,37 @@ class OrganisationController extends Controller
         $response = array("message" => 'Organisation deleted.');
 
         return response()->json($response, 200);
+    }
+
+
+    /**
+     * @SWG\Get(
+     *   tags={"Organisations"},
+     *   path="/api/organisations/{id}/validate",
+     *   summary="Validate organisation data",
+     *   operationId="validate",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function validateData(Request $request, $id)
+    {
+        $organisation = Organisation::findOrFail($id);
+        if(!$organisation){
+            return response()->json('Nu exista', 404);
+        }
+
+        if(isRole('ngo')){
+            if($organisation->_id != getAffiliationId()){
+                isDenied();
+            }
+        }
+
+        $organisation->updated_at =  (string) Carbon::now()->format('Y-m-d H:i:s');
+        $organisation->save();
+
+        return response()->json(array('success' => true), 200);
     }
 }
