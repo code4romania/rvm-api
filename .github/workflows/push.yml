@@ -1,7 +1,4 @@
-on: 
-  push: 
-    branches:
-      - stage
+on: push
 name: Build and deploy
 jobs:
   filtersForGitHubActions-Branch:
