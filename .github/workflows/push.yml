@@ -1,4 +1,7 @@
-on: push
+on:
+  push:
+    branches:
+      - stage
 name: Build and deploy staging branch
 jobs:
   buildAndDeploy:
