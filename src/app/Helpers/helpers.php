@@ -24,10 +24,11 @@ function applyFilters($query, $params, $filterKeys = array()){
             if(is_null($filter_value)){
                 continue;
             }
-            
 
-            if(strpos($filter_value,",") !== false){
-                $array_values = explode(",", $filter_value);
+            $hydrated_value = removeDiacritics($filter_value);
+
+            if(strpos($hydrated_value,",") !== false){
+                $array_values = explode(",", $hydrated_value);
  
                     $query->where(function($query) use( $filterKeys, $key, $array_values)
                     {
@@ -52,7 +53,7 @@ function applyFilters($query, $params, $filterKeys = array()){
                         }
                     }); 
             } else {
-                $value = $filter_value;
+                $value = $hydrated_value;
                 if(isset($filterKeys[$key])){
                     if($filterKeys[$key][1]=='ilike' || $filterKeys[$key][1]=='like'){
                         $value = '%'.$value.'%';
@@ -317,9 +318,18 @@ function likeOp($operator, $value){
     return array($operator => $value);
 }
 
-function verifyErrors($errors, $value, $message) {
+function verifyErrors($errors, $value, $message, $force = false) {
     
-    if(!isset($value) || is_null($value) || empty($value)) {
+    if(!isset($value) || is_null($value) || empty($value) || $force) {
+        $errors[] = array("value" => $value, "error" => $message);
+    }
+
+    return $errors;
+}
+
+function addError($errors, $value, $message) {
+    
+    if($message) {
         $errors[] = array("value" => $value, "error" => $message);
     }
 

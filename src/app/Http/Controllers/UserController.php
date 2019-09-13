@@ -47,9 +47,8 @@ class UserController extends Controller
             '2' => 'role',
             '3' => 'institution.name'
         ));
-        $volunteers = Volunteer::query()->get();
+
         $pager = applyPaginate($users, $params);
-        
 
         return response()->json(array(
             "pager" => $pager,
@@ -80,7 +79,7 @@ class UserController extends Controller
         }
 
         if(isset($user->institution['_id'])){
-            $user->institution = Institution::find($user->organisation['_id']);
+            $user->institution = Institution::find($user->institution['_id']);
         }
         return response()->json($user, 200);
     }
@@ -257,12 +256,10 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
-        if(isRole('institution') && isRole('institution', $user) && !$user){
-            isDenied();
+        if(!isRole('dsu') && $id!= \Auth::user()->_id){
+           isDenied();
         }
-        if(isRole('organisation') && isRole('organisation', $user) && !$user){
-            isDenied();
-        }
+
         $user->delete();
         $response = array("message" => 'User deleted.');
 
