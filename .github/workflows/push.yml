@@ -1,24 +1,23 @@
-on: push
-name: Build and deploy
+on: 
+  push:
+    branches:
+      - stage
+name: Build and deploy staging branch
 jobs:
-  filtersForGitHubActions-Branch:
-    name: Filters for GitHub Actions - branch
+  buildAndDeploy:
+    name: Build and deploy staging branch
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Filters for GitHub Actions - branch
-      uses: actions/bin/filter@master
-      with:
-        args: branch stage
-    - name: MilesChou/composer-action@master
+    - name: composer install
       uses: MilesChou/composer-action@master
       with:
-        args: install
-    - name: contention/rsync-deployments@master
+        args: install --working-dir src
+    - name: rsync
       uses: contention/rsync-deployments@master
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         RVM_MACHINE: ${{ secrets.RVM_MACHINE }}
         RVM_USERNAME: ${{ secrets.RVM_USERNAME }}
       with:
-        args: '"-rv", "--exclude /dev/ --exclude .gitignore", "$RVM_USERNAME@$RVM_MACHINE:/var/www/api"'
+        args: -arv --omit-dir-times src/ $RVM_USERNAME@$RVM_MACHINE:/var/www/api/
