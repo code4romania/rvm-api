@@ -85,3 +85,4 @@ Started in 2016, Code for Romania is a civic tech NGO, official member of the Co
 
 Last, but not least, we rely on donations to ensure the infrastructure, logistics and management of our community that is widely spread across 11 timezones, coding for social change to make Romania and the world a better place. If you want to support us, [you can do it here](https://code4.ro/en/donate/).
 
+
