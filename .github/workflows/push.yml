@@ -1,4 +1,7 @@
-on: push
+on: 
+  push: 
+    branches:
+      - stage
 name: Build and deploy
 jobs:
   filtersForGitHubActions-Branch:
@@ -6,10 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Filters for GitHub Actions - branch
-      uses: actions/bin/filter@master
-      with:
-        args: branch stage
     - name: MilesChou/composer-action@master
       uses: MilesChou/composer-action@master
       with:
