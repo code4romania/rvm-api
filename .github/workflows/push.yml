@@ -25,3 +25,4 @@ jobs:
         echo "$DEPLOY_KEY" > "$SSH_PATH/deploy_key"
         chmod 600 "$SSH_PATH/deploy_key"
         sh -c "rsync -rvz --omit-dir-times -e 'ssh -i $SSH_PATH/deploy_key -o StrictHostKeyChecking=no' $DEPLOY_FOLDER $RVM_USERNAME@$RVM_MACHINE:/var/www/api/"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cp ~/.env /var/www/api/'"
