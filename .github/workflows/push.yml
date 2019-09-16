@@ -29,5 +29,6 @@ jobs:
         sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cp ~/.env /var/www/api/'"
         sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan cache:clear'"
         sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan passport:install'"
-        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan php artisan key:generate'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan key:generate'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan storage:link'"
         sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan up'"
