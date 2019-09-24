@@ -524,10 +524,10 @@ class ResourceController extends Controller
                             "name" =>  $getCity->offsetGet(0)['value']
                         );
                     }else{
-                        $error = addError($error, $county_map[$countySlug]['_id'], 'Orasul nu exista');
+                        $error = addError($error, $citySlug, 'Orasul nu exista');
                     }
                 } else {
-                    $error = addError($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                    $error = addError($error, $countySlug, 'Judetul nu exista');
                 }
 
                 if( count($error) == 0 ){

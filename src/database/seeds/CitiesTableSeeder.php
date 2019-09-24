@@ -2733,7 +2733,7 @@ class CitiesTableSeeder extends Seeder {
         ['county_id' => strval($counties['8']->id),  'country_id' => $id, 'slug' => 'Colonia 1 Mai', 'name' => 'Colonia 1 Mai'],
         ['county_id' => strval($counties['8']->id),  'country_id' => $id, 'slug' => 'Holbav', 'name' => 'Holbav'],
         ['county_id' => strval($counties['8']->id),  'country_id' => $id, 'slug' => 'Poiana Brasov', 'name' => 'Poiana Brașov'],
-        ['county_id' => strval($counties['9']->id),  'country_id' => $id, 'slug' => 'Municipiul Bucuresti', 'name' => 'Municipiul București'],
+        ['county_id' => strval($counties['9']->id),  'country_id' => $id, 'slug' => 'Bucuresti', 'name' => 'București'],
         ['county_id' => strval($counties['10']->id), 'country_id' => $id, 'slug' => 'Braila', 'name' => 'Brăila'],
         ['county_id' => strval($counties['10']->id), 'country_id' => $id, 'slug' => 'Chiscani', 'name' => 'Chișcani'],
         ['county_id' => strval($counties['10']->id), 'country_id' => $id, 'slug' => 'Lacu Sarat', 'name' => 'Lacu Sărat'],

@@ -200,7 +200,11 @@ class VolunteerController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
-        $data['ssn'] = $request->has('ssn') ? $request->ssn : '';
+        if(isset($validator->validated()['ssn']) && $validator->validated()['ssn']) {
+            $data['ssn'] = $validator->validated()['ssn'];
+        } else {
+            return response(['errors' => 'CNP'], 400);
+        }
         $courses =  $request->has('courses') ? $request->courses : '';
         $data['allocation'] = '';
         $data['comments'] = $request->has('comments') ? $request->comments : '';
@@ -475,51 +479,53 @@ class VolunteerController extends Controller
                     $error = verifyErrors($error, $courses, 'Acreditarile au fost separate gresit.');
                     $coursesData = array();
 
-                    foreach ($courses as $course) {
-                        $each = explode(':', $course);
-                        $error = verifyErrors($error, $each, 'Datele acreditarii separate gresit.');
-                        $course_values = [
-                            'course_name_id' => removeDiacritics($each[0]),
-                            'obtained' => $each[1],
-                            'accredited_by' => $each[2]
-                        ];
-
-                        if(isset($course_values['course_name_id']) && !is_null($course_values['course_name_id'])) {
-                            $course_name = CourseName::query()->where('slug', '=', $course_values['course_name_id'])->first();
-                            if($course_name){
-                                $newCourse = (object) [
-                                    'course_name' =>(object) [
-                                        '_id' => $course_name['_id'],
-                                        'name' => $course_name['name'],
-                                        'slug' => removeDiacritics($course_name['name'])
-                                    ],
-                                    'obtained' => Carbon::parse($course_values['obtained'])->format('Y-m-d H:i:s')
-                                ];
-                                $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course_values['accredited_by'])->first();
-
-                                if(!$courseAccreditor) {
-                                    $courseAccreditor = CourseAccreditor::create([
-                                        'name' => $course_values['accredited_by'],
-                                        'courses' => [$course_name['_id']]
-                                    ]);
-                                } else {
-                                    if(is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)){
-                                        $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
-                                        $courseAccreditor->save();
+                    if(isset($courses) && $courses) {
+                        foreach ($courses as $course) {
+                            $each = explode(':', $course);
+                            $error = verifyErrors($error, $each, 'Datele acreditarii separate gresit.');
+                            $course_values = [
+                                'course_name_id' => removeDiacritics($each[0]),
+                                'obtained' => $each[1],
+                                'accredited_by' => $each[2]
+                            ];
+    
+                            if(isset($course_values['course_name_id']) && !is_null($course_values['course_name_id'])) {
+                                $course_name = CourseName::query()->where('slug', '=', $course_values['course_name_id'])->first();
+                                if($course_name){
+                                    $newCourse = (object) [
+                                        'course_name' =>(object) [
+                                            '_id' => $course_name['_id'],
+                                            'name' => $course_name['name'],
+                                            'slug' => removeDiacritics($course_name['name'])
+                                        ],
+                                        'obtained' => Carbon::parse($course_values['obtained'])->format('Y-m-d H:i:s')
+                                    ];
+                                    $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course_values['accredited_by'])->first();
+    
+                                    if(!$courseAccreditor) {
+                                        $courseAccreditor = CourseAccreditor::create([
+                                            'name' => $course_values['accredited_by'],
+                                            'courses' => [$course_name['_id']]
+                                        ]);
+                                    } else {
+                                        if(is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)){
+                                            $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
+                                            $courseAccreditor->save();
+                                        }
                                     }
+    
+                                    $newCourse->accredited = (object) [
+                                        '_id' => $courseAccreditor['_id'],
+                                        'name' => $courseAccreditor['name']
+                                    ];
+            
+                                    $coursesData[] = (object) $newCourse;
+                                } else {
+                                    $error = addError($error, $course_name, 'Numele acreditarii nu se afla in baza de date.');
                                 }
-
-                                $newCourse->accredited = (object) [
-                                    '_id' => $courseAccreditor['_id'],
-                                    'name' => $courseAccreditor['name']
-                                ];
-        
-                                $coursesData[] = (object) $newCourse;
                             } else {
-                                $error = addError($error, $course_name, 'Numele acreditarii nu se afla in baza de date.');
+                                $error = addError($error, $course_values['course_name_id'], 'Numele acreditarii setat gresit.');
                             }
-                        } else {
-                            $error = addError($error, $course_values['course_name_id'], 'Numele acreditarii setat gresit.');
                         }
                     }
                 }
@@ -537,9 +543,11 @@ class VolunteerController extends Controller
                             "_id" => $getCity->offsetGet(0)['id'],
                             "name" =>  $getCity->offsetGet(0)['value']
                         );
+                    }else{
+                        $error = addError($error, $citySlug, 'Orasul nu exista');
                     }
                 } else {
-                    $error = addError($error, $county_map[$countySlug]['_id'], 'Judetul nu exista');
+                    $error = addError($error, $countySlug, 'Judetul nu exista');
                 }
                 $email = Volunteer::query()->where('email', '=', $setUpData[2])->get()->count();
 

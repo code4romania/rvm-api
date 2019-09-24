@@ -49,7 +49,11 @@ class FilterController extends Controller
      */
     public function filterVolunteerCourses(Request $request) 
     {
-        return response()->json(getFiltersByIdAndName($request->name, CourseName::query()), 200);
+        $model = CourseName::query();
+        if(isset($request->name) && $request->name) {
+            $model->where('name', 'ilike', '%'.$request->name.'%');
+        }
+        return response()->json($model->get(), 200);
     }
 
     /**
