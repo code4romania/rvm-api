@@ -484,26 +484,30 @@ class ResourceController extends Controller
                    continue; 
                 }
 
-                $categories = [];
-                $category = ResourceCategory::query()
-                    ->where('slug', '=', removeDiacritics($setUpData[2]))
-                    ->first(['_id', 'name', 'slug']);
-
-                if($category) {
-                    $categories[] = $category->toArray();
-              
-                    $subcategory = ResourceCategory::query()
-                        ->where('slug', '=', removeDiacritics($setUpData[3]))
-                        ->where('parent_id', '=', $category['_id'])
+                if(isset($setUpData[2]) && $setUpData[2]) {
+                    $categories = [];
+                    $category = ResourceCategory::query()
+                        ->where('slug', '=', removeDiacritics($setUpData[2]))
                         ->first(['_id', 'name', 'slug']);
-
-                    if($subcategory) {
-                        $categories[] = $subcategory->toArray();
+                        
+                    if($category) {
+                        $categories[] = $category->toArray();
+                    
+                        $subcategory = ResourceCategory::query()
+                            ->where('slug', '=', removeDiacritics($setUpData[3]))
+                            ->where('parent_id', '=', $category['_id'])
+                            ->first(['_id', 'name', 'slug']);
+    
+                        if($subcategory) {
+                            $categories[] = $subcategory->toArray();
+                        }else{
+                            $error = addError($error, $setUpData[3], 'Subcategoria nu exista');
+                        }
                     }else{
-                        $error = addError($error, $setUpData[3], 'Subcategoria nu exista');
+                        $error = addError($error, $setUpData[2], 'Categoria nu exista');
                     }
-                }else{
-                    $error = addError($error, $setUpData[2], 'Categoria nu exista');
+                } else {
+                    $error = addError($error, $setUpData[2], 'Categoria este gresita');
                 }
 
                 $countySlug = removeDiacritics($setUpData[5]);

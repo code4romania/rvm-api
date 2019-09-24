@@ -153,10 +153,7 @@ function convertData($data, $validator){
 
 function countByOrgId($org_ids, $model) {
     foreach($org_ids as $id) {
-        
-    // dd($id);
         $test = $model::where('organisation._id', '=', $id)->count();
-        // dd($test);
     }
 }
 

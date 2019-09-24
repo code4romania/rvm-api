@@ -43,11 +43,12 @@ class OrganisationController extends Controller
             $organisations->where('_id', '=', getAffiliationId());
         }
         applyFilters($organisations, $params, array(
-            '0' => array( 'cover', 'ilike'),
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'name', 'ilike')
         ));
-
+        if(isset($request->filters[0])) {
+            $organisations->where('cover', 'ilike', $request->filters[0]);
+        }
         if(isset($request->filters[3])){
             $matchOrganisations = Volunteer::query()
                 ->where('courses', 'elemmatch', array("course_name._id" => $request->filters[3]))
@@ -155,7 +156,7 @@ class OrganisationController extends Controller
                 isDenied();
             }
         }
-        $data = ['url' => env('FRONT_END_URL').'auth'];
+        $data = ['url' => env('FRONT_END_URL').'/auth'];
         Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
         return response()->json('Email sent succesfully', 200); 
     }
