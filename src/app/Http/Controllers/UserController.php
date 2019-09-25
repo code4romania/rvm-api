@@ -194,6 +194,16 @@ class UserController extends Controller
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
         $data['password'] = Hash::make(str_random(16));
         $user = User::create($data);
+        if($user['role']==2) {
+            $organisation = Organisation::query()->where('_id', '=', $user['organisation._id'])->first();
+            $organisation->contact_person = (object) [
+                '_id'=>$user['_id'],
+                'name'=>$user['name'],
+                'email'=>$user['email'],
+                'phone'=>$user['phone']
+            ];
+            $organisation->save();
+        }
         $response = array(
             "message" => 'Password sent to email.',
             "user" => $user
@@ -259,7 +269,16 @@ class UserController extends Controller
         if(!isRole('dsu') && !isRole('ngo') && getAffiliationId($id) != \Auth::user()->institution['_id']){
            isDenied();
         }
-
+        if($user->role == 2) {
+            $ong = Organisation::query()->where('_id', '=', $user->organisation['_id'])->first();
+            $ong->contact_person = (object) [
+                '_id'=>null,
+                'name'=>null,
+                'email'=>null,
+                'phone'=>null
+            ];
+            $ong->save();
+        }
         $user->delete();
         $response = array("message" => 'User deleted.');
 
