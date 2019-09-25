@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * File containing global helper functions.
+ */
+
 use Illuminate\Support\Facades\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -9,13 +13,17 @@ use App\Volunteer;
 use App\Institution;
 use App\Organisation;
 use App\CourseName;
+
+
+
 /**
- * Pagination helper
+ * Function used for filtering
  *
- * @param string $data Items to paginate
+ * @param string $params string after filtering is made
+ * @param array $filterKeys key used to filter the query
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
  * @return array of $data 
  */
-
 function applyFilters($query, $params, $filterKeys = array()){
     $filters = isset($params['filters']) ? $params['filters'] : null;
 
@@ -79,6 +87,13 @@ function applyFilters($query, $params, $filterKeys = array()){
     return $query;
 }
 
+/** 
+ * Function used to sort 
+ * @param string $params string after sorting is made
+ * @param array $sortKeys key used to sort the query
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applySort($query, $params, $sortKeys = array()){
     $sort = isset($params['sort']) ? $params['sort'] : null;
     $method = isset($params['method']) ? $params['method'] : 'asc';
@@ -90,6 +105,12 @@ function applySort($query, $params, $sortKeys = array()){
     return $query;
 }
 
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @param object $collection Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applyCollectionPaginate($collection, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -105,6 +126,12 @@ function applyCollectionPaginate($collection, $params){
     );
 }
 
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applyPaginate($query, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -120,6 +147,11 @@ function applyPaginate($query, $params){
     );
 }
 
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @return array of $data 
+*/
 function emptyPager($params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -132,6 +164,12 @@ function emptyPager($params){
     );
 }
 
+/** 
+ * Function used to paginate
+ * @param array $data get data and validate them
+ *              $validator validate rules
+ * @return array of $data 
+*/
 function convertData($data, $validator){
     $newData = array();
     foreach($data as $key => $val){
@@ -151,17 +189,16 @@ function convertData($data, $validator){
     return $newData;
 }
 
-function countByOrgId($org_ids, $model) {
-    foreach($org_ids as $id) {
-        
-    // dd($id);
-        $test = $model::where('organisation._id', '=', $id)->count();
-        // dd($test);
-    }
-}
-
-function removeDiacritics($post_name) {
-    $diacritics_array = array( 
+/**
+ * Function that removes any diacritics of other special letters
+ *  by replacing them with the english letters.
+ * 
+ * @param string $data The data that contains discritics that have to be removed.
+ * 
+ * @return string The received data with all the discritics removed.
+ */
+function removeDiacritics($data) {
+    $diacritics_array = array(
         'Š'=>'S', 'š'=>'s', 
         'Ž'=>'Z', 'ž'=>'z',
         'À'=>'A', 'Á'=>'A',
@@ -201,11 +238,17 @@ function removeDiacritics($post_name) {
         'Ț'=>'T', 'Ţ'=>'T'
     );
 
-    $post_name = strtr( $post_name, $diacritics_array );
+    return strtr($data, $diacritics_array);
 
-    return $post_name;
+    return $data;
 }
 
+/**
+ * Check if the authentificated user has access to the specified resource.
+ * 
+ * @param array $resource checked if has acces.
+ * @return bool
+ */
 function allowResourceAccess($resource) {
     $r = is_array($resource) ? $resource : $resource->toArray();
 
@@ -222,25 +265,41 @@ function allowResourceAccess($resource) {
     return true;
 }
 
+
+/**
+ * Function that checks if a user has a specific role.
+ * 
+ * @param string $role The role to check if the user has.
+ * @param object $user The user for which to check if it has the specified role.
+ * 
+ * @return bool
+ */
 function isRole($role, $user = null) {
+    /** Check if a user has been specified. */
     $user = $user ? $user : \Auth::user();
+    /** Extract the role ID. */
+    $roleId = config('roles.role')[$role];
 
-    $roleIds = config('roles.role');
-    $roleId = $roleIds[$role];
-
-    if($roleId === $user->role && $role=='institution' && (!isset($user->institution) || !$user->institution || !isset($user->institution['_id']))) return false;
-    if($roleId === $user->role && $role=='ngo' && (!isset($user->organisation) || !$user->organisation || !isset($user->organisation['_id']))) return false;
+    if($roleId === $user->role && $role == 'institution' && (!isset($user->institution) || !$user->institution || !isset($user->institution['_id']))) return false;
+    if($roleId === $user->role && $role == 'ngo' && (!isset($user->organisation) || !$user->organisation || !isset($user->organisation['_id']))) return false;
     if($roleId === $user->role) return true;
 
     return false;
 }
 
-// Returns Institution id Organization id of the admin
+
+/**
+ * Returns Institution id or Organization id of the authentificated user.
+ * 
+ * @return string|null The Institution id/Organization id or null id user is not 'ngo-admin' or 'institution-admin'
+ */
 function getAffiliationId() {
     $user = \Auth::user();
+
     if(isRole('institution')) {
         return $user->institution['_id'];
     }
+
     if(isRole('ngo')){
         return $user->organisation['_id'];
     }
@@ -248,9 +307,14 @@ function getAffiliationId() {
     return null;
 }
 
+
+/**
+ * Function that causes an 403 'Permission denied' abort.
+ */
 function isDenied() {
     abort(403, 'Permission denied');
 }
+
 
 function setAffiliate($data) {
     $affiliate= null;
@@ -276,18 +340,34 @@ function setAffiliate($data) {
     return $data;
 }
 
-function getFiltersByIdAndName($name ,$model) {
+
+/**
+ * Function that extracts a list of <ID, NAME> pairs by searching
+ *  for entries with similar 'names' on the specified 'model'.
+ * 
+ * @param string $name The name to be used in the like query
+ * @param object $model Laravel object of type 'Eloquent ORM' representing the model to be searched
+ */
+function getFiltersByIdAndName($name, $model) {
     if(isset($name) && $name) {
         $model->where('name', 'ilike', '%'.$name.'%');
     }
     return $model->get(['_id', 'name']);
 }
 
-function getCityOrCounty($params,$model) {
+/**
+ * Function that extracts a list of <ID, NAME, SLUG> pairs by searching
+ *  for entries with similar '_id' on the specified 'model'.
+ * 
+ * @param string $params The _id of City or County, used in the where query.
+ * @param object $model Laravel object of type 'Eloquent ORM' representing the model to be searched
+ */
+function getCityOrCounty($params, $model) {
     $city_or_county = $model->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $params)->first();    
     if($city_or_county) {
-        $place = array('_id' => $city_or_county->_id,
+        $place = array(
+            '_id' => $city_or_county->_id,
             'name' => $city_or_county->name,
             'slug' => $city_or_county->slug
         );
@@ -296,6 +376,7 @@ function getCityOrCounty($params,$model) {
     }
     return $place;
 }
+
 
 function likeOp($operator, $value){
     if (in_array($operator, ['like', 'not like', 'ilike', 'not ilike'])) {
@@ -318,8 +399,8 @@ function likeOp($operator, $value){
     return array($operator => $value);
 }
 
+
 function verifyErrors($errors, $value, $message, $force = false) {
-    
     if(!isset($value) || is_null($value) || empty($value) || $force) {
         $errors[] = array("value" => $value, "error" => $message);
     }
@@ -327,8 +408,8 @@ function verifyErrors($errors, $value, $message, $force = false) {
     return $errors;
 }
 
+
 function addError($errors, $value, $message) {
-    
     if($message) {
         $errors[] = array("value" => $value, "error" => $message);
     }

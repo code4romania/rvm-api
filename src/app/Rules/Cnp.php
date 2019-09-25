@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Rules;
+use App\Volunteer;
 
 use Illuminate\Contracts\Validation\Rule;
 
@@ -25,9 +26,9 @@ class Cnp implements Rule
      */
     public function passes($attribute, $value)
     {
-      
-        if (strlen($value) === 13) {
-         
+        
+        $exist = Volunteer::query()->where('ssn', '=', $value)->first();
+        if (strlen($value) === 13 && !$exist) {
             $cnp = array_map('intval',str_split($value));
            
 			$coefs = [2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9];

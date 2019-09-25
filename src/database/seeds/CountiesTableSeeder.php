@@ -25,7 +25,7 @@ class CountiesTableSeeder extends Seeder {
         ['county_id' => '6',  'country_id' => $id, 'slug'  => 'Suceava',         'name' => 'Suceava'],
         ['county_id' => '7',  'country_id' => $id, 'slug'  => 'Botosani',        'name' => 'Botoșani'],
         ['county_id' => '8',  'country_id' => $id, 'slug'  => 'Brasov',          'name' => 'Brașov'],
-        ['county_id' => '9',  'country_id' => $id, 'slug'  => 'BucureSti',       'name' => 'București'],
+        ['county_id' => '9',  'country_id' => $id, 'slug'  => 'Bucuresti',       'name' => 'București'],
         ['county_id' => '10', 'country_id' => $id, 'slug'  => 'Braila',          'name' => 'Brăila'],
         ['county_id' => '11', 'country_id' => $id, 'slug'  => 'Hunedoara',       'name' => 'Hunedoara'],
         ['county_id' => '12', 'country_id' => $id, 'slug'  => 'Teleorman',       'name' => 'Teleorman'],

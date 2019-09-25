@@ -18,6 +18,13 @@ use App\Volunteer;
 class UserController extends Controller
 {
     /**
+     * Function responsible of processing get all users requests.
+     * 
+     * @param object $request Contains all the data needed for extracting the users list.
+     * 
+     * @return object 200 and the list of users if successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users",
@@ -29,34 +36,30 @@ class UserController extends Controller
      * )
      *
      */
-
-    public function index(Request $request) 
-    { 
+    public function index(Request $request) {
         $params = $request->query();
         $users = User::query();
+
         if(isRole('institution')) {
-            $users->where('role', '=', '0')
-                  ->where('institution._id', '=', getAffiliationId());
+            $users->where('role', '=', '0')->where('institution._id', '=', getAffiliationId());
         }
-        applyFilters($users, $params, array(
-            '0' => array( 'institution._id', 'ilike'),
-            '1' => array( 'name', 'ilike' ),
-        ));
-        applySort($users, $params, array(
-            '1' => 'name',
-            '2' => 'role',
-            '3' => 'institution.name'
-        ));
+        applyFilters($users, $params, array('0' => array( 'institution._id', 'ilike'), '1' => array( 'name', 'ilike' ),));
+        applySort($users, $params, array('1' => 'name', '2' => 'role', '3' => 'institution.name'));
 
         $pager = applyPaginate($users, $params);
 
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $users->get()
-        ), 200); 
+        return response()->json(array("pager" => $pager, "data" => $users->get()), 200);
     }
 
+
      /**
+     * Function responsible of extracting a user details requests.
+     * 
+     * @param object $request Contains all the data needed for extracting the user details.
+     * 
+     * @return object 200 and the JSON encoded user details if successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -68,9 +71,7 @@ class UserController extends Controller
      * )
      *
      */
-
-    public function show($id)
-    {
+    public function show($id) {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
 
@@ -81,10 +82,20 @@ class UserController extends Controller
         if(isset($user->institution['_id'])){
             $user->institution = Institution::find($user->institution['_id']);
         }
+
         return response()->json($user, 200);
     }
 
+
     /**
+     * Function responsible of processing user creation requests.
+     * 
+     * @param object $request Contains all the data needed for creating a new user.
+     * 
+     * @return object 201 and the JSON encoded new user details if successful
+     *                400 if validation fails
+     *                500 if an error occurs
+     *  
      * @SWG\Post(
      *   tags={"Users"},
      *   path="/api/users",
@@ -132,14 +143,13 @@ class UserController extends Controller
      *     required=false,
      *     type="string"
      *   ),
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=201, description="successful operation"),
+     *   @SWG\Response(response=400, description="validation fails"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $data = $request->all();
         $rules = [
             'name' => 'required|string|max:255',
@@ -152,94 +162,109 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
+
         $data = convertData($validator->validated(), $rules);
         if(!isRole('dsu')){
             if(isset($data['institution'])) {
                 unset($data['institution']);
             }
+
             if(isset($data['organisation'])){
                 unset($data['organisation']);
             }
         } else {
             $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
             if(isset($institution)) {
-                $data['institution'] = [
-                    '_id' => $institution->_id,
-                    'name' => $institution->name
-                ];
+                $data['institution'] = ['_id' => $institution->_id, 'name' => $institution->name];
             }
+
             $request->has('organisation') ? $organisation = Organisation::findOrFail($request->organisation) : '';
             if(isset($organisation)) {
-                $data['organisation'] = [
-                    '_id' => $organisation->_id,
-                    'name' => $organisation->name
-                ]; 
+                $data['organisation'] = ['_id' => $organisation->_id, 'name' => $organisation->name];
             }
         }
         $data = setAffiliate($data);
         if(\Auth::check()) {
            $data['added_by'] = \Auth::user()->_id;
         }
-        $passwordReset = PasswordReset::updateOrCreate(
-            ['email' => $data['email']],
-            [
-                'email' => $data['email'],
-                'token' => str_random(60)
-            ]
-        );
-        $url = env('FRONT_END_URL') . '/auth/reset/'.$passwordReset->token;
-        $set_password_data = array(
-            'url' => $url
-        );
+
+        /** Generate a password reset. */
+        $passwordReset = PasswordReset::updateOrCreate(['email' => $data['email']], ['email' => $data['email'], 'token' => str_random(60)]);
+        /** Create the pass reset URL. */
+        $url = env('FRONT_END_URL') . '/auth/reset/' . $passwordReset->token;
+        $set_password_data = array('url' => $url);
+        /** Sent welcoming email. */
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
+
+        /** Generate a radom password. */
         $data['password'] = Hash::make(str_random(16));
+        /** Create the new user. */
         $user = User::create($data);
-        $response = array(
-            "message" => 'Password sent to email.',
-            "user" => $user
-        );
-        return response()->json($response, 201); 
+
+        /** Chech if the user is ngo-admin. */
+        if($user['role'] == 2) {
+            /** Extract the organization and update the contact person. */
+            $organisation = Organisation::query()->where('_id', '=', $user['organisation._id'])->first();
+            $organisation->contact_person = (object) ['_id'=>$user['_id'], 'name'=>$user['name'], 'email'=>$user['email'], 'phone'=>$user['phone']];
+            $organisation->save();
+        }
+        $response = ["message" => 'Password sent to email.', "user" => $user];
+
+        return response()->json($response, 201);
     }
 
+
     /**
+     * Function responsible of processing user update requests.
+     * 
+     * @param object $request Contains all the data needed for updating a user.
+     * @param string $id The ID of the user to be updated.
+     * 
+     * @return object 201 and the JSON encoded user details if successful
+     *                400 if validation fails
+     *                500 if an error occurs
+     *  
      * @SWG\put(
      *   tags={"Users"},
      *   path="/api/users/{id}",
      *   summary="Update user",
      *   operationId="update",
-     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=201, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */
-
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
         $user = setAffiliate($user);
         $data = $request->all();
+
         if(isset($data['institution']) && $data['institution']) {
             $institution = Institution::findOrFail($data['institution']);
-            $data['institution'] = [
-                '_id' => $institution->_id,
-                'name' => $institution->name
-            ];
+            $data['institution'] = ['_id' => $institution->_id, 'name' => $institution->name];
         }
+
         if(isset($data['organisation']) && $data['organisation']) {
             $organisation = Organisation::findOrFail($data['organisation']);
-            $data['organisation'] = [
-                '_id' => $organisation->_id,
-                'name' => $organisation->name
-            ];
+            $data['organisation'] = ['_id' => $organisation->_id, 'name' => $organisation->name];
         }
         $user->update($data);
 
         return response()->json($user, 201); 
     }
 
+
     /**
+     * Function responsible of processing delete user requests.
+     * 
+     * @param object $request Contains all the data needed for deleting a user.
+     * @param string $id The ID of the user to be deleted.
+     * 
+     * @return object 200 if deletion is successful
+     *                500 if an error occurs
+     *  
      * @SWG\Delete(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -251,15 +276,18 @@ class UserController extends Controller
      * )
      *
      */
-
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
-        if(!isRole('dsu') && $id!= \Auth::user()->_id){
+        if(!isRole('dsu') && !isRole('ngo') && getAffiliationId($id) != \Auth::user()->institution['_id']){
            isDenied();
         }
 
+        if($user->role == 2) {
+            $ong = Organisation::query()->where('_id', '=', $user->organisation['_id'])->first();
+            $ong->contact_person = (object) ['_id'=>null, 'name'=>null, 'email'=>null, 'phone'=>null];
+            $ong->save();
+        }
         $user->delete();
         $response = array("message" => 'User deleted.');
 
