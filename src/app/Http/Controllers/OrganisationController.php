@@ -390,7 +390,12 @@ class OrganisationController extends Controller
         $newNgoAdmin->password = Hash::make(str_random(16));
         $newNgoAdmin->save();
         
-        $organisation->contact_person = $newNgoAdmin->_id;
+        $organisation->contact_person = (object) [
+            '_id'=>$newNgoAdmin['_id'],
+            'name'=>$newNgoAdmin['name'],
+            'email'=>$newNgoAdmin['email'],
+            'phone'=>$newNgoAdmin['phone']
+        ];
         $organisation->save();
         $response = array(
             "message" => 'Password sent to email.',

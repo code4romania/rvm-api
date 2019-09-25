@@ -44,7 +44,7 @@ class NotifyOrganisation extends Command
         $organisations = Organisation::all();
         $organisations->map(function($organisation) {
             if(Carbon::parse($organisation->updated_at)->addDays(env('MAIL_CRON_TIME'))->isPast()) {
-                $data = ['url' => env('FRONT_END_URL')];
+                $data = ['url' => env('FRONT_END_URL').'/login'];
                 Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
             } 
         });

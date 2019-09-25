@@ -550,8 +550,9 @@ class VolunteerController extends Controller
                     $error = addError($error, $countySlug, 'Judetul nu exista');
                 }
                 $email = Volunteer::query()->where('email', '=', $setUpData[2])->get()->count();
+                $cnp = Volunteer::query()->where('ssn', '=', $setUpData[1])->get()->count();
 
-                if( count($error) == 0 && $email == 0){
+                if( count($error) == 0 && $email == 0 && $cnp == 0){
                     $insertData = array(
                         "name" => $setUpData[0],
                         "ssn" => $setUpData[1],
@@ -573,7 +574,7 @@ class VolunteerController extends Controller
 
                     $imported++;
                 }else{
-                    $error = addError($error, $setUpData[2], 'Email-ul exista deja');
+                    $error = addError($error, $setUpData[2], 'Email-ul exista deja sau cnp-ul exista deja');
                     $errors[] =  [
                         'line' => $i,
                         'error' => $error

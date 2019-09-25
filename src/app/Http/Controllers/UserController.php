@@ -256,7 +256,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
-        if(!isRole('dsu') && getAffiliationId($id) != \Auth::user()->institution['_id']){
+        if(!isRole('dsu') && !isRole('ngo') && getAffiliationId($id) != \Auth::user()->institution['_id']){
            isDenied();
         }
 
