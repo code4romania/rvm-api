@@ -197,7 +197,7 @@ class OrganisationController extends Controller
         /** Sending the notification */
         $data = ['url' => env('FRONT_END_URL').'/organisations/id/'.$organisation->_id.'/validate'];
         Mail::to($organisation['contact_person']['email'])->send(new NotifyTheOrganisation($data));
-        return response()->json('Email sent succesfully', 200); 
+        return response()->json('Email sent successfully', 200); 
     }
 
     /**
@@ -313,7 +313,7 @@ class OrganisationController extends Controller
 
     /**
      * @param object $request used to create new organisation and new organisation admin
-     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
+     * @return object 200 and the organisation details and organisation admin details if datas are inserted successfull
      *                403 if the organisation is denied
      *                500 if an error occurs
      * 
@@ -475,8 +475,8 @@ class OrganisationController extends Controller
 
     /**
      * @param object $request used to update organisation details
-     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
-     *                403 if the organisation is denied
+     * @return object 200 and the organisation details if datas are inserted successfull
+     *                404 if the organisation is not found
      *                500 if an error occurs
      * 
      * @SWG\put(
@@ -508,9 +508,9 @@ class OrganisationController extends Controller
         $data = $request->all();
         $data['contact_person'] = (object) [
             '_id'=>$organisation->contact_person['_id'],
-            'name'=>$organisation->contact_person['name'],
-            'email'=>$organisation->contact_person['email'],
-            'phone'=>$organisation->contact_person['phone']
+            'name'=>$data['contact_person'],
+            'email'=>$data['email'],
+            'phone'=>$data['phone']
         ];
         if ($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
@@ -524,9 +524,10 @@ class OrganisationController extends Controller
     }
 
     /**
-     * @param object $request used to create new organisation and new organisation admin
-     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
-     *                403 if the organisation is denied
+     * @param string $id used to search the organisation
+     * @param object $request used to get obj
+     * @return object 200 and if delete is successfull
+     *                404 if the organisation is denied
      *                500 if an error occurs
      * 
      * @SWG\Delete(
