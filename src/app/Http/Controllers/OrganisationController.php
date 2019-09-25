@@ -24,6 +24,14 @@ use Carbon\Carbon;
 class OrganisationController extends Controller
 {
     /**
+     * Function responsible with showing all organisations.
+     * 
+     * @param object $request Contains all the datas about organisations (like the name, number of volunteers, number of resources and more) 
+     *               used to display all the organisations
+     * @return object 200 and the organisations details if the request is successful
+     *                406 if the authentificated user have no permission
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations",
@@ -39,16 +47,24 @@ class OrganisationController extends Controller
     {
         $params = $request->query();
         $organisations = Organisation::query();
+
+        /** Verify if role is NGO */
         if(isRole('ngo')) {
             $organisations->where('_id', '=', getAffiliationId());
         }
+
+        /** Function used for filtering */
         applyFilters($organisations, $params, array(
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'name', 'ilike')
         ));
+
+        /**  Custom filter for organisation cover */
         if(isset($request->filters[0])) {
             $organisations->where('cover', 'ilike', $request->filters[0]);
         }
+
+        /** Custom filter for organisation courses */
         if(isset($request->filters[3])){
             $matchOrganisations = Volunteer::query()
                 ->where('courses', 'elemmatch', array("course_name._id" => $request->filters[3]))
@@ -67,6 +83,7 @@ class OrganisationController extends Controller
             $organisations->whereIn('_id', $matchOrganisations);
         }
 
+        /** Custom filter for organisation categories */
         if(isset($request->filters[4])){
             $matchOrganisations2 = Resource::query()
                 ->where('categories', 'elemmatch', array("_id" => $request->filters[4]))
@@ -85,18 +102,20 @@ class OrganisationController extends Controller
             $organisations->whereIn('_id', $matchOrganisations2);
         }
 
+        /** Function used for sorting */
         applySort($organisations, $params, array(
             '1' => 'name',
             '2' => 'county',
         ));
 
+        /** Function used for paginate. */
         $pager = applyPaginate($organisations, $params);
         $organisations = $organisations->get();
-        $organisationsIds = array_map(function($o){ return $o['_id']; }, $organisations->toArray());
 
+        /** Adding the number of volunteers and resources to each organisation. */
+        $organisationsIds = array_map(function($o){ return $o['_id']; }, $organisations->toArray());
         $volunteers = Volunteer::query()->whereIn('organisation._id', $organisationsIds)->get(['_id', 'organisation._id']);
         $resources = Resource::query()->whereIn('organisation._id', $organisationsIds)->get(['_id', 'organisation._id']);
-
         foreach($organisations as $organisation){
            $organisation->volunteers = $volunteers->where('organisation._id', '=', $organisation->_id)->count();
            $organisation->resources = $resources->where('organisation._id', '=', $organisation->_id)->count();
@@ -107,7 +126,15 @@ class OrganisationController extends Controller
             "data" => $organisations
         ), 200); 
     }
-     /**
+
+    /**
+     * Function responsible with showing one organisation details.
+     * 
+     * @param string $id used for organisation search
+     * @return object 200 and the organisation details if id match
+     *                404 if the organisation is not exist
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
@@ -119,7 +146,6 @@ class OrganisationController extends Controller
      * )
      *
      */
-
     public function show($id)
     {
         $organisation = Organisation::findOrFail($id);
@@ -127,6 +153,7 @@ class OrganisationController extends Controller
             return response()->json('Nu exista', 404);
         }
 
+        /** Verify the affiliated users to NGO */
         if(isRole('ngo')){
             if($organisation->_id != getAffiliationId()){
                 isDenied();
@@ -136,65 +163,83 @@ class OrganisationController extends Controller
     }
 
     /**
-    * @SWG\Post(
-    *   tags={"Organisations"},
-    *   path="/api/organisations/{id}/email",
-    *   summary="Send notification via email to a organisation admin",
-    *   operationId="send",
-    *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found"),
-    *   @SWG\Response(response=500, description="internal server error")
-    * )
-    *
-    */
+     * Function responsible with sending notification to organisation
+     * 
+     * @param string $id used for organisation search
+     * @return object 200 and the organisation details if id match
+     *                404 if the organisation is not exist
+     *                500 if an error occurs
+     *  
+     * @SWG\Post(
+     *   tags={"Organisations"},
+     *   path="/api/organisations/{id}/email",
+     *   summary="Send notification via email to a organisation admin",
+     *   operationId="send",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="not found"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function sendNotification($id) {
         $organisation = Organisation::findOrFail($id);
         if(!$organisation){
             return response()->json('Nu exista', 404);
         }
 
+        /** Verify the affiliated users to NGO */
         if(isRole('ngo')){
             if($organisation->_id != getAffiliationId()){
                 isDenied();
             }
         }
+
+        /** Sending the notification */
         $data = ['url' => env('FRONT_END_URL').'/organisations/id/'.$organisation->_id.'/validate'];
         Mail::to($organisation['contact_person']['email'])->send(new NotifyTheOrganisation($data));
         return response()->json('Email sent succesfully', 200); 
     }
 
     /**
-    * @SWG\Get(
-    *   tags={"Organisations"},
-    *   path="/api/organisations/{id}/volunteers",
-    *   summary="Show all volunteers of an Organisation ",
-    *   operationId="show",
-    *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found"),
-    *   @SWG\Response(response=500, description="internal server error")
-    * )
-    *
-    */
-
+     * Function responsible with showing all volunteers from a specific organisation
+     * 
+     * @param string $id used for organisation search
+     * @param object $request contains the data for filter and sort
+     * @return object 200 and the organisation volunteers details if id match
+     *                403 if the organisation is denied
+     *                500 if an error occurs
+     *  
+     * @SWG\Get(
+     *   tags={"Organisations"},
+     *   path="/api/organisations/{id}/volunteers",
+     *   summary="Show all volunteers of an Organisation ",
+     *   operationId="show",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=403, description="is denied"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
     public function showVolunteers(Request $request, $id)
     {
         $params = $request->query();
 
+        /** Verify if role is NGO*/
         if(isRole('ngo')){
             if( $id != getAffiliationId()){
                 isDenied();
             }
         }
+        $volunteers = Volunteer::query()->where('organisation._id', 'ilike', $id);
 
-        $volunteers = Volunteer::query()
-            ->where('organisation._id', 'ilike', $id);
-
+        /** Function used for filtering */
         applyFilters($volunteers, $params, array(
             '0' => array( 'county._id', 'ilike' ),
             '1' => array( 'courses', 'elemmatch' , "course_name._id", '$eq'),
             '2' => array ( 'name', 'ilike')
         ));
     
+        /** Function used for sorting */
         applySort($volunteers, $params, array(
             '1' => 'name',
             '2' => 'courses',
@@ -202,6 +247,7 @@ class OrganisationController extends Controller
             '4' => 'updated_at'
         ));
 
+        /** Function used for pager */
         $pager = applyPaginate($volunteers, $params);
 
         return response()->json(array(
@@ -211,17 +257,22 @@ class OrganisationController extends Controller
     }
 
     /**
-    * @SWG\Get(
-    *   tags={"Organisations"},
-    *   path="/api/organisations/{id}/resources",
-    *   summary="Show all resources of an Organisation ",
-    *   operationId="show",
-    *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found"),
-    *   @SWG\Response(response=500, description="internal server error")
-    * )
-    *
-    */
+     * @param string $id used for organisation search
+     * @param object $request contains the data for filter and sort
+     * @return object 200 and the organisation volunteers details if id match
+     *                403 if the organisation is denied
+     *                500 if an error occurs
+     * @SWG\Get(
+     *   tags={"Organisations"},
+     *   path="/api/organisations/{id}/resources",
+     *   summary="Show all resources of an Organisation ",
+     *   operationId="show",
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="not found"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
 
     public function showResources(Request $request, $id)
     {
@@ -443,6 +494,12 @@ class OrganisationController extends Controller
         }
 
         $data = $request->all();
+        $data['contact_person'] = (object) [
+            '_id'=>$organisation->contact_person['_id'],
+            'name'=>$data['contact_person']['name'],
+            'email'=>$data['contact_person']['email'],
+            'phone'=>$data['contact_person']['phone']
+        ];
         if ($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }

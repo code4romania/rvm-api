@@ -288,6 +288,7 @@ class VolunteerController extends Controller
      *   summary="Update volunteer",
      *   operationId="update",
      *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="not valid"),     
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
@@ -301,13 +302,13 @@ class VolunteerController extends Controller
         if($volunteer->email != $data['email']) {
             $volunteer_same_email = Volunteer::query()->where('email', '=', $data['email'])->first();
             if(isset($volunteer_same_email)) {
-                return 'Email invalid';
+                return response()->json('Email invalid', 404);
             }
         }
         if($volunteer->ssn != $data['ssn']) {
             $volunteer_same_ssn = Volunteer::query()->where('ssn', '=', $data['ssn'])->first();
             if(isset($volunteer_same_ssn)) {
-                return 'CNP invalid';
+                return response()->json('CNP invalid', 404);
             }
         }
         if ($data['county'] && !is_null($data['county'])) {

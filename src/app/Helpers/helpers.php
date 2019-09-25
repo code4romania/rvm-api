@@ -17,9 +17,11 @@ use App\CourseName;
 
 
 /**
- * Pagination helper
+ * Function used for filtering
  *
- * @param string $data Items to paginate
+ * @param string $params string after filtering is made
+ * @param array $filterKeys key used to filter the query
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
  * @return array of $data 
  */
 function applyFilters($query, $params, $filterKeys = array()){
@@ -85,7 +87,13 @@ function applyFilters($query, $params, $filterKeys = array()){
     return $query;
 }
 
-
+/** 
+ * Function used to sort 
+ * @param string $params string after sorting is made
+ * @param array $sortKeys key used to sort the query
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applySort($query, $params, $sortKeys = array()){
     $sort = isset($params['sort']) ? $params['sort'] : null;
     $method = isset($params['method']) ? $params['method'] : 'asc';
@@ -97,7 +105,12 @@ function applySort($query, $params, $sortKeys = array()){
     return $query;
 }
 
-
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @param object $collection Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applyCollectionPaginate($collection, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -113,7 +126,12 @@ function applyCollectionPaginate($collection, $params){
     );
 }
 
-
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @param object $query Laravel object of type 'Eloquent ORM' representing the model to be searched
+ * @return array of $data 
+*/
 function applyPaginate($query, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -129,7 +147,11 @@ function applyPaginate($query, $params){
     );
 }
 
-
+/** 
+ * Function used to paginate
+ * @param string $params string after pagination is made
+ * @return array of $data 
+*/
 function emptyPager($params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
