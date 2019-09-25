@@ -19,7 +19,14 @@ use App\DBViews\StaticCountiesBySlugAndNameView;
 
 class VolunteerController extends Controller
 {
-        /**
+    /**
+     * Function responsible of processing get all volunteers requests.
+     * 
+     * @param object $request Contains all the data needed for extracting all the volunteers list.
+     * 
+     * @return object 200 and the list of volunteers if successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Volunteers"},
      *   path="/api/volunteers",
@@ -31,33 +38,27 @@ class VolunteerController extends Controller
      * )
      *
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $params = $request->query();
         $volunteers = Volunteer::query();
 
-        applyFilters($volunteers, $params, array(
-            '0' => array( 'county._id', 'ilike' ),
-            '1' => array( 'courses', 'elemmatch' , "course_name._id", '$eq'),
-            '2' => array( 'organisation._id', '='),
-            '3' => array ( 'name', 'ilike'),
-        ));
-
-        applySort($volunteers, $params, array(
-            '1' => 'name',
-            '2' => 'county',
-            '3' => 'organisation.name'
-        ));
-
+        /** Sort, filter and paginate the list of volunteers. */
+        applyFilters($volunteers, $params, ['0' => ['county._id', 'ilike'], '1' => ['courses', 'elemmatch', "course_name._id", '$eq'], '2' => ['organisation._id', '='], '3' => ['name', 'ilike'], ]);
+        applySort($volunteers, $params, array('1' => 'name', '2' => 'county', '3' => 'organisation.name'));
         $pager = applyPaginate($volunteers, $params);
 
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $volunteers->get()
-        ), 200); 
+        return response()->json(array("pager" => $pager,"data" => $volunteers->get()), 200);
     }
 
+
      /**
+     * Function responsible of processing get volunteer requests.
+     * 
+     * @param string $id $id The ID of the volunteer to be extracted.
+     * 
+     * @return object 200 and the volunteers details if successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Volunteers"},
      *   path="/api/volunteers/{id}",
@@ -69,13 +70,21 @@ class VolunteerController extends Controller
      * )
      *
      */
-
-    public function show($id)
-    {
+    public function show($id) {
         return Volunteer::find($id);
     }
 
+
     /**
+     * Function responsible of processing get volunteer requests.
+     * 
+     * @param string $id $id The ID of the volunteer to be extracted.
+     * 
+     * @return object 201 and the volunteers details if successful
+     *                400 if validation fails
+     *                404 if organization not found fails
+     *                500 if an error occurs
+     *  
      * @SWG\Post(
      *   tags={"Volunteers"},
      *   path="/api/volunteers",
@@ -179,14 +188,14 @@ class VolunteerController extends Controller
      *     required=false,
      *     type="string"
      *   ),
-     *   @SWG\Response(response=200, description="successful operation"),
-     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=201, description="successful operation"),
+     *   @SWG\Response(response=400, description="validation fails"),
+     *   @SWG\Response(response=404, description="organization not found"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $data = $request->all();
         $rules = [
             'organisation_id' => 'required',
@@ -195,93 +204,98 @@ class VolunteerController extends Controller
             'ssn' => new Cnp,
             'name' => 'required|string|max:255',
         ];
+
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
+
+        /** Validate SSN uniqueness. */
         $data = convertData($validator->validated(), $rules);
-        if(isset($validator->validated()['ssn']) && $validator->validated()['ssn']) {
+        if (isset($validator->validated()['ssn']) && $validator->validated()['ssn']) {
             $data['ssn'] = $validator->validated()['ssn'];
         } else {
             return response(['errors' => 'CNP'], 400);
         }
-        $courses =  $request->has('courses') ? $request->courses : '';
+
         $data['allocation'] = '';
         $data['comments'] = $request->has('comments') ? $request->comments : '';
         $data['job'] = $request->has('job') ? $request->job : '';
 
-        //Add Organisation
+        /** Add organisation to the volunteer. */
         $organisation_id = $request->organisation_id;
-        $organisation = \DB::connection('organisations')->collection('organisations')
-            ->where('_id', '=', $organisation_id)
-            ->get(['_id', 'name', 'website'])
-            ->first();
-
-        if(!$organisation){
+        $organisation = \DB::connection('organisations')->collection('organisations')->where('_id', '=', $organisation_id)->get(['_id', 'name', 'website'])->first();
+        if (!$organisation) {
             return response()->json('Organizatia nu exista', 404); 
         }
 
         $data['organisation'] = $organisation;
 
-        //Add City and County
+        /** Add city and county to the volunteer. */
         if ($request->has('county')) {
             $data['county'] = getCityOrCounty($request->county,County::query());
         }
-
         if ($request->has('city')) {            
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
 
-        //Added by
+        /** Add adden by to the the volunteer */
         $data['added_by'] = \Auth::check() ? \Auth::user()->_id : '';
         $data['courses'] = [];
+        /** Create the volunteer. */
         $volunteer = Volunteer::create($data);
-        if($courses && !is_null($courses) && !empty($courses)){
+
+        /** Extract all courses from request and process them. */
+        $courses =  $request->has('courses') ? $request->courses : '';
+        if ($courses && !is_null($courses) && !empty($courses)) {
             foreach ($courses as $course) {
-                if(isset($course['course_name_id']) && !is_null($course['course_name_id'])) {
+                if (isset($course['course_name_id']) && !is_null($course['course_name_id'])) {
                     $course_name = CourseName::find($course['course_name_id']);
-                    if($course_name){
+                    if ($course_name) {
+                        /** Create a new course. */
                         $newCourse = [
                             'course_name' => [
                                 '_id' => $course_name['_id'],
                                 'name' => $course_name['name'],
-                                'slug' => removeDiacritics($course_name['name'])
-                            ],
+                                'slug' => removeDiacritics($course_name['name'])],
                             'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s')
                         ];
 
+                        /** Check if the accreditor already exists in DB. */
                         $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
-                        
-                        if(!$courseAccreditor) {
-                            $courseAccreditor = CourseAccreditor::create([
-                                'name' => $course['accredited_by'],
-                                'courses' => [$course_name['_id']]
-                            ]);
+                        if (!$courseAccreditor) {
+                            $courseAccreditor = CourseAccreditor::create(['name' => $course['accredited_by'],'courses' => [$course_name['_id']]]);
                         } else {
-                            if(is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)){
+                            if (is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)) {
                                 $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
                                 $courseAccreditor->save();
                             }
                         }
-
-                        $newCourse['accredited'] = [
-                            '_id' => $courseAccreditor->_id,
-                            'name' => $courseAccreditor->name
-                        ];
-
+                        /** Save the accreditor and add the course to the volunteer. */
+                        $newCourse['accredited'] = ['_id' => $courseAccreditor->_id,'name' => $courseAccreditor->name];
                         $data['courses'][] = $newCourse;
                     }
                 }
             }
-
+            /** Add the courses. */
             $volunteer->courses = $data['courses'];
-            $volunteer->save();
         }
+        $volunteer->save();
 
         return response()->json($volunteer, 201); 
     }
 
+
     /**
+     * Function responsible of processing volunteer update requests.
+     * 
+     * @param object $request Contains all the data needed for updating a volunteer.
+     * @param string $id The ID of the volunteer to be updated.
+     * 
+     * @return object 201 and the JSON encoded volunteer details if successful
+     *                404 if email or CNP/SSN are invalid fails
+     *                500 if an error occurs
+     *  
      * @SWG\put(
      *   tags={"Volunteers"},
      *   path="/api/volunteers/{id}",
@@ -294,36 +308,39 @@ class VolunteerController extends Controller
      * )
      *
      */
-
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $volunteer = Volunteer::findOrFail($id);
         $data = $request->all();
+
+        /** Validate email uniqueness. */
         if($volunteer->email != $data['email']) {
             $volunteer_same_email = Volunteer::query()->where('email', '=', $data['email'])->first();
             if(isset($volunteer_same_email)) {
                 return response()->json('Email invalid', 404);
             }
         }
+        /** Validate CNP/SSN uniqueness. */
         if($volunteer->ssn != $data['ssn']) {
             $volunteer_same_ssn = Volunteer::query()->where('ssn', '=', $data['ssn'])->first();
             if(isset($volunteer_same_ssn)) {
                 return response()->json('CNP invalid', 404);
             }
         }
+        /** Extract 'county' and 'city'. */
         if ($data['county'] && !is_null($data['county'])) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }
         if ($data['city'] && !is_null($data['city'])) {            
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
+        /** Extract and set 'organisation_id'. */
         $organisation_id = $request['organisation_id'];
-        $organisation = \DB::connection('organisations')->collection('organisations')
-            ->where('_id', '=', $organisation_id)
-            ->get(['_id', 'name', 'website'])
-            ->first();
+        $organisation = \DB::connection('organisations')->collection('organisations')->where('_id', '=', $organisation_id)->get(['_id', 'name', 'website'])->first();
         $data['organisation'] = $organisation;
+        /** Extract and set 'added_by'. */
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
+
+        /** Extract all courses from request and process them. */
         $courses =  $request->has('courses') ? $request->courses : '';
         $data['courses'] = [];
         if($courses && !is_null($courses) && !empty($courses)){
@@ -331,6 +348,7 @@ class VolunteerController extends Controller
                 if(isset($course['course_name_id']) && !is_null($course['course_name_id'])) {
                     $course_name = CourseName::find($course['course_name_id']);
                     if($course_name){
+                        /** Create a new course. */
                         $newCourse = [
                             'course_name' => [
                                 '_id' => $course_name['_id'],
@@ -340,8 +358,8 @@ class VolunteerController extends Controller
                             'obtained' => Carbon::parse($course['obtained'])->format('Y-m-d H:i:s')
                         ];
 
+                        /** Check if the accreditor already exists in DB. */
                         $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
-                        
                         if(!$courseAccreditor) {
                             $courseAccreditor = CourseAccreditor::create([
                                 'name' => $course['accredited_by'],
@@ -354,15 +372,13 @@ class VolunteerController extends Controller
                             }
                         }
 
-                        $newCourse['accredited'] = [
-                            '_id' => $courseAccreditor->_id,
-                            'name' => $courseAccreditor->name
-                        ];
-
+                        /** Save the accreditor and add the course to the volunteer. */
+                        $newCourse['accredited'] = ['_id' => $courseAccreditor->_id,'name' => $courseAccreditor->name];
                         $data['courses'][] = $newCourse;
                     }
                 }
             }
+            /** Add the courses. */
             $volunteer->courses = $data['courses'];
         }
         $volunteer->update($data);
@@ -370,7 +386,16 @@ class VolunteerController extends Controller
         return $volunteer;
     }
 
+
     /**
+     * Function responsible of processing delete volunteers requests.
+     * 
+     * @param object $request Contains all the data needed for deleting a volunteer.
+     * @param string $id The ID of the volunteer to be deleted.
+     * 
+     * @return object 200 if deletion is successful
+     *                500 if an error occurs
+     *  
      * @SWG\Delete(
      *   tags={"Volunteers"},
      *   path="/api/volunteers/{id}",
@@ -382,9 +407,7 @@ class VolunteerController extends Controller
      * )
      *
      */
-
-    public function delete(Request $request, $id)
-    {
+    public function delete(Request $request, $id) {
         $volunteer = Volunteer::findOrFail($id);
         $volunteer->delete();
 
@@ -392,6 +415,7 @@ class VolunteerController extends Controller
 
         return response()->json($response, 200);
     }
+
 
     /**
      * @SWG\Post(
@@ -622,6 +646,7 @@ class VolunteerController extends Controller
             ));
         }
     }
+
 
     public function allocations(Request $request, $id) {
         $allocations = Allocation::query()->where('volunteer._id', '=', $id)->get();

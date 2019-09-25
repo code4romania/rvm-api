@@ -18,9 +18,9 @@ use App\Volunteer;
 class UserController extends Controller
 {
     /**
-     * Function responsible of extracting all users requests.
+     * Function responsible of processing get all users requests.
      * 
-     * @param object $request Contains all the data to be used for extracting the users list.
+     * @param object $request Contains all the data needed for extracting the users list.
      * 
      * @return object 200 and the list of users if successful
      *                500 if an error occurs
@@ -92,7 +92,7 @@ class UserController extends Controller
      * 
      * @param object $request Contains all the data needed for creating a new user.
      * 
-     * @return object 200 and the JSON encoded new user details if successful
+     * @return object 201 and the JSON encoded new user details if successful
      *                400 if validation fails
      *                500 if an error occurs
      *  
@@ -263,7 +263,6 @@ class UserController extends Controller
      * @param string $id The ID of the user to be deleted.
      * 
      * @return object 200 if deletion is successful
-     *                400 if validation fails
      *                500 if an error occurs
      *  
      * @SWG\Delete(
