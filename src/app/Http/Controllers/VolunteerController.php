@@ -42,7 +42,7 @@ class VolunteerController extends Controller
         $params = $request->query();
         $volunteers = Volunteer::query();
 
-        /** Sort, filter and paginate the list of volunteers. */
+        /** Filter, sort and paginate the list of volunteers. */
         applyFilters($volunteers, $params, ['0' => ['county._id', 'ilike'], '1' => ['courses', 'elemmatch', "course_name._id", '$eq'], '2' => ['organisation._id', '='], '3' => ['name', 'ilike'], ]);
         applySort($volunteers, $params, array('1' => 'name', '2' => 'county', '3' => 'organisation.name'));
         $pager = applyPaginate($volunteers, $params);
@@ -54,9 +54,9 @@ class VolunteerController extends Controller
      /**
      * Function responsible of processing get volunteer requests.
      * 
-     * @param string $id $id The ID of the volunteer to be extracted.
+     * @param string $id The ID of the volunteer to be extracted.
      * 
-     * @return object 200 and the volunteers details if successful
+     * @return object 200 and the volunteer details if successful
      *                500 if an error occurs
      *  
      * @SWG\Get(
@@ -76,11 +76,11 @@ class VolunteerController extends Controller
 
 
     /**
-     * Function responsible of processing get volunteer requests.
+     * Function responsible of processing put volunteer requests.
      * 
-     * @param string $id $id The ID of the volunteer to be extracted.
+     * @param object $request Contains all the data needed for saving a new volunteer.
      * 
-     * @return object 201 and the volunteers details if successful
+     * @return object 201 and the volunteer details if successful
      *                400 if validation fails
      *                404 if organization not found fails
      *                500 if an error occurs
@@ -222,7 +222,7 @@ class VolunteerController extends Controller
         $data['comments'] = $request->has('comments') ? $request->comments : '';
         $data['job'] = $request->has('job') ? $request->job : '';
 
-        /** Add organisation to the volunteer. */
+        /** Add 'organisation' to the volunteer. */
         $organisation_id = $request->organisation_id;
         $organisation = \DB::connection('organisations')->collection('organisations')->where('_id', '=', $organisation_id)->get(['_id', 'name', 'website'])->first();
         if (!$organisation) {
@@ -231,7 +231,7 @@ class VolunteerController extends Controller
 
         $data['organisation'] = $organisation;
 
-        /** Add city and county to the volunteer. */
+        /** Add 'city' and 'county' to the volunteer. */
         if ($request->has('county')) {
             $data['county'] = getCityOrCounty($request->county,County::query());
         }
@@ -239,7 +239,7 @@ class VolunteerController extends Controller
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
 
-        /** Add adden by to the the volunteer */
+        /** Add 'adden by' to the the volunteer */
         $data['added_by'] = \Auth::check() ? \Auth::user()->_id : '';
         $data['courses'] = [];
         /** Create the volunteer. */
@@ -264,7 +264,7 @@ class VolunteerController extends Controller
                         /** Check if the accreditor already exists in DB. */
                         $courseAccreditor = CourseAccreditor::query()->where('name', '=', $course['accredited_by'])->first();
                         if (!$courseAccreditor) {
-                            $courseAccreditor = CourseAccreditor::create(['name' => $course['accredited_by'],'courses' => [$course_name['_id']]]);
+                            $courseAccreditor = CourseAccreditor::create(['name' => $course['accredited_by'], 'courses' => [$course_name['_id']]]);
                         } else {
                             if (is_array($courseAccreditor->courses) && !in_array($course_name['_id'], $courseAccreditor->courses)) {
                                 $courseAccreditor->courses = array_merge( $courseAccreditor->courses, [$course_name['_id']]);
@@ -277,7 +277,7 @@ class VolunteerController extends Controller
                     }
                 }
             }
-            /** Add the courses. */
+            /** Add the 'courses' to the volunteer. */
             $volunteer->courses = $data['courses'];
         }
         $volunteer->save();

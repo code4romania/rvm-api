@@ -13,7 +13,14 @@ use App\County;
 
 class ResourceController extends Controller
 {
-        /**
+    /**
+     * Function responsible of processing get all resources requests.
+     * 
+     * @param object $request Contains all the data needed for extracting all the resources list.
+     * 
+     * @return object 200 and the list of resources if successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources",
@@ -25,8 +32,7 @@ class ResourceController extends Controller
      * )
      *
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $params = $request->query();
         $resources = Resource::query();
 
@@ -34,21 +40,10 @@ class ResourceController extends Controller
             $resources->where('organisation._id', '=', getAffiliationId());
         }
 
-        applyFilters($resources, $params, array(
-            '0' => array( 'categories', 'elemmatch', '_id', '$eq' ),
-            '1' => array( 'county._id', 'ilike' ),
-            '2' => array( 'name', 'ilike')
-        ));
-
-        applySort($resources, $params, array(
-            '1' => 'name',
-            '2' => 'resource_type',
-            '3' => 'quantity',
-            '4' => 'organisation',
-        ));
-
+        /** Filter, sort and paginate the list of volunteers. */
+        applyFilters($resources, $params, ['0' => ['categories', 'elemmatch', '_id', '$eq'],'1' => ['county._id', 'ilike'],'2' => ['name', 'ilike']]);
+        applySort($resources, $params, ['1' => 'name', '2' => 'resource_type', '3' => 'quantity', '4' => 'organisation',]);
         $resources = $resources->get()->groupBy('slug');
-
         $resources = applyCollectionPaginate($resources, $params);
 
         foreach($resources['data'] as $key => &$resource){
@@ -73,6 +68,14 @@ class ResourceController extends Controller
     }
 
      /**
+     * Function responsible of processing get resource requests.
+     * 
+     * @param string $id The ID of the resource to be extracted.
+     * 
+     * @return object 200 and the resource details if successful
+     *                404 if no resource is found
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources/{id}",
@@ -85,11 +88,9 @@ class ResourceController extends Controller
      * )
      *
      */
-
-    public function show(Request $request, $id)
-    {   
+    public function show($id) {
         $resource = Resource::find($id);
-       
+
         if(empty($resource)) {
             return response()->json(404);
         }
@@ -99,6 +100,14 @@ class ResourceController extends Controller
 
 
      /**
+     * Function responsible of processing get all resources with a slug requests.
+     * 
+     * @param object $request Contains all the data needed for extracting all the resources with a slug list.
+     * 
+     * @return object 200 and the list of resources if successful
+     *                404 if no resource is found
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources/by_slug/{slug}",
@@ -112,8 +121,7 @@ class ResourceController extends Controller
      *
      */
 
-    public function by_slug(Request $request, $slug)
-    {   
+    public function by_slug(Request $request, $slug) {
         $params =  $request->query();
         $resources = Resource::query()->where('slug', '=', $slug);
         applySort($resources, $params, array(
@@ -123,7 +131,7 @@ class ResourceController extends Controller
             '4' => 'county._id',
             '5' => 'updated_at'
         ));
-        $pager = applyPaginate($resources,$params);
+        $pager = applyPaginate($resources, $params);
 
         $resources = $resources->get();
 
@@ -131,13 +139,19 @@ class ResourceController extends Controller
             return response()->json(404);
         }
 
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $resources
-        ), 200);
+        return response()->json(array("pager" => $pager,"data" => $resources), 200);
     }
 
+
     /**
+     * Function responsible of processing put resources requests.
+     * 
+     * @param object $request Contains all the data needed for saving a resource.
+     * 
+     * @return object 200 and the resource details if successful
+     *                400 if validation fails
+     *                500 if an error occurs
+     *  
      * @SWG\Post(
      *   tags={"Resources"},
      *   path="/api/resources",
@@ -219,8 +233,7 @@ class ResourceController extends Controller
      * )
      *
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $data = $request->all();
         $rules = [
             'organisation_id' => 'required',
@@ -235,28 +248,20 @@ class ResourceController extends Controller
             return response(['errors' => $validator->errors()->all()], 400);
         }
         $data = convertData($validator->validated(), $rules);
-        
-        if($request->has('categories'))
-        {
+
+        if($request->has('categories')) {
             $data['categories'] = array();
             foreach ($request->categories as $key =>$val) {
-                $resCat = ResourceCategory::query()
-                    ->where('_id', '=', $val)
-                    ->get(['_id', 'name', 'slug'])
-                    ->first();
+                $resCat = ResourceCategory::query()->where('_id', '=', $val)->get(['_id', 'name', 'slug'])->first();
 
-                $data['categories'][$key] = array(
-                    '_id' => $resCat['_id'],
-                    'name' => $resCat['name'],
-                    'slug' => $resCat['slug']
-                );
+                $data['categories'][$key] = array('_id' => $resCat['_id'], 'name' => $resCat['name'], 'slug' => $resCat['slug']);
             }
-        } 
+        }
 
         $request->has('comments') ? $data['comments'] = $request->comments : '';
         $request->has('address') ? $data['address'] = $request->address : '';
 
-        //Add City and County
+        /** Add the 'county' and 'city' to the resource. */
         if ($request->has('county')) {
             $data['county'] = getCityOrCounty($request->county,County::query());
         }
@@ -264,22 +269,32 @@ class ResourceController extends Controller
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
 
-        //Add Organisation
+        /** Add the 'organisation' to the resource. */
         $organisation_id = $request->organisation_id;
         $organisation = \DB::connection('organisations')->collection('organisations')
-            ->where('_id', '=', $organisation_id)
-            ->get(['_id', 'name', 'slug', 'website'])
-            ->first();
+                                                        ->where('_id', '=', $organisation_id)
+                                                        ->get(['_id', 'name', 'slug', 'website'])
+                                                        ->first();
         $data['organisation'] = $organisation;
 
-        //Added by
+        /** Add the 'added by' to the resource. */
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
 
         $resource = Resource::create($data);
         return response()->json($resource, 200); 
     }
 
+
     /**
+     * Function responsible of processing resource update requests.
+     * 
+     * @param object $request Contains all the data needed for updating a resource.
+     * @param string $id The ID of the resource to be updated.
+     * 
+     * @return object 200 and the JSON encoded resource details if successful
+     *                404 if email or CNP/SSN are invalid fails
+     *                500 if an error occurs
+     *  
      * @SWG\put(
      *   tags={"Resources"},
      *   path="/api/resources/{id}",
@@ -291,46 +306,45 @@ class ResourceController extends Controller
      * )
      *
      */
-
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $resource = Resource::findOrFail($id);
         $data = $request->all();
         if(isset($data['organisation_id']) && $data['organisation_id']) {
             $organisation_id = $data['organisation_id'];
-            $organisation = Organisation::query()
-                ->where('_id', '=', $organisation_id)
-                ->get(['_id', 'name', 'website', 'address'])
-                ->first();
+            $organisation = Organisation::query()->where('_id', '=', $organisation_id)->get(['_id', 'name', 'website', 'address'])->first();
 
             $data['organisation'] = $organisation;
         }
+
         if(isset($data['categories']) && $data['categories']) {
             foreach ($data['categories'] as $key =>$val) {
-                $resCat = ResourceCategory::query()
-                    ->where('_id', '=', $val)
-                    ->get(['_id', 'name', 'slug'])
-                    ->first();
-    
-                $data['categories'][$key] = array(
-                    '_id' => $resCat->_id,
-                    'name' => $resCat->name,
-                    'slug' => $resCat->slug
-                );
+                $resCat = ResourceCategory::query()->where('_id', '=', $val)->get(['_id', 'name', 'slug'])->first();
+
+                $data['categories'][$key] = array('_id' => $resCat->_id, 'name' => $resCat->name, 'slug' => $resCat->slug);
             }
         }
+
+        /** Add the 'county' and 'city' to the resource. */
         if($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }
-        if($data['city']) {            
+        if($data['city']) {
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
+
         $resource->update($data);
- 
-        return response()->json($resource, 200); 
+        return response()->json($resource, 200);
     }
 
+
     /**
+     * Function responsible of processing delete resource requests.
+     * 
+     * @param string $id The ID of the resource to be deleted.
+     * 
+     * @return object 200 if deletion is successful
+     *                500 if an error occurs
+     *  
      * @SWG\Delete(
      *   tags={"Resources"},
      *   path="/api/resources/{id}",
@@ -342,9 +356,7 @@ class ResourceController extends Controller
      * )
      *
      */
-
-    public function delete(Request $request, $id)
-    {
+    public function delete($id) {
         $resource = Resource::findOrFail($id);
         $resource->delete();
 
@@ -366,9 +378,7 @@ class ResourceController extends Controller
      * )
      *
      */
-    
-    public function list(Request $request)
-    {
+    public function list(Request $request) {
         $items = [];
         $resOrgsIds = [];
 
@@ -394,6 +404,13 @@ class ResourceController extends Controller
     }
 
     /**
+     * Function responsible of processing get all resource categories requests.
+     * 
+     * @param object $request Contains all the data needed for geting all resource categories.
+     * 
+     * @return object 200 if extraction is successful
+     *                500 if an error occurs
+     *  
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources/categories",
@@ -405,21 +422,24 @@ class ResourceController extends Controller
      * )
      *
      */
-
-    public function getAllResourceCategories(Request $request)
-    {
+    public function getAllResourceCategories(Request $request) {
         $params = $request->query();
         $resources = ResourceCategory::query();
 
-        applyFilters($resources, $params, array(
-            '1' => array( 'slug', 'ilike' ),
-            '2' => array( 'parent_id', '=' )
-        ));
+        applyFilters($resources, $params, array('1' => array( 'slug', 'ilike' ),'2' => array( 'parent_id', '=' )));
 
         return response()->json($resources->get(['_id', 'parent_id', 'name', 'slug']), 200); 
     }
 
+
     /**
+     * Function responsible of processing import resources requests.
+     * 
+     * @param object $request Contains all the data needed for importing a list of resources.
+     * 
+     * @return object 200 if import is successful
+     *                500 if an error occurs
+     *  
      * @SWG\Post(
      *   tags={"Resources"},
      *   path="/api/resources/import",
@@ -445,7 +465,6 @@ class ResourceController extends Controller
      * )
      *
      */
-
     public function importResources(Request $request) {
         $file = $request->file('file');
         $filename = $file->getClientOriginalName();
