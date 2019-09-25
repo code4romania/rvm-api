@@ -264,7 +264,7 @@ function isRole($role, $user = null) {
 }
 
 
-// Returns Institution id Organization id of the admin
+// Returns Institution id or Organization id of the authentificated user.
 function getAffiliationId() {
     $user = \Auth::user();
     if(isRole('institution')) {
@@ -325,12 +325,19 @@ function getFiltersByIdAndName($name, $model) {
     return $model->get(['_id', 'name']);
 }
 
-
-function getCityOrCounty($params,$model) {
+/**
+ * Function that extracts a list of <ID, NAME, SLUG> pairs by searching
+ *  for entries with similar '_id' on the specified 'model'.
+ * 
+ * @param string $params The _id of City or County, used in the where query.
+ * @param object $model Laravel object of type 'Eloquent ORM' representing the model to be searched
+ */
+function getCityOrCounty($params, $model) {
     $city_or_county = $model->get(['_id', 'name', 'slug'])
                 ->where('_id', '=', $params)->first();    
     if($city_or_county) {
-        $place = array('_id' => $city_or_county->_id,
+        $place = array(
+            '_id' => $city_or_county->_id,
             'name' => $city_or_county->name,
             'slug' => $city_or_county->slug
         );

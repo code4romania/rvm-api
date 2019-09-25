@@ -298,6 +298,12 @@ class VolunteerController extends Controller
     {
         $volunteer = Volunteer::findOrFail($id);
         $data = $request->all();
+        if($volunteer->email != $data['email']) {
+            $volunteer_same_email = Volunteer::query()->where('email', '=', $data['email'])->first();
+            if(isset($volunteer_same_email)) {
+                return 'Email invalid';
+            }
+        }
         if($volunteer->ssn != $data['ssn']) {
             $volunteer_same_ssn = Volunteer::query()->where('ssn', '=', $data['ssn'])->first();
             if(isset($volunteer_same_ssn)) {
