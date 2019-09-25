@@ -300,7 +300,14 @@ function setAffiliate($data) {
 }
 
 
-function getFiltersByIdAndName($name ,$model) {
+/**
+ * Function that extracts a list of <ID, NAME> pairs by searching
+ *  for entries with similar 'names' on the specified 'model'.
+ * 
+ * @param string $name The name to be used in the like query
+ * @param object $model Laravel object of type 'Eloquent ORM' representing the model to be searched
+ */
+function getFiltersByIdAndName($name, $model) {
     if(isset($name) && $name) {
         $model->where('name', 'ilike', '%'.$name.'%');
     }

@@ -19,6 +19,14 @@ use Illuminate\Support\Facades\Auth;
 class FilterController extends Controller
 {
     /**
+     * Function responsible of extracting a list of organizations <ID, NAME> pairs
+     *  based on the received name.
+     *
+     * @param object $request Contains the name to be used for extracting the <ID, NAME> pairs list.
+     *
+     * @return object 200 and the found list of <ID, NAME> pairs (JSON encoded) if no error occurs
+     *                500 if an error occurs
+     *
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/organisations",
@@ -30,12 +38,19 @@ class FilterController extends Controller
      * )
      *
      */
-    public function filterOrganisationsName(Request $request)
-    {
+    public function filterOrganisationsName(Request $request) {
         return response()->json(getFiltersByIdAndName($request->name, Organisation::query()), 200);
     }
 
+
     /**
+     * Function responsible of extracting a list of volunteer courses based on the received name.
+     *
+     * @param object $request Contains the name to be used for extracting the list.
+     *
+     * @return object 200 and the found list (JSON encoded) if no error occurs
+     *                500 if an error occurs
+     *
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/volunteers/courses",
@@ -47,16 +62,24 @@ class FilterController extends Controller
      * )
      *
      */
-    public function filterVolunteerCourses(Request $request) 
-    {
+    public function filterVolunteerCourses(Request $request) {
         $model = CourseName::query();
         if(isset($request->name) && $request->name) {
-            $model->where('name', 'ilike', '%'.$request->name.'%');
+            $model->where('name', 'ilike', '%' . $request->name . '%');
         }
         return response()->json($model->get(), 200);
     }
 
+
     /**
+     * Function responsible of extracting a list of institutions <ID, NAME> pairs
+     *  based on the received name.
+     *
+     * @param object $request Contains the name to be used for extracting the <ID, NAME> pairs list.
+     *
+     * @return object 200 and the found list of <ID, NAME> pairs (JSON encoded) if no error occurs
+     *                500 if an error occurs
+     *
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/users/institutions",
@@ -68,12 +91,20 @@ class FilterController extends Controller
      * )
      *
      */
-    public function filterInstitutionUsers(Request $request) 
-    {
+    public function filterInstitutionUsers(Request $request) {
         return response()->json(getFiltersByIdAndName($request->name, Institution::query()), 200);
     }
-    
+
+
     /**
+     * Function responsible of extracting a list of course accreditors <ID, NAME> pairs
+     *  based on the received name.
+     *
+     * @param object $request Contains the name to be used for extracting the <ID, NAME> pairs list.
+     *
+     * @return object 200 and the found list of <ID, NAME> pairs (JSON encoded) if no error occurs
+     *                500 if an error occurs
+     *
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/accreditedby",
@@ -85,12 +116,18 @@ class FilterController extends Controller
      * )
      *
      */
-    public function filterAccreditedBy(Request $request)
-    {
+    public function filterAccreditedBy(Request $request) {
         return response()->json(getFiltersByIdAndName($request->name, CourseAccreditor::query()), 200);
     }
 
+
      /**
+     * Function responsible of extracting a list of all the conties with the total number
+     *  of volunteers and resources for each county individually.
+     *
+     * @return object 200 and the list of counties with the total number of volunteers and resources individually if no error occurs
+     *                500 if an error occurs
+     *
      * @SWG\Get(
      *   tags={"Filters"},
      *   path="/filter/map",
@@ -102,15 +139,12 @@ class FilterController extends Controller
      * )
      *
      */
-    public function filterMap(Request $request)
-    {
-        $countys = County::query()->get();
-        foreach ($countys as $county) {
-            $nr_resources = Resource::query()->get()->where('county._id', '=', $county->_id)->count();
-            $nr_voluntari = Volunteer::query()->get()->where('county._id', '=', $county->_id)->count();
-            $county->nrResurse = $nr_resources;
-            $county->nrVoluntari = $nr_voluntari;
+    public function filterMap() {
+        $counties = County::query()->get();
+        foreach ($counties as $county) {
+            $county->nrResurse = Resource::query()->get()->where('county._id', '=', $county->_id)->count();
+            $county->nrVoluntari = Volunteer::query()->get()->where('county._id', '=', $county->_id)->count();
         }
-        return $countys;
+        return $counties;
     }
 }
