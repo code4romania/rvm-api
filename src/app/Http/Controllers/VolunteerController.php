@@ -547,7 +547,7 @@ class VolunteerController extends Controller
                 $citySlug = removeDiacritics($setUpData[5]);
                 if(isset($county_map[$countySlug]) && $county_map[$countySlug]) {
                     $getCity = \DB::connection('statics')->getCouchDBClient()
-                        ->createViewQuery('cities', 'name')
+                        ->createViewQuery('cities', 'slug')
                         ->setKey(array($county_map[$countySlug]['_id'],$citySlug))
                         ->execute();
 
