@@ -518,15 +518,17 @@ class ResourceController extends Controller
                     if($category) {
                         $categories[] = $category->toArray();
                     
-                        $subcategory = ResourceCategory::query()
-                            ->where('slug', '=', removeDiacritics($setUpData[3]))
-                            ->where('parent_id', '=', $category['_id'])
-                            ->first(['_id', 'name', 'slug']);
-    
-                        if($subcategory) {
-                            $categories[] = $subcategory->toArray();
-                        }else{
-                            $error = addError($error, $setUpData[3], 'Subcategoria nu exista');
+                        if(isset($setUpData[3]) && $setUpData[3]) {
+                            $subcategory = ResourceCategory::query()
+                                ->where('slug', '=', removeDiacritics($setUpData[3]))
+                                ->where('parent_id', '=', $category['_id'])
+                                ->first(['_id', 'name', 'slug']);
+        
+                            if($subcategory) {
+                                $categories[] = $subcategory->toArray();
+                            }else{
+                                $error = addError($error, $setUpData[3], 'Subcategoria nu exista');
+                            }
                         }
                     }else{
                         $error = addError($error, $setUpData[2], 'Categoria nu exista');
