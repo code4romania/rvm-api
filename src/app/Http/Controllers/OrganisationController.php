@@ -400,6 +400,7 @@ class OrganisationController extends Controller
      */
     public function store(Request $request)
     {
+        /** Verify the datas */
         $data = $request->all();
         $rules = [
             'name' => 'required|string|max:255',
@@ -410,23 +411,25 @@ class OrganisationController extends Controller
             'cover' => 'required'
         ];
         $validator = Validator::make($data, $rules);
-
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 400);
         }
-
         $data = convertData($validator->validated(), $rules);
         $data['status'] = 'Active';
 
+        /** Set up the county and city */
         if ($request->has('county')) {
             $data['county'] = getCityOrCounty($request->county,County::query());
         }
         if ($request->has('city')) {            
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
-        
+
+        /** Set up the optional data */        
         $data['comments'] = $request->has('comments') ? $request->comments : '';
         $data['address'] = $request->has('address') ? $request->address : '';
+
+        /** Creating password and sending mail to SetUpPassword */
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
         $passwordReset = PasswordReset::updateOrCreate(
             ['email' => $data['email']],
@@ -441,6 +444,8 @@ class OrganisationController extends Controller
         );
         $data['password'] = Hash::make(str_random(16));
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
+
+        /** Creating Organisation */
         $organisation = Organisation::create($data);
         if(!isRole('dsu')){
             if(isset($data['organisation'])){
@@ -448,6 +453,8 @@ class OrganisationController extends Controller
             }
         }
         $data = setAffiliate($data);
+
+        /** Creating organisation admin */
         $newNgoAdmin = User::firstOrNew([
             'email' => $data['email'],
         ]);
@@ -459,6 +466,7 @@ class OrganisationController extends Controller
         $newNgoAdmin->password = Hash::make(str_random(16));
         $newNgoAdmin->save();
         
+        /** Set up the contact person */
         $organisation->contact_person = (object) [
             '_id'=>$newNgoAdmin['_id'],
             'name'=>$newNgoAdmin['name'],
@@ -466,6 +474,7 @@ class OrganisationController extends Controller
             'phone'=>$newNgoAdmin['phone']
         ];
         $organisation->save();
+
         $response = array(
             "message" => 'Password sent to email.',
             "organisation" => $organisation
@@ -490,15 +499,14 @@ class OrganisationController extends Controller
      * )
      *
      */
-
     public function update(Request $request, $id)
     {
         $organisation = Organisation::findOrFail($id);
-
         if(!$organisation){
             return response()->json('Nu exista', 404);
         }
 
+        /** Check role */
         if(isRole('ngo')){
             if($organisation->_id != getAffiliationId()){
                 isDenied();
@@ -506,6 +514,8 @@ class OrganisationController extends Controller
         }
 
         $data = $request->all();
+        
+        /** Set up the new datas */
         $data['contact_person'] = (object) [
             '_id'=>$organisation->contact_person['_id'],
             'name'=>$data['contact_person'],
@@ -525,8 +535,7 @@ class OrganisationController extends Controller
 
     /**
      * @param string $id used to search the organisation
-     * @param object $request used to get obj
-     * @return object 200 and if delete is successfull
+     * @return object 200 if delete is successfull
      *                404 if the organisation is denied
      *                500 if an error occurs
      * 
@@ -541,24 +550,25 @@ class OrganisationController extends Controller
      * )
      *
      */
-
-    public function delete(Request $request, $id)
+    public function delete($id)
     {
         $organisation = Organisation::findOrFail($id);
         if(!$organisation){
             return response()->json('Nu exista', 404);
         }
 
+        /** Check role */
         if(isRole('ngo')){
             if($organisation->_id != getAffiliationId()){
                 isDenied();
             }
         }
-
+        /** Check role */
         if(isRole('ngo') && isRole('ngo', $organisation)){
             isDenied();
         }
 
+        /** Cascade */
         $volunteers = Volunteer::query()->where('organisation._id', '=', $organisation->_id)->get();
         if($volunteers) {
             foreach ($volunteers as $volunteer) {
@@ -580,12 +590,16 @@ class OrganisationController extends Controller
         $organisation->delete();
 
         $response = array("message" => 'Organisation deleted.');
-
         return response()->json($response, 200);
     }
 
 
     /**
+     * @param string $id get the organisation
+     * @return object 200 if is successfull
+     *                404 if the organisation is denied
+     *                500 if an error occurs
+     * 
      * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}/validate",
@@ -597,13 +611,14 @@ class OrganisationController extends Controller
      * )
      *
      */
-    public function validateData(Request $request, $id)
+    public function validateData($id)
     {
         $organisation = Organisation::findOrFail($id);
         if(!$organisation){
             return response()->json('Nu exista', 404);
         }
 
+        /** Check role */
         if(isRole('ngo')){
             if($organisation->_id != getAffiliationId()){
                 isDenied();

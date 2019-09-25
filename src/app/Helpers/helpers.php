@@ -164,7 +164,12 @@ function emptyPager($params){
     );
 }
 
-
+/** 
+ * Function used to paginate
+ * @param array $data get data and validate them
+ *              $validator validate rules
+ * @return array of $data 
+*/
 function convertData($data, $validator){
     $newData = array();
     foreach($data as $key => $val){
@@ -183,14 +188,6 @@ function convertData($data, $validator){
 
     return $newData;
 }
-
-
-function countByOrgId($org_ids, $model) {
-    foreach($org_ids as $id) {
-        $test = $model::where('organisation._id', '=', $id)->count();
-    }
-}
-
 
 /**
  * Function that removes any diacritics of other special letters
@@ -246,7 +243,12 @@ function removeDiacritics($data) {
     return $data;
 }
 
-
+/**
+ * Allow the access of authentificated user.
+ * 
+ * @param array $resource checked if has acces.
+ * @return bool
+ */
 function allowResourceAccess($resource) {
     $r = is_array($resource) ? $resource : $resource->toArray();
 
