@@ -23,7 +23,7 @@ use Carbon\Carbon;
 
 class OrganisationController extends Controller
 {
-        /**
+    /**
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations",
@@ -115,6 +115,7 @@ class OrganisationController extends Controller
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error") 
      * )
      *
      */
@@ -135,13 +136,14 @@ class OrganisationController extends Controller
     }
 
     /**
-    * @SWG\Get(
+    * @SWG\Post(
     *   tags={"Organisations"},
     *   path="/api/organisations/{id}/email",
     *   summary="Send notification via email to a organisation admin",
     *   operationId="send",
     *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found")
+    *   @SWG\Response(response=404, description="not found"),
+    *   @SWG\Response(response=500, description="internal server error")
     * )
     *
     */
@@ -168,7 +170,8 @@ class OrganisationController extends Controller
     *   summary="Show all volunteers of an Organisation ",
     *   operationId="show",
     *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found")
+    *   @SWG\Response(response=404, description="not found"),
+    *   @SWG\Response(response=500, description="internal server error")
     * )
     *
     */
@@ -214,7 +217,8 @@ class OrganisationController extends Controller
     *   summary="Show all resources of an Organisation ",
     *   operationId="show",
     *   @SWG\Response(response=200, description="successful operation"),
-    *   @SWG\Response(response=404, description="not found")
+    *   @SWG\Response(response=404, description="not found"),
+    *   @SWG\Response(response=500, description="internal server error")
     * )
     *
     */
@@ -292,6 +296,13 @@ class OrganisationController extends Controller
      *     name="phone",
      *     in="query",
      *     description="Organisation phone.",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="cover",
+     *     in="query",
+     *     description="Organisation cover.",
      *     required=true,
      *     type="string"
      *   ),
@@ -500,7 +511,7 @@ class OrganisationController extends Controller
 
 
     /**
-     * @SWG\Get(
+     * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}/validate",
      *   summary="Validate organisation data",
