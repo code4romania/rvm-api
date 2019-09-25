@@ -29,8 +29,6 @@ class StaticController extends Controller
 
         $client = \DB::connection('statics')->getCouchDBClient();
 
-        $client->createDesignDocument('cities', new StaticCitiesBySlugAndNameView());
-
         $query = $client->createViewQuery('cities', 'slug');
 
         $startKey = null;
@@ -53,33 +51,12 @@ class StaticController extends Controller
         $query->setEndKey($endKey);
         $docs = $query->execute();
 
-        //TEMPORARY
         return response()->json(array_map(function($doc){
             return array(
                 "_id" => $doc['id'],
                 "name" =>  $doc['value']
             );
         }, $docs->toArray()));
-       
-
-        /*
-        ** OLD QUERY
-
-        $cities = applyFilters($cities, $params, array(
-            '1' => array( 'county_id', '=' ),
-            '2' => array( 'slug', 'ilike' )
-        ));
-
-        $cities = applySort($cities, $params, array(
-            '1' => 'name'
-        ));
-
-        $pager = applyPaginate($cities, $params);
-
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $cities->get(['name','_id'])
-        ), 200); */
     }
 
     /**
@@ -100,8 +77,6 @@ class StaticController extends Controller
         $counties = County::query();
 
         $client = \DB::connection('statics')->getCouchDBClient();
-
-        $client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
 
         $query = $client->createViewQuery('counties', 'slug');
 
@@ -125,31 +100,13 @@ class StaticController extends Controller
         $query->setEndKey($endKey);
         $docs = $query->execute();
 
-        //TEMPORARY
         return response()->json(array_map(function($doc){
             return array(
                 "_id" => $doc['id'],
                 "name" =>  $doc['value']
             );
         }, $docs->toArray()));
-       
-        /*
-        ** OLD QUERY
-        applyFilters($counties, $params, array(
-            '1' => array( 'slug', 'ilike' ),
-            '2' => array( 'country_id', '=' ),
-        ));
-
-        applySort($counties, $params, array(
-            '1' => 'name',
-        ));
-
-        $pager = applyPaginate($counties, $params);
-
-        return response()->json(array(
-            "pager" => $pager,
-            "data" => $counties->get()
-        ), 200); */
+    
     }
 
 }

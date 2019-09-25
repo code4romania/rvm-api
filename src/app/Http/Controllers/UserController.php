@@ -132,7 +132,7 @@ class UserController extends Controller
      *     required=false,
      *     type="string"
      *   ),
-     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=201, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
@@ -217,7 +217,7 @@ class UserController extends Controller
      *   path="/api/users/{id}",
      *   summary="Update user",
      *   operationId="update",
-     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=201, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )

@@ -97,8 +97,8 @@
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
-                        "description": "not acceptable"
+                    "422": {
+                        "description": "user or password missmatch"
                     },
                     "500": {
                         "description": "internal server error"
@@ -198,130 +198,6 @@
                         "type": "string"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            }
-        },
-        "/api/courses": {
-            "get": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Return all courses",
-                "operationId": "index",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Create course",
-                "operationId": "store",
-                "parameters": [
-                    {
-                        "name": "volunteer_id",
-                        "in": "query",
-                        "description": "Course volunteer id.",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "description": "Course name.",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ssn",
-                        "in": "query",
-                        "description": "Course accredited.",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "email",
-                        "in": "query",
-                        "description": "Course obatained.",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            }
-        },
-        "/api/courses/{id}": {
-            "get": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Show course info ",
-                "operationId": "show",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Update course",
-                "operationId": "update",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Delete course",
-                "operationId": "delete",
                 "responses": {
                     "200": {
                         "description": "successful operation"
@@ -497,6 +373,13 @@
                         "type": "string"
                     },
                     {
+                        "name": "cover",
+                        "in": "query",
+                        "description": "Organisation cover.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
                         "name": "county",
                         "in": "query",
                         "description": "Organisation county.",
@@ -551,6 +434,9 @@
                     },
                     "404": {
                         "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             },
@@ -592,7 +478,7 @@
             }
         },
         "/api/organisations/{id}/email": {
-            "get": {
+            "post": {
                 "tags": [
                     "Organisations"
                 ],
@@ -604,6 +490,9 @@
                     },
                     "404": {
                         "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             }
@@ -621,6 +510,9 @@
                     },
                     "404": {
                         "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             }
@@ -638,6 +530,29 @@
                     },
                     "404": {
                         "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/organisations/{id}/validate": {
+            "post": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Validate organisation data",
+                "operationId": "validate",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             }
@@ -685,9 +600,16 @@
                     {
                         "name": "resource_type",
                         "in": "query",
-                        "description": "Resource resource_type.",
+                        "description": "Resource type.",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "categories",
+                        "in": "query",
+                        "description": "Resource categories and subcategories.",
+                        "required": true,
+                        "type": "array"
                     },
                     {
                         "name": "quantity",
@@ -756,6 +678,9 @@
                     "200": {
                         "description": "successful operation"
                     },
+                    "404": {
+                        "description": "empty resource"
+                    },
                     "406": {
                         "description": "not acceptable"
                     },
@@ -812,6 +737,9 @@
                     "200": {
                         "description": "successful operation"
                     },
+                    "404": {
+                        "description": "empty resource"
+                    },
                     "406": {
                         "description": "not acceptable"
                     },
@@ -827,7 +755,7 @@
                     "Resources"
                 ],
                 "summary": "List resources",
-                "operationId": "delete",
+                "operationId": "list",
                 "responses": {
                     "200": {
                         "description": "successful operation"
@@ -847,7 +775,43 @@
                     "Resources"
                 ],
                 "summary": "List resource categories",
-                "operationId": "delete",
+                "operationId": "category",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/resources/import": {
+            "post": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Import CSV with resources",
+                "operationId": "import",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "description": "CSV file.",
+                        "required": true,
+                        "type": "File"
+                    },
+                    {
+                        "name": "Coloanele din CSV",
+                        "in": "query",
+                        "description": "nume,tip,categorie,subcategorie,cantitate,judet,localitate,adresa,comentarii",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "successful operation"
@@ -971,7 +935,7 @@
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "successful operation"
                     },
                     "406": {
@@ -1009,7 +973,7 @@
                 "summary": "Update user",
                 "operationId": "update",
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "successful operation"
                     },
                     "406": {

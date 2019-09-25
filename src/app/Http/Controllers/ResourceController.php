@@ -79,6 +79,7 @@ class ResourceController extends Controller
      *   summary="Show resource info ",
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="empty resource"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
@@ -104,6 +105,7 @@ class ResourceController extends Controller
      *   summary="Show resource info grouped by slug ",
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=404, description="empty resource"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
      * )
@@ -148,7 +150,7 @@ class ResourceController extends Controller
      *     required=true,
      *     type="string"
      *   ),
-     *   @SWG\Parameter(
+     *  @SWG\Parameter(
      *     name="name",
      *     in="query",
      *     description="Resource name.",
@@ -158,9 +160,16 @@ class ResourceController extends Controller
      *  @SWG\Parameter(
      *     name="resource_type",
      *     in="query",
-     *     description="Resource resource_type.",
+     *     description="Resource type.",
      *     required=true,
      *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="categories",
+     *     in="query",
+     *     description="Resource categories and subcategories.",
+     *     required=true,
+     *     type="array"
      *   ),
      *   @SWG\Parameter(
      *     name="quantity",
@@ -267,7 +276,7 @@ class ResourceController extends Controller
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
 
         $resource = Resource::create($data);
-        return response()->json($resource, 201); 
+        return response()->json($resource, 200); 
     }
 
     /**
@@ -350,7 +359,7 @@ class ResourceController extends Controller
      *   tags={"Resources"},
      *   path="/api/resources/list",
      *   summary="List resources",
-     *   operationId="delete",
+     *   operationId="list",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -380,16 +389,16 @@ class ResourceController extends Controller
                 }
             }
         }
-       // $items = rvmPaginate($items);
 
         return response()->json($items, 200);
     }
+
     /**
      * @SWG\Get(
      *   tags={"Resources"},
      *   path="/api/resources/categories",
      *   summary="List resource categories",
-     *   operationId="delete",
+     *   operationId="category",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=406, description="not acceptable"),
      *   @SWG\Response(response=500, description="internal server error")
@@ -410,16 +419,32 @@ class ResourceController extends Controller
         return response()->json($resources->get(['_id', 'parent_id', 'name', 'slug']), 200); 
     }
 
-    public function getResourceCategory($id) {
-        $resourceCat = ResourceCategory::find($id);
-
-        if(empty($resourceCat)) {
-            return response()->json(404);
-        }
-
-        return response()->json($resourceCat, 200);
-
-    }
+    /**
+     * @SWG\Post(
+     *   tags={"Resources"},
+     *   path="/api/resources/import",
+     *   summary="Import CSV with resources",
+     *   operationId="import",
+     *   @SWG\Parameter(
+     *     name="file",
+     *     in="query",
+     *     description="CSV file.",
+     *     required=true,
+     *     type="File"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="Coloanele din CSV",
+     *     in="query",
+     *     description="nume,tip,categorie,subcategorie,cantitate,judet,localitate,adresa,comentarii",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
 
     public function importResources(Request $request) {
         $file = $request->file('file');
