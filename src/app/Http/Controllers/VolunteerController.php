@@ -298,6 +298,12 @@ class VolunteerController extends Controller
     {
         $volunteer = Volunteer::findOrFail($id);
         $data = $request->all();
+        if($volunteer->ssn != $data['ssn']) {
+            $volunteer_same_ssn = Volunteer::query()->where('ssn', '=', $data['ssn'])->first();
+            if(isset($volunteer_same_ssn)) {
+                return 'CNP invalid';
+            }
+        }
         if ($data['county'] && !is_null($data['county'])) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
         }

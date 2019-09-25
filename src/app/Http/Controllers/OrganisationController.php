@@ -156,7 +156,7 @@ class OrganisationController extends Controller
                 isDenied();
             }
         }
-        $data = ['url' => env('FRONT_END_URL').'/auth'];
+        $data = ['url' => env('FRONT_END_URL').'/organisations/id/'.$organisation->_id.'/validate'];
         Mail::to($organisation['email'])->send(new NotifyTheOrganisation($data));
         return response()->json('Email sent succesfully', 200); 
     }

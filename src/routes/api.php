@@ -58,12 +58,6 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::delete('resources/{id}', 'ResourceController@delete');
             Route::post('resources/import', 'ResourceController@importResources');
 
-            Route::get('courses', 'CourseController@index');
-            Route::get('courses/{id}', 'CourseController@show');
-            Route::post('courses', 'CourseController@store');
-            Route::put('courses/{id}', 'CourseController@update');
-            Route::delete('courses/{id}', 'CourseController@delete');
-
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
