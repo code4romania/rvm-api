@@ -242,14 +242,22 @@ function allowResourceAccess($resource) {
 }
 
 
+/**
+ * Function that checks if a user has a specific role.
+ * 
+ * @param string $role The role to check if the user has.
+ * @param object $user The user for which to check if it has the specified role.
+ * 
+ * @return bool
+ */
 function isRole($role, $user = null) {
+    /** Check if a user has been specified. */
     $user = $user ? $user : \Auth::user();
+    /** Extract the role ID. */
+    $roleId = config('roles.role')[$role];
 
-    $roleIds = config('roles.role');
-    $roleId = $roleIds[$role];
-
-    if($roleId === $user->role && $role=='institution' && (!isset($user->institution) || !$user->institution || !isset($user->institution['_id']))) return false;
-    if($roleId === $user->role && $role=='ngo' && (!isset($user->organisation) || !$user->organisation || !isset($user->organisation['_id']))) return false;
+    if($roleId === $user->role && $role == 'institution' && (!isset($user->institution) || !$user->institution || !isset($user->institution['_id']))) return false;
+    if($roleId === $user->role && $role == 'ngo' && (!isset($user->organisation) || !$user->organisation || !isset($user->organisation['_id']))) return false;
     if($roleId === $user->role) return true;
 
     return false;
@@ -270,6 +278,9 @@ function getAffiliationId() {
 }
 
 
+/**
+ * Function that causes an 403 'Permission denied' abort.
+ */
 function isDenied() {
     abort(403, 'Permission denied');
 }
@@ -353,7 +364,6 @@ function likeOp($operator, $value){
 
 
 function verifyErrors($errors, $value, $message, $force = false) {
-    
     if(!isset($value) || is_null($value) || empty($value) || $force) {
         $errors[] = array("value" => $value, "error" => $message);
     }
@@ -363,7 +373,6 @@ function verifyErrors($errors, $value, $message, $force = false) {
 
 
 function addError($errors, $value, $message) {
-    
     if($message) {
         $errors[] = array("value" => $value, "error" => $message);
     }

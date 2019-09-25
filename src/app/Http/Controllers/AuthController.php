@@ -14,6 +14,7 @@ use App\Mail\PasswordChanged;
 use App\User;
 use App\PasswordReset;
 
+
 class AuthController extends Controller
 {
     /**

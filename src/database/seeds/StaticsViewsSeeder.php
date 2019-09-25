@@ -11,11 +11,10 @@ class StaticsViewsSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
-    {        
+    public function run(){
         $client = \DB::connection('statics')->getCouchDBClient();
 
         $client->createDesignDocument('cities', new StaticCitiesBySlugAndNameView());
-		$client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
+		    $client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
     }
 }
