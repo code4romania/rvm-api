@@ -244,7 +244,7 @@ function removeDiacritics($data) {
 }
 
 /**
- * Allow the access of authentificated user.
+ * Check if the authentificated user has access to the specified resource.
  * 
  * @param array $resource checked if has acces.
  * @return bool
@@ -288,12 +288,18 @@ function isRole($role, $user = null) {
 }
 
 
-// Returns Institution id or Organization id of the authentificated user.
+/**
+ * Returns Institution id or Organization id of the authentificated user.
+ * 
+ * @return string|null The Institution id/Organization id or null id user is not 'ngo-admin' or 'institution-admin'
+ */
 function getAffiliationId() {
     $user = \Auth::user();
+
     if(isRole('institution')) {
         return $user->institution['_id'];
     }
+
     if(isRole('ngo')){
         return $user->organisation['_id'];
     }
