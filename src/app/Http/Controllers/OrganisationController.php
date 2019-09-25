@@ -277,22 +277,23 @@ class OrganisationController extends Controller
     public function showResources(Request $request, $id)
     {
         $params = $request->query();
-        
+
+        /** Verify if role is NGO*/        
         if(isRole('ngo')){
             if( $id != getAffiliationId()){
                 isDenied();
             }
         }
+        $resources = Resource::query()->where('organisation._id', '=', $id);
 
-        $resources = Resource::query()
-            ->where('organisation._id', '=', $id);
-
+        /** Function used for filtering */
         applyFilters($resources, $params, array(
             '0' => array( 'categories', 'elemmatch', '_id', '$eq' ),
             '1' => array( 'county._id', 'ilike' ),
             '2' => array( 'name', 'ilike')
         ));
 
+        /** Function used for sorting */
         applySort($resources, $params, array(
             '1' => 'name',
             '2' => 'categories',
@@ -300,6 +301,7 @@ class OrganisationController extends Controller
             '4' => 'county'
         ));
 
+        /** Function used for pager*/
         $pager = applyPaginate($resources, $params);
 
         return response()->json(array(
@@ -310,6 +312,11 @@ class OrganisationController extends Controller
 
 
     /**
+     * @param object $request used to create new organisation and new organisation admin
+     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
+     *                403 if the organisation is denied
+     *                500 if an error occurs
+     * 
      * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations",
@@ -467,6 +474,11 @@ class OrganisationController extends Controller
     }
 
     /**
+     * @param object $request used to update organisation details
+     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
+     *                403 if the organisation is denied
+     *                500 if an error occurs
+     * 
      * @SWG\put(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
@@ -496,9 +508,9 @@ class OrganisationController extends Controller
         $data = $request->all();
         $data['contact_person'] = (object) [
             '_id'=>$organisation->contact_person['_id'],
-            'name'=>$data['contact_person']['name'],
-            'email'=>$data['contact_person']['email'],
-            'phone'=>$data['contact_person']['phone']
+            'name'=>$organisation->contact_person['name'],
+            'email'=>$organisation->contact_person['email'],
+            'phone'=>$organisation->contact_person['phone']
         ];
         if ($data['county']) {
             $data['county'] = getCityOrCounty($request['county'],County::query());
@@ -512,6 +524,11 @@ class OrganisationController extends Controller
     }
 
     /**
+     * @param object $request used to create new organisation and new organisation admin
+     * @return object 200 and the organisation details and organisation admin details if datas are inserted succesfull
+     *                403 if the organisation is denied
+     *                500 if an error occurs
+     * 
      * @SWG\Delete(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
