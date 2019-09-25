@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * File containing global helper functions.
+ */
+
 use Illuminate\Support\Facades\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -9,13 +13,15 @@ use App\Volunteer;
 use App\Institution;
 use App\Organisation;
 use App\CourseName;
+
+
+
 /**
  * Pagination helper
  *
  * @param string $data Items to paginate
  * @return array of $data 
  */
-
 function applyFilters($query, $params, $filterKeys = array()){
     $filters = isset($params['filters']) ? $params['filters'] : null;
 
@@ -79,6 +85,7 @@ function applyFilters($query, $params, $filterKeys = array()){
     return $query;
 }
 
+
 function applySort($query, $params, $sortKeys = array()){
     $sort = isset($params['sort']) ? $params['sort'] : null;
     $method = isset($params['method']) ? $params['method'] : 'asc';
@@ -89,6 +96,7 @@ function applySort($query, $params, $sortKeys = array()){
 
     return $query;
 }
+
 
 function applyCollectionPaginate($collection, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
@@ -105,6 +113,7 @@ function applyCollectionPaginate($collection, $params){
     );
 }
 
+
 function applyPaginate($query, $params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -120,6 +129,7 @@ function applyPaginate($query, $params){
     );
 }
 
+
 function emptyPager($params){
     $page = isset($params['page']) && $params['page'] ? $params['page'] : 1;
     $size = isset($params['size']) && $params['size'] ? $params['size'] : 15;
@@ -131,6 +141,7 @@ function emptyPager($params){
         'total' => $total
     );
 }
+
 
 function convertData($data, $validator){
     $newData = array();
@@ -151,14 +162,24 @@ function convertData($data, $validator){
     return $newData;
 }
 
+
 function countByOrgId($org_ids, $model) {
     foreach($org_ids as $id) {
         $test = $model::where('organisation._id', '=', $id)->count();
     }
 }
 
-function removeDiacritics($post_name) {
-    $diacritics_array = array( 
+
+/**
+ * Function that removes any diacritics of other special letters
+ *  by replacing them with the english letters.
+ * 
+ * @param string $data The data that contains discritics that have to be removed.
+ * 
+ * @return string The received data with all the discritics removed.
+ */
+function removeDiacritics($data) {
+    $diacritics_array = array(
         'Š'=>'S', 'š'=>'s', 
         'Ž'=>'Z', 'ž'=>'z',
         'À'=>'A', 'Á'=>'A',
@@ -198,10 +219,11 @@ function removeDiacritics($post_name) {
         'Ț'=>'T', 'Ţ'=>'T'
     );
 
-    $post_name = strtr( $post_name, $diacritics_array );
+    return strtr($data, $diacritics_array);
 
-    return $post_name;
+    return $data;
 }
+
 
 function allowResourceAccess($resource) {
     $r = is_array($resource) ? $resource : $resource->toArray();
@@ -219,6 +241,7 @@ function allowResourceAccess($resource) {
     return true;
 }
 
+
 function isRole($role, $user = null) {
     $user = $user ? $user : \Auth::user();
 
@@ -231,6 +254,7 @@ function isRole($role, $user = null) {
 
     return false;
 }
+
 
 // Returns Institution id Organization id of the admin
 function getAffiliationId() {
@@ -245,9 +269,11 @@ function getAffiliationId() {
     return null;
 }
 
+
 function isDenied() {
     abort(403, 'Permission denied');
 }
+
 
 function setAffiliate($data) {
     $affiliate= null;
@@ -273,12 +299,14 @@ function setAffiliate($data) {
     return $data;
 }
 
+
 function getFiltersByIdAndName($name ,$model) {
     if(isset($name) && $name) {
         $model->where('name', 'ilike', '%'.$name.'%');
     }
     return $model->get(['_id', 'name']);
 }
+
 
 function getCityOrCounty($params,$model) {
     $city_or_county = $model->get(['_id', 'name', 'slug'])
@@ -293,6 +321,7 @@ function getCityOrCounty($params,$model) {
     }
     return $place;
 }
+
 
 function likeOp($operator, $value){
     if (in_array($operator, ['like', 'not like', 'ilike', 'not ilike'])) {
@@ -315,6 +344,7 @@ function likeOp($operator, $value){
     return array($operator => $value);
 }
 
+
 function verifyErrors($errors, $value, $message, $force = false) {
     
     if(!isset($value) || is_null($value) || empty($value) || $force) {
@@ -323,6 +353,7 @@ function verifyErrors($errors, $value, $message, $force = false) {
 
     return $errors;
 }
+
 
 function addError($errors, $value, $message) {
     
