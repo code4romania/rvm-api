@@ -641,7 +641,7 @@ class ResourceController extends Controller
      *                500 if an error occurs
      */
     public function template() {
-        return Storage::download('template-resurse.csv');
+        return Storage::download('/template-resurse.csv');
         // return Storage::download(Storage::url('template-resurse.csv'));
     }
 }
