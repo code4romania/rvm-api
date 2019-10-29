@@ -288,7 +288,7 @@ class VolunteerController extends Controller
         $volunteer->save();
 
         /** Notify the DSU admin of the add. */
-        notifyUpdate('dsu', new VolunteerAdd(['name' => $volunteer->organisation->name]));
+        notifyUpdate('dsu', new VolunteerAdd(['name' => $volunteer->organisation['name']]));
 
         return response()->json($volunteer, 201); 
     }
@@ -392,7 +392,7 @@ class VolunteerController extends Controller
         $volunteer->update($data);
 
         /** Notify the DSU admin of the update. */
-        notifyUpdate('dsu', new VolunteerUpdate(['name' => $volunteer->organisation->name]));
+        notifyUpdate('dsu', new VolunteerUpdate(['name' => $volunteer->organisation['name']]));
 
         return $volunteer;
     }
@@ -421,7 +421,7 @@ class VolunteerController extends Controller
         /** Extract the volunteer. */
         $volunteer = Volunteer::findOrFail($id);
         /** Save the organisation name. */
-        $organizationName = $volunteer->organisation->name;
+        $organizationName = $volunteer->organisation['name'];
 
         /** Delete the volunteer. */
         $volunteer->delete();
