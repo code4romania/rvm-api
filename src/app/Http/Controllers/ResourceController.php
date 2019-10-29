@@ -631,4 +631,16 @@ class ResourceController extends Controller
             ));
         }
     }
+
+
+    /**
+     * Function responsible of returning the resources import template file.
+     * 
+     * @return object 200 and the template-resurse.csv file if successful
+     *                500 if an error occurs
+     */
+    public function template($id) {
+        return Storage::download('template-resurse.csv');
+        // return Storage::download(Storage::url('template-resurse.csv'));
+    }
 }

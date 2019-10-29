@@ -287,7 +287,7 @@ class VolunteerController extends Controller
 
 
     /**
-     * Function responsible of processing volunteer update requests.
+     * Function responsible of processing a volunteer update requests.
      * 
      * @param object $request Contains all the data needed for updating a volunteer.
      * @param string $id The ID of the volunteer to be updated.
@@ -662,6 +662,18 @@ class VolunteerController extends Controller
         $allocations = Allocation::query()->where('volunteer._id', '=', $id)->get();
 
         return response()->json($allocations, 200);
+    }
+
+
+    /**
+     * Function responsible of returning the volunteers import template file.
+     * 
+     * @return object 200 and the template-voluntari.csv file if successful
+     *                500 if an error occurs
+     */
+    public function template($id) {
+        return Storage::download('template-voluntari.csv');
+        // return Storage::download(Storage::url('template-voluntari.csv'));
     }
 }
  
