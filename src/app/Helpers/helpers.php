@@ -9,6 +9,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
 use Illuminate\Validation\ValidationRuleParser;
+use Illuminate\Support\Facades\Mail;
+use App\User;
 use App\Volunteer;
 use App\Institution;
 use App\Organisation;
@@ -338,6 +340,33 @@ function setAffiliate($data) {
     } 
     
     return $data;
+}
+
+
+/**
+ * Funtion that sends an email about an update
+ *  to all users of a specified type.
+ * 
+ * @param string $role: The role the users must have to be notified.
+ * @param Mail $mail: Laravel mail object that needs to be sent.
+ * 
+ * @return void
+ */
+function notifyUpdate($role, $mail){
+    /** Check the role is specified. */
+    if ((NULL === $role) || ("" === $role)) {
+      return;
+    }
+
+    /** Extract the role ID. */
+    $roleId = config('roles.role')[$role];
+    /** Extract the users to be notified. */
+    $users = User::where('role', $roleId)->get();
+
+    /** Notify the users. */
+    foreach ($users as $key => $user) {
+        Mail::to($user->email)->send($mail);
+    }
 }
 
 
