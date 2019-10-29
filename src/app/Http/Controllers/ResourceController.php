@@ -639,7 +639,7 @@ class ResourceController extends Controller
      * @return object 200 and the template-resurse.csv file if successful
      *                500 if an error occurs
      */
-    public function template($id) {
+    public function template() {
         return Storage::download('template-resurse.csv');
         // return Storage::download(Storage::url('template-resurse.csv'));
     }
