@@ -285,8 +285,10 @@ class ResourceController extends Controller
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
         $resource = Resource::create($data);
 
-        /** Notify the DSU admin of the add. */
-        notifyUpdate('dsu', new ResourceAdd(['name' => $resource->organisation['name']]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the add. */
+            notifyUpdate('dsu', new ResourceAdd(['name' => $resource->organisation['name']]));
+        }
 
         return response()->json($resource, 200); 
     }
@@ -340,8 +342,10 @@ class ResourceController extends Controller
         }
         $resource->update($data);
 
-        /** Notify the DSU admin of the update. */
-        notifyUpdate('dsu', new ResourceUpdate(['name' =>  $resource->organisation['name']]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the update. */
+            notifyUpdate('dsu', new ResourceUpdate(['name' =>  $resource->organisation['name']]));
+        }
 
         return response()->json($resource, 200);
     }
@@ -375,8 +379,10 @@ class ResourceController extends Controller
         /** Delete the volunteer. */
         $resource->delete();
 
-        /** Notify the DSU admin of the delete. */
-        notifyUpdate('dsu', new ResourceDelete(['name' => $organizationName]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the delete. */
+            notifyUpdate('dsu', new ResourceDelete(['name' => $organizationName]));
+        }
 
         $response = array("message" => 'Resource deleted.');
 
