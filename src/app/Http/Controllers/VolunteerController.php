@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use App\Volunteer;
 use App\CourseName;
 use App\CourseAccreditor;
@@ -16,6 +17,7 @@ use App\Rules\Cnp;
 use Carbon\Carbon;
 use App\DBViews\StaticCitiesBySlugAndNameView;
 use App\DBViews\StaticCountiesBySlugAndNameView;
+
 
 class VolunteerController extends Controller
 {
