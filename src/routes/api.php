@@ -24,6 +24,9 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::get('/counties','StaticController@getAllCounties');
     Route::get('/resources/categories', 'ResourceController@getAllResourceCategories');
 
+    Route::get('resources/template', 'ResourceController@template');
+    Route::get('volunteers/template', 'VolunteerController@template');
+
     // private routes
     Route::middleware(['auth:api'])->group(function () {
         Route::get('/profile', 'AuthController@profile')->name('profile.api');
@@ -57,14 +60,13 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::put('resources/{id}', 'ResourceController@update');
             Route::delete('resources/{id}', 'ResourceController@delete');
             Route::post('resources/import', 'ResourceController@importResources');
-            Route::get('resources/template', 'ResourceController@template');
-
+            
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
             Route::post('volunteers/import', 'VolunteerController@importVolunteers');
-            Route::get('volunteers/template', 'VolunteerController@template');
-        });
+          });
+
 
         Route::middleware(['checkRole:dsu,ngo,institution'])->group(function () {
             Route::get('volunteers', 'VolunteerController@index');

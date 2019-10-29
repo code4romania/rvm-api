@@ -674,8 +674,8 @@ class VolunteerController extends Controller
      *                500 if an error occurs
      */
     public function template() {
-        return Storage::download(public_path('/template-voluntari.csv'), 'template-voluntari.csv');
-        // return Storage::download(Storage::url('template-voluntari.csv'));
+      return Storage::download(Storage::url('template-voluntari.csv'));
+      // return Storage::download(public_path('/template-voluntari.csv'), 'template-voluntari.csv');
     }
 }
  
