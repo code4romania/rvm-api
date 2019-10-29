@@ -286,7 +286,7 @@ class ResourceController extends Controller
         $resource = Resource::create($data);
 
         /** Notify the DSU admin of the add. */
-        notifyUpdate('dsu', new ResourceAdd(['name' => $resource->organisation->name]));
+        notifyUpdate('dsu', new ResourceAdd(['name' => $resource->organisation['name']]));
 
         return response()->json($resource, 200); 
     }
@@ -341,7 +341,7 @@ class ResourceController extends Controller
         $resource->update($data);
 
         /** Notify the DSU admin of the update. */
-        notifyUpdate('dsu', new ResourceUpdate(['name' =>  $resource->organisation->name]));
+        notifyUpdate('dsu', new ResourceUpdate(['name' =>  $resource->organisation['name']]));
 
         return response()->json($resource, 200);
     }
@@ -370,7 +370,7 @@ class ResourceController extends Controller
         /** Extract the resource. */
         $resource = Resource::findOrFail($id);
         /** Save the organisation name. */
-        $organizationName = $resource->organisation->name;
+        $organizationName = $resource->organisation['name'];
 
         /** Delete the volunteer. */
         $resource->delete();
