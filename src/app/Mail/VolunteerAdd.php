@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class VolunteerDelete extends Mailable
+class VolunteerAdd extends Mailable
 {
     use Queueable, SerializesModels;
     public $data;

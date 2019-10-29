@@ -287,8 +287,10 @@ class VolunteerController extends Controller
         }
         $volunteer->save();
 
-        /** Notify the DSU admin of the add. */
-        notifyUpdate('dsu', new VolunteerAdd(['name' => $volunteer->organisation['name']]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the add. */
+            notifyUpdate('dsu', new VolunteerAdd(['name' => $volunteer->organisation['name']]));
+        }
 
         return response()->json($volunteer, 201); 
     }
@@ -391,8 +393,10 @@ class VolunteerController extends Controller
         }
         $volunteer->update($data);
 
-        /** Notify the DSU admin of the update. */
-        notifyUpdate('dsu', new VolunteerUpdate(['name' => $volunteer->organisation['name']]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the update. */
+            notifyUpdate('dsu', new VolunteerUpdate(['name' => $volunteer->organisation['name']]));
+        }
 
         return $volunteer;
     }
@@ -426,8 +430,10 @@ class VolunteerController extends Controller
         /** Delete the volunteer. */
         $volunteer->delete();
 
-        /** Notify the DSU admin of the delete. */
-        notifyUpdate('dsu', new VolunteerDelete(['name' => $organizationName]));
+        if (!isRole('dsu')) {
+            /** Notify the DSU admin of the delete. */
+            notifyUpdate('dsu', new VolunteerDelete(['name' => $organizationName]));
+        }
 
         /** Prepare the response and respond. */
         $response = array("message" => 'Volunteer deleted.');
