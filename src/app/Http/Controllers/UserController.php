@@ -193,7 +193,7 @@ class UserController extends Controller
         /** Create the pass reset URL. */
         $url = env('FRONT_END_URL') . '/auth/reset/' . $passwordReset->token;
         $set_password_data = array('url' => $url);
-        /** Sent welcoming email. */
+        /** Send welcoming email. */
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
 
         /** Generate a radom password. */
