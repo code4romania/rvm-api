@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\VolunteerAdd;
+use App\Mail\VolunteerUpdate;
+use App\Mail\VolunteerDelete;
 use App\Volunteer;
 use App\CourseName;
 use App\CourseAccreditor;
@@ -284,6 +287,9 @@ class VolunteerController extends Controller
         }
         $volunteer->save();
 
+        /** Notify the DSU admin of the add. */
+        notifyUpdate('dsu', new VolunteerAdd(['name' => $volunteer->organisation->name]));
+
         return response()->json($volunteer, 201); 
     }
 
@@ -385,6 +391,9 @@ class VolunteerController extends Controller
         }
         $volunteer->update($data);
 
+        /** Notify the DSU admin of the update. */
+        notifyUpdate('dsu', new VolunteerUpdate(['name' => $volunteer->organisation->name]));
+
         return $volunteer;
     }
 
@@ -409,11 +418,19 @@ class VolunteerController extends Controller
      *
      */
     public function delete($id) {
+        /** Extract the volunteer. */
         $volunteer = Volunteer::findOrFail($id);
+        /** Save the organisation name. */
+        $organizationName = $volunteer->organisation->name;
+
+        /** Delete the volunteer. */
         $volunteer->delete();
 
-        $response = array("message" => 'Volunteer deleted.');
+        /** Notify the DSU admin of the delete. */
+        notifyUpdate('dsu', new VolunteerDelete(['name' => $organizationName]));
 
+        /** Prepare the response and respond. */
+        $response = array("message" => 'Volunteer deleted.');
         return response()->json($response, 200);
     }
 

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ResourceAdd;
+use App\Mail\ResourceUpdate;
+use App\Mail\ResourceDelete;
 use App\Resource;
 use App\Organisation;
 use App\ResourceCategory;
@@ -280,8 +283,11 @@ class ResourceController extends Controller
 
         /** Add the 'added by' to the resource. */
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
-
         $resource = Resource::create($data);
+
+        /** Notify the DSU admin of the add. */
+        notifyUpdate('dsu', new ResourceAdd(['name' => $resource->organisation->name]));
+
         return response()->json($resource, 200); 
     }
 
@@ -332,8 +338,11 @@ class ResourceController extends Controller
         if($data['city']) {
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
-
         $resource->update($data);
+
+        /** Notify the DSU admin of the update. */
+        notifyUpdate('dsu', new ResourceUpdate(['name' =>  $resource->organisation->name]));
+
         return response()->json($resource, 200);
     }
 
@@ -358,8 +367,16 @@ class ResourceController extends Controller
      *
      */
     public function delete($id) {
+        /** Extract the resource. */
         $resource = Resource::findOrFail($id);
+        /** Save the organisation name. */
+        $organizationName = $resource->organisation->name;
+
+        /** Delete the volunteer. */
         $resource->delete();
+
+        /** Notify the DSU admin of the delete. */
+        notifyUpdate('dsu', new ResourceDelete(['name' => $organizationName]));
 
         $response = array("message" => 'Resource deleted.');
 
