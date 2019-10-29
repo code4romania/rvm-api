@@ -24,7 +24,9 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::get('/counties','StaticController@getAllCounties');
     Route::get('/resources/categories', 'ResourceController@getAllResourceCategories');
 
+    /** Route for downloading the template file for resources. */
     Route::get('resources/template', 'ResourceController@template');
+    /** Route for downloading the template file for volunteers. */
     Route::get('volunteers/template', 'VolunteerController@template');
 
     // private routes
