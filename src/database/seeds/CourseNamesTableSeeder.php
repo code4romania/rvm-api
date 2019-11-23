@@ -13,7 +13,7 @@ class CourseNamesTableSeeder extends Seeder {
     $id = str_random(16);
     CourseName::insert([
       ['slug' => 'Prim-ajutor calificat',                                             'name' => 'Prim-ajutor calificat', 'static_accreditor' => (object)["_id" => $id, "name" => "IGSU-Pompieri"]],
-      ['slug' => 'Prim-ajutor',                                                       'name' => 'Prim-ajutor'],
+      ['slug' => 'Prim-ajutor de baza',                                               'name' => 'Prim-ajutor de baza'],
       ['slug' => 'Medicina primara (asistente/medici rezidenti/etc)',                 'name' => 'Medicină primară (asistente/medici rezidenți/etc)'],
       ['slug' => 'Asistenta sociala',                                                 'name' => 'Asistență socială'],
       ['slug' => 'Personal medical auxiliar (brancardieri/mediatori sanitari/etc)',   'name' => 'Personal medical auxiliar (brancardieri/mediatori sanitari/etc)'],
