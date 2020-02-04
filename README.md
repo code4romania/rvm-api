@@ -34,7 +34,7 @@ Composer
 
 ### Database technology & provider
 
-MySQL
+CouchDB
 
 ## Repos and projects
 
