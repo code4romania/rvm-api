@@ -4,31 +4,31 @@
 $shortopts = "b:u:p:c:";
 $longopts  = ["base:", "user:", "pass:", "command:"];
 $options = getopt($shortopts, $longopts);
+
 /* Set the cmd line arguments values to appropiate values. */
-$baseUrl = (isset($options['b'])) ? ($options['b']) : ((isset($options['base'])) ? ($options['base']) : ("localhost:5984/"));
-$user = (isset($options['u'])) ? ($options['u']) : ((isset($options['user'])) ? ($options['user']) : ("admin"));
-$password = (isset($options['p'])) ? ($options['p']) : ((isset($options['pass'])) ? ($options['pass']) : ("secret"));
+$baseUrl = (isset($options['b'])) ? ($options['b']) : ((isset($options['base'])) ? ($options['base']) : (getenv('DB_HOST') . ':' . getenv('DB_PORT') . '/'));
+$user = (isset($options['u'])) ? ($options['u']) : ((isset($options['user'])) ? ($options['user']) : getenv('DB_USERNAME'));
+$password = (isset($options['p'])) ? ($options['p']) : ((isset($options['pass'])) ? ($options['pass']) : getenv('DB_PASSWORD'));
 $command = (isset($options['c'])) ? ($options['c']) : ((isset($options['command'])) ? ($options['command']) : (""));
 
-
 /* Script messages. */
-$messages = [ 'no-cmd' => "[ERROR]: Command not specified.\n"
-            , 'invalid-cmd' => "[ERROR]: Command %s is not recognised.\n"
-            , 'migrate' => "[INFO]: Migrate DB changes.\n"
-            , 'rollback' => "[INFO]: Rollback DB changes.\n"
-            , 'finish' => "[INFO]: Script %s finished successfully.\n"
-            ];
-
+$messages = [
+  'no-cmd' => "[ERROR]: Command not specified.\n",
+  'invalid-cmd' => "[ERROR]: Command %s is not recognised.\n",
+  'migrate' => "[INFO]: Migrate DB changes.\n",
+  'rollback' => "[INFO]: Rollback DB changes.\n",
+  'finish' => "[INFO]: Script %s finished successfully.\n",
+];
 
 /**
  * Function that performes am HTTp request using curl.
- * 
+ *
  * @param url:      The URL at which to perform the request.
  * @param method:   The HTTP method to use.
  * @param data:     Data to send over with the request.
  * @param username: The authentication user.
  * @param password: The authentication password.
- * 
+ *
  * @return JSON:  Decoded response data in case of success
  *         NULL:  In case of error.
  */
@@ -53,7 +53,7 @@ function _curl($url, $method, $data, $username, $password) {
       curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
     break;
     case "DELETE":
-      curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
+      curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
       curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
     break;
   }

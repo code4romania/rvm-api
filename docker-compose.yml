@@ -1,0 +1,39 @@
+version: '3'
+services:
+  # The Application
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    env_file: ./src/.env
+    environment:
+      - "DB_PORT=5984"
+      - "DB_HOST=database"
+    ports:
+      - "9000:9000"
+
+  # The Web Server
+  web:
+    image: nginx:1.15
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+      - ./configs/nginx.app.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:80
+
+  # The Database
+  database:
+    image: couchdb:latest
+    volumes:
+      - dbdata:/opt/couchdb/data
+      - ./configs/couch.local.ini:/opt/couchdb/etc/local.ini
+    env_file: ./src/.env
+    ports:
+      - "5984:5984"
+
+volumes:
+  dbdata:
