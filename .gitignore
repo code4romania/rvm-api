@@ -2,6 +2,7 @@ vendor/
 node_modules/
 npm-debug.log
 .idea/
+*.log
 
 # Laravel 4 specific
 src/bootstrap/compiled.php

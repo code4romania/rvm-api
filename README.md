@@ -34,26 +34,58 @@ Composer
 
 ### Database technology & provider
 
-MySQL
+CouchDB
 
 ## Repos and projects
 
 Client of the API: https://github.com/code4romania/rvm-client
 
+
 ## Development
 
-    # To bootstrap the project (Run this only once), run the following commands in your shell:
+### To bootstrap the project (Run this only once), run the following commands in your shell:
 
-    ./dev/composer.sh update
-    cp src/.env.example src/.env
-    docker-compose up
-    ./dev/key_generate.sh
-    ./dev/artisan.sh migrate
-    ./dev/artisan.sh passport:install
+Install composer dependencies
+```bash
+$ docker run -v ${PWD}/src:/app -w /app composer:latest composer install --ignore-platform-reqs --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+```
 
-    # Every other time
+Copy environment variables and start the application
+```bash
+$ cp src/.env.example src/.env
+$ docker-compose up
+```
 
-    docker-compose up
+Setup CouchDB single-node here: http://localhost:5984/_utils#setup or do it manually by running:
+```bash
+$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_users"'
+$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_replicator"'
+$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_global_changes"'
+```
+
+Run database migrations
+```bash
+$ docker exec -it rvm-api_app_1 php ./database/migrations/v_1_0_0.php -c migrate
+```
+
+Generate app secret key, and personal access client keys
+```bash
+$ ./scripts/artisan.sh key:generate
+$ ./scripts/artisan.sh optimize
+$ ./scripts/artisan.sh passport:install
+```
+
+Seed the database
+```bash
+$ docker run -v ${PWD}/src:/app -w /app composer:latest composer dump-autoload
+$ ./scripts/artisan.sh db:seed --class=DatabaseSeed
+```
+
+### Every other time
+
+```bash
+$ docker-compose up
+```
 
 ## Swagger
 [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger) has been bundled which is a Laravel 5 - Swagger integration that
@@ -61,7 +93,9 @@ works out of the box.
 
 To parse new API route definitions, you need to publish a new version of Swagger definitions
 
-    ./dev/artisan.sh vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
+```bash
+$ ./scripts/artisan.sh vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
+```
 
 To see all API definitions, hit the [/api/documentation](http://localhost:8080/api/documentation) endpoint of the server.
 ## Deployment
@@ -75,7 +109,7 @@ TBD
 * File a bug in GitHub Issues.
 * Email us with other feedback contact@code4.ro
 
-## License 
+## License
 
 This project is licensed under the MPL 2.0 License - see the [LICENSE](LICENSE) file for details
 
