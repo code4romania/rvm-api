@@ -78,7 +78,7 @@ return [
             'prefix' => '',
         ],
 
-        'rvm' => [    
+        'rvm' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -91,7 +91,7 @@ return [
             'sticky'   => true
         ],
 
-        'users' => [    
+        'users' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -104,7 +104,20 @@ return [
             'sticky'   => true
         ],
 
-        'organisations' => [    
+        'statics' => [
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'statics'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'organisations' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -117,7 +130,7 @@ return [
             'sticky'   => true
         ],
 
-        'courses' => [    
+        'courses' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -130,7 +143,7 @@ return [
             'sticky'   => true
         ],
 
-        'resources' => [    
+        'resources' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -143,7 +156,7 @@ return [
             'sticky'   => true
         ],
 
-        'volunteers' => [    
+        'volunteers' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
@@ -156,13 +169,26 @@ return [
             'sticky'   => true
         ],
 
-        'allocations' => [    
+        'allocations' => [
             'driver'   => 'couchdb',
             'type'     => env('DB_CONNECTION_TYPE', 'socket'),
             'host'     => env('DB_HOST', 'localhost'),
             'ip'       => env('DB_IP', null),
             'port'     => env('DB_PORT', '5984'),
             'dbname'   => env('DB_DATABASE', 'allocations'),
+            'user'     => env('DB_USERNAME', 'admin'),
+            'password' => env('DB_PASSWORD', 'admin'),
+            'logging'  => env('DB_LOGGING', false),
+            'sticky'   => true
+        ],
+
+        'institutions' => [
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', 'localhost'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'institutions'),
             'user'     => env('DB_USERNAME', 'admin'),
             'password' => env('DB_PASSWORD', 'admin'),
             'logging'  => env('DB_LOGGING', false),

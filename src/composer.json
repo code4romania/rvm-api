@@ -9,7 +9,7 @@
         "barryvdh/laravel-cors": "^0.11.0@dev",
         "darkaonline/l5-swagger": "5.8.*",
         "fideloper/proxy": "^4.0",
-        "inft/laravel-couchdb": "dev-master",
+        "inft/laravel-couchdb": "*",
         "laravel/framework": "5.8.*",
         "laravel/passport": "^7.0",
         "laravel/tinker": "~1.0",

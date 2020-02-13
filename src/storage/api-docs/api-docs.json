@@ -97,8 +97,8 @@
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
-                        "description": "not acceptable"
+                    "422": {
+                        "description": "user or password missmatch"
                     },
                     "500": {
                         "description": "internal server error"
@@ -146,97 +146,18 @@
                 }
             }
         },
-        "/api/password/reset": {
+        "/api/recoverpassword": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "User reset pw",
-                "operationId": "passwordReset",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            }
-        },
-        "/api/password/recovery": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "User recovery password ",
-                "operationId": "passwordRecovery",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            }
-        },
-        "/api/courses": {
-            "get": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Return all courses",
-                "operationId": "index",
-                "responses": {
-                    "200": {
-                        "description": "successful operation"
-                    },
-                    "406": {
-                        "description": "not acceptable"
-                    },
-                    "500": {
-                        "description": "internal server error"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Courses"
-                ],
-                "summary": "Create course",
-                "operationId": "store",
+                "summary": "Recover Password, Send Reset Password Mail",
+                "operationId": "recoverpassword",
                 "parameters": [
-                    {
-                        "name": "volunteer_id",
-                        "in": "query",
-                        "description": "Course volunteer id.",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "description": "Course name.",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ssn",
-                        "in": "query",
-                        "description": "Course acredited.",
-                        "required": true,
-                        "type": "string"
-                    },
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "Course obatained.",
+                        "description": "Emaill address.",
                         "required": true,
                         "type": "string"
                     }
@@ -254,54 +175,134 @@
                 }
             }
         },
-        "/api/courses/{id}": {
+        "/api/resetpassword": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reset the user password",
+                "operationId": "resetpassword",
+                "parameters": [
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "Password",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "passtoken",
+                        "in": "query",
+                        "description": "Password Token",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/organisations": {
             "get": {
                 "tags": [
-                    "Courses"
+                    "Filters"
                 ],
-                "summary": "Show course info ",
-                "operationId": "show",
+                "summary": "Show organisations name/id.",
+                "operationId": "filter_org_name",
                 "responses": {
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
+                    "404": {
                         "description": "not acceptable"
                     },
                     "500": {
                         "description": "internal server error"
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/filter/volunteers/courses": {
+            "get": {
                 "tags": [
-                    "Courses"
+                    "Filters"
                 ],
-                "summary": "Update course",
-                "operationId": "update",
+                "summary": "Show courses by name/id.",
+                "operationId": "filter_courses",
                 "responses": {
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
+                    "404": {
                         "description": "not acceptable"
                     },
                     "500": {
                         "description": "internal server error"
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/filter/users/institutions": {
+            "get": {
                 "tags": [
-                    "Courses"
+                    "Filters"
                 ],
-                "summary": "Delete course",
-                "operationId": "delete",
+                "summary": "Show all institutions.",
+                "operationId": "filter_institution_users",
                 "responses": {
                     "200": {
                         "description": "successful operation"
                     },
-                    "406": {
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/accreditedby": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show all Accreditors.",
+                "operationId": "filter_accreditedby",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/filter/map": {
+            "get": {
+                "tags": [
+                    "Filters"
+                ],
+                "summary": "Show number of resources and volunteers for each county.",
+                "operationId": "filter_accreditedby",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
                         "description": "not acceptable"
                     },
                     "500": {
@@ -372,6 +373,13 @@
                         "type": "string"
                     },
                     {
+                        "name": "cover",
+                        "in": "query",
+                        "description": "Organisation cover.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
                         "name": "county",
                         "in": "query",
                         "description": "Organisation county.",
@@ -426,6 +434,9 @@
                     },
                     "404": {
                         "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             },
@@ -466,6 +477,26 @@
                 }
             }
         },
+        "/api/organisations/{id}/email": {
+            "post": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Send notification via email to a organisation admin",
+                "operationId": "send",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/api/organisations/{id}/volunteers": {
             "get": {
                 "tags": [
@@ -479,6 +510,9 @@
                     },
                     "404": {
                         "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             }
@@ -496,6 +530,29 @@
                     },
                     "404": {
                         "description": "not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/organisations/{id}/validate": {
+            "post": {
+                "tags": [
+                    "Organisations"
+                ],
+                "summary": "Validate organisation data",
+                "operationId": "validate",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
                     }
                 }
             }
@@ -541,11 +598,18 @@
                         "type": "string"
                     },
                     {
-                        "name": "type_name",
+                        "name": "resource_type",
                         "in": "query",
-                        "description": "Resource type_name.",
+                        "description": "Resource type.",
                         "required": true,
                         "type": "string"
+                    },
+                    {
+                        "name": "categories",
+                        "in": "query",
+                        "description": "Resource categories and subcategories.",
+                        "required": true,
+                        "type": "array"
                     },
                     {
                         "name": "quantity",
@@ -614,6 +678,9 @@
                     "200": {
                         "description": "successful operation"
                     },
+                    "404": {
+                        "description": "empty resource"
+                    },
                     "406": {
                         "description": "not acceptable"
                     },
@@ -659,13 +726,132 @@
                 }
             }
         },
+        "/api/resources/by_slug/{slug}": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Show resource info grouped by slug ",
+                "operationId": "show",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "404": {
+                        "description": "empty resource"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/api/resources/list": {
             "get": {
                 "tags": [
                     "Resources"
                 ],
                 "summary": "List resources",
-                "operationId": "delete",
+                "operationId": "list",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/resources/categories": {
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "List resource categories",
+                "operationId": "category",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/resources/import": {
+            "post": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Import CSV with resources",
+                "operationId": "import",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "description": "CSV file.",
+                        "required": true,
+                        "type": "File"
+                    },
+                    {
+                        "name": "Coloanele din CSV",
+                        "in": "query",
+                        "description": "nume,tip,categorie,subcategorie,cantitate,judet,localitate,adresa,comentarii",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/cities": {
+            "get": {
+                "tags": [
+                    "Statics"
+                ],
+                "summary": "Return all cities",
+                "operationId": "getAllCities",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/counties": {
+            "get": {
+                "tags": [
+                    "Statics"
+                ],
+                "summary": "Return all counties",
+                "operationId": "getAllCounties",
                 "responses": {
                     "200": {
                         "description": "successful operation"
@@ -704,8 +890,52 @@
                 ],
                 "summary": "Create volunteer",
                 "operationId": "store",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Customer name.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Customer email.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Customer Phone.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Customer Role.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "institution",
+                        "in": "query",
+                        "description": "Customer Institution.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "organisation",
+                        "in": "query",
+                        "description": "Customer Organisation.",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "successful operation"
                     },
                     "406": {
@@ -743,7 +973,7 @@
                 "summary": "Update user",
                 "operationId": "update",
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "successful operation"
                     },
                     "406": {
@@ -849,6 +1079,27 @@
                         "type": "string"
                     },
                     {
+                        "name": "course_name_id",
+                        "in": "query",
+                        "description": "Name of course from DB .",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "obtained",
+                        "in": "query",
+                        "description": "Obtained.",
+                        "required": true,
+                        "type": "date-time"
+                    },
+                    {
+                        "name": "accredited_by",
+                        "in": "query",
+                        "description": "Accredited by.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
                         "name": "address",
                         "in": "query",
                         "description": "Volunteer address.",
@@ -933,6 +1184,42 @@
                 ],
                 "summary": "Delete volunteer",
                 "operationId": "delete",
+                "responses": {
+                    "200": {
+                        "description": "successful operation"
+                    },
+                    "406": {
+                        "description": "not acceptable"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/api/volunteers/import": {
+            "post": {
+                "tags": [
+                    "Volunteers"
+                ],
+                "summary": "Import CSV with volunteers",
+                "operationId": "post",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "description": "CSV file.",
+                        "required": true,
+                        "type": "File"
+                    },
+                    {
+                        "name": "Coloanele din CSV",
+                        "in": "query",
+                        "description": "nume,cnp,email,telefon,judet,localitate,profesie,comentarii,acreditari",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "successful operation"

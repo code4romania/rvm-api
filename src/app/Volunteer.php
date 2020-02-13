@@ -9,7 +9,8 @@ class Volunteer extends Eloquent
   protected $connection = 'volunteers';
   protected $collection = 'volunteers';
   protected $fillable = [
-    'organisation', 'courses', 'name', 'ssn', 'email', 'phone', 'county', 'city', 'address', 'comments', 'job', 'added_by',
+    'name', 'slug', 'ssn', 'email', 'phone', 'county', 'city', 'address', 'organisation',
+    'courses', 'allocation', 'comments', 'job', 'added_by',
   ];
 
 }

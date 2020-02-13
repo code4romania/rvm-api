@@ -16,7 +16,6 @@ class CheckRole
 
     public function handle($request, Closure $next, ...$roles)
     {
-
         $roleIds = config('roles.role');
 
         $allowedRoleIds = [];
@@ -29,7 +28,7 @@ class CheckRole
         $allowedRoleIds = array_unique($allowedRoleIds); 
 
         if(\Auth::check()) {
-            if(in_array(\Auth::user()->role, $allowedRoleIds)) {
+            if (in_array(\Auth::user()->role, $allowedRoleIds)) {
                 return $next($request);
             }
         }

@@ -13,11 +13,22 @@ jobs:
       uses: MilesChou/composer-action@master
       with:
         args: install --working-dir src
-    - name: rsync
-      uses: contention/rsync-deployments@master
+    - name: Deploy the solution
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         RVM_MACHINE: ${{ secrets.RVM_MACHINE }}
         RVM_USERNAME: ${{ secrets.RVM_USERNAME }}
-      with:
-        args: -arv --omit-dir-times src/ $RVM_USERNAME@$RVM_MACHINE:/var/www/api/
+      run: |
+        DEPLOY_FOLDER="$GITHUB_WORKSPACE/src/"
+        SSH_PATH="$HOME/.ssh"
+        mkdir "$SSH_PATH"
+        echo "$DEPLOY_KEY" > "$SSH_PATH/deploy_key"
+        chmod 600 "$SSH_PATH/deploy_key"
+        sh -c "ssh -i $SSH_PATH/deploy_key -o StrictHostKeyChecking=no $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan down'"
+        sh -c "rsync -rvz --omit-dir-times --links -e 'ssh -i $SSH_PATH/deploy_key' $DEPLOY_FOLDER $RVM_USERNAME@$RVM_MACHINE:/var/www/api/"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cp ~/.env /var/www/api/'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan cache:clear'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan passport:install'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan key:generate'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan storage:link'"
+        sh -c "ssh -i $SSH_PATH/deploy_key $RVM_USERNAME@$RVM_MACHINE 'cd /var/www/api/ && php artisan up'"

@@ -5,7 +5,7 @@ require 'dependencies/couch_db.php';
 
 /**
  * Function that performs all DB changes.
- * 
+ *
  * @return void
  */
 function migrate(){
@@ -17,15 +17,17 @@ function migrate(){
   createDB('volunteers');
   createDB('courses');
   createDB('allocations');
+  createDB('institutions');
 }
 
 
 /**
  * Function that discards all DB changes.
- * 
+ *
  * @return void
  */
 function rollback(){
+  deleteDB('institutions');
   deleteDB('allocations');
   deleteDB('courses');
   deleteDB('volunteers');
