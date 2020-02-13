@@ -78,7 +78,13 @@ $ ./scripts/artisan.sh passport:install
 Seed the database
 ```bash
 $ docker run -v ${PWD}/src:/app -w /app composer:latest composer dump-autoload
-$ ./scripts/artisan.sh db:seed --class=DatabaseSeed
+$ ./scripts/artisan.sh db:seed --class=CourseNamesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=InstitutionsTableSeeder
+$ ./scripts/artisan.sh db:seed --class=ResourceCategoriesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=CountriesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=CountiesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=CitiesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=UsersTableSeeder
 ```
 
 ### Every other time
