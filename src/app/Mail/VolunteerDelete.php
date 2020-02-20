@@ -28,6 +28,6 @@ class VolunteerDelete extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Ștergere voluntari')->view('mails.volunteer_delete')->with('data', $this->data);
+        return $this->from(config('mail.username'))->subject('Ștergere voluntari')->view('mails.volunteer_delete')->with('data', $this->data);
     }
 }

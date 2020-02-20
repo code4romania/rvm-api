@@ -28,6 +28,6 @@ class ResourceDelete extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Ștergere resurse')->view('mails.resource_delete')->with('data', $this->data);
+        return $this->from(config('mail.username'))->subject('Ștergere resurse')->view('mails.resource_delete')->with('data', $this->data);
     }
 }

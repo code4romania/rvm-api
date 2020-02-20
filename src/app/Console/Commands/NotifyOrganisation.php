@@ -43,10 +43,10 @@ class NotifyOrganisation extends Command
     {
         $organisations = Organisation::all();
         $organisations->map(function($organisation) {
-            if(Carbon::parse($organisation->updated_at)->addDays(env('MAIL_CRON_TIME'))->isPast()) {
-                $data = ['url' => env('FRONT_END_URL').'/organisations/id/'.$organisation->_id.'/validate'];
+            if(Carbon::parse($organisation->updated_at)->addDays(config('mail.mail-cron-time'))->isPast()) {
+                $data = ['url' => config('app.frontend-url').'/organisations/id/'.$organisation->_id.'/validate'];
                 Mail::to($organisation['contact_person']['email'])->send(new NotifyTheOrganisation($data));
-            } 
+            }
         });
     }
 }

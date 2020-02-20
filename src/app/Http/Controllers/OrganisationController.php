@@ -25,13 +25,13 @@ class OrganisationController extends Controller
 {
     /**
      * Function responsible with showing all organisations.
-     * 
-     * @param object $request Contains all the datas about organisations (like the name, number of volunteers, number of resources and more) 
+     *
+     * @param object $request Contains all the datas about organisations (like the name, number of volunteers, number of resources and more)
      *               used to display all the organisations
      * @return object 200 and the organisations details if the request is successful
      *                406 if the authentificated user have no permission
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations",
@@ -72,12 +72,12 @@ class OrganisationController extends Controller
                 ->pluck('organisation._id')
                 ->unique('organisation._id')
                 ->toArray();
-            
+
             if(!$matchOrganisations){
                 return response()->json(array(
                     "pager" =>  emptyPager($params),
                     "data" => []
-                ), 200); 
+                ), 200);
             }
 
             $organisations->whereIn('_id', $matchOrganisations);
@@ -96,7 +96,7 @@ class OrganisationController extends Controller
                 return response()->json(array(
                     "pager" => emptyPager($params),
                     "data" => []
-                ), 200); 
+                ), 200);
             }
 
             $organisations->whereIn('_id', $matchOrganisations2);
@@ -124,17 +124,17 @@ class OrganisationController extends Controller
         return response()->json(array(
             "pager" => $pager,
             "data" => $organisations
-        ), 200); 
+        ), 200);
     }
 
     /**
      * Function responsible with showing one organisation details.
-     * 
+     *
      * @param string $id used for organisation search
      * @return object 200 and the organisation details if id match
      *                404 if the organisation is not exist
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
@@ -142,7 +142,7 @@ class OrganisationController extends Controller
      *   operationId="show",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error") 
+     *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */
@@ -159,17 +159,17 @@ class OrganisationController extends Controller
                 isDenied();
             }
         }
-        return response()->json($organisation, 200); 
+        return response()->json($organisation, 200);
     }
 
     /**
      * Function responsible with sending notification to organisation
-     * 
+     *
      * @param string $id used for organisation search
      * @return object 200 and the organisation details if id match
      *                404 if the organisation is not exist
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}/email",
@@ -195,20 +195,20 @@ class OrganisationController extends Controller
         }
 
         /** Sending the notification */
-        $data = ['url' => env('FRONT_END_URL').'/organisations/id/'.$organisation->_id.'/validate'];
+        $data = ['url' => config('app.frontend-url').'/organisations/id/'.$organisation->_id.'/validate'];
         Mail::to($organisation['contact_person']['email'])->send(new NotifyTheOrganisation($data));
-        return response()->json('Email sent successfully', 200); 
+        return response()->json('Email sent successfully', 200);
     }
 
     /**
      * Function responsible with showing all volunteers from a specific organisation
-     * 
+     *
      * @param string $id used for organisation search
      * @param object $request contains the data for filter and sort
      * @return object 200 and the organisation volunteers details if id match
      *                403 if the organisation is denied
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}/volunteers",
@@ -238,7 +238,7 @@ class OrganisationController extends Controller
             '1' => array( 'courses', 'elemmatch' , "course_name._id", '$eq'),
             '2' => array ( 'name', 'ilike')
         ));
-    
+
         /** Function used for sorting */
         applySort($volunteers, $params, array(
             '1' => 'name',
@@ -253,7 +253,7 @@ class OrganisationController extends Controller
         return response()->json(array(
             "pager" => $pager,
             "data" => $volunteers->get()
-        ), 200); 
+        ), 200);
     }
 
     /**
@@ -278,7 +278,7 @@ class OrganisationController extends Controller
     {
         $params = $request->query();
 
-        /** Verify if role is NGO*/        
+        /** Verify if role is NGO*/
         if(isRole('ngo')){
             if( $id != getAffiliationId()){
                 isDenied();
@@ -307,7 +307,7 @@ class OrganisationController extends Controller
         return response()->json(array(
             "pager" => $pager,
             "data" => $resources->get()
-        ), 200); 
+        ), 200);
     }
 
 
@@ -316,7 +316,7 @@ class OrganisationController extends Controller
      * @return object 200 and the organisation details and organisation admin details if datas are inserted successfull
      *                403 if the organisation is denied
      *                500 if an error occurs
-     * 
+     *
      * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations",
@@ -421,11 +421,11 @@ class OrganisationController extends Controller
         if ($request->has('county')) {
             $data['county'] = getCityOrCounty($request->county,County::query());
         }
-        if ($request->has('city')) {            
+        if ($request->has('city')) {
             $data['city'] = getCityOrCounty($request->city,City::query());
         }
 
-        /** Set up the optional data */        
+        /** Set up the optional data */
         $data['comments'] = $request->has('comments') ? $request->comments : '';
         $data['address'] = $request->has('address') ? $request->address : '';
 
@@ -438,7 +438,7 @@ class OrganisationController extends Controller
                 'token' => str_random(60)
             ]
         );
-        $url = env('FRONT_END_URL') . '/auth/reset/'.$passwordReset->token;
+        $url = config('app.frontend-url') . '/auth/reset/'.$passwordReset->token;
         $set_password_data = array(
             'url' => $url
         );
@@ -465,7 +465,7 @@ class OrganisationController extends Controller
         $newNgoAdmin->added_by = $data['added_by'];
         $newNgoAdmin->password = Hash::make(str_random(16));
         $newNgoAdmin->save();
-        
+
         /** Set up the contact person */
         $organisation->contact_person = (object) [
             '_id'=>$newNgoAdmin['_id'],
@@ -479,7 +479,7 @@ class OrganisationController extends Controller
             "message" => 'Password sent to email.',
             "organisation" => $organisation
         );
-        return response()->json($response, 201); 
+        return response()->json($response, 201);
     }
 
     /**
@@ -487,7 +487,7 @@ class OrganisationController extends Controller
      * @return object 200 and the organisation details if datas are inserted successfull
      *                404 if the organisation is not found
      *                500 if an error occurs
-     * 
+     *
      * @SWG\put(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
@@ -514,7 +514,7 @@ class OrganisationController extends Controller
         }
 
         $data = $request->all();
-        
+
         /** Set up the new datas */
         $data['contact_person'] = (object) [
             '_id'=>$organisation->contact_person['_id'],
@@ -529,7 +529,7 @@ class OrganisationController extends Controller
             $data['city'] = getCityOrCounty($request['city'],City::query());
         }
         $organisation->update($data);
-        
+
         return $organisation;
     }
 
@@ -538,7 +538,7 @@ class OrganisationController extends Controller
      * @return object 200 if delete is successfull
      *                404 if the organisation is denied
      *                500 if an error occurs
-     * 
+     *
      * @SWG\Delete(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}",
@@ -599,7 +599,7 @@ class OrganisationController extends Controller
      * @return object 200 if is successfull
      *                404 if the organisation is denied
      *                500 if an error occurs
-     * 
+     *
      * @SWG\Post(
      *   tags={"Organisations"},
      *   path="/api/organisations/{id}/validate",

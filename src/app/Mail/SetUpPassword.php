@@ -28,6 +28,6 @@ class SetUpPassword extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Setează parola')->view('mails.set_up_password')->with('data', $this->data);
+        return $this->from(config('mail.username'))->subject('Setează parola')->view('mails.set_up_password')->with('data', $this->data);
     }
 }

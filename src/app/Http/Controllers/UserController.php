@@ -19,12 +19,12 @@ class UserController extends Controller
 {
     /**
      * Function responsible of processing get all users requests.
-     * 
+     *
      * @param object $request Contains all the data needed for extracting the users list.
-     * 
+     *
      * @return object 200 and the list of users if successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users",
@@ -54,12 +54,12 @@ class UserController extends Controller
 
      /**
      * Function responsible of extracting a user details requests.
-     * 
+     *
      * @param object $request Contains all the data needed for extracting the user details.
-     * 
+     *
      * @return object 200 and the JSON encoded user details if successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -89,13 +89,13 @@ class UserController extends Controller
 
     /**
      * Function responsible of processing user creation requests.
-     * 
+     *
      * @param object $request Contains all the data needed for creating a new user.
-     * 
+     *
      * @return object 201 and the JSON encoded new user details if successful
      *                400 if validation fails
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Post(
      *   tags={"Users"},
      *   path="/api/users",
@@ -191,7 +191,7 @@ class UserController extends Controller
         /** Generate a password reset. */
         $passwordReset = PasswordReset::updateOrCreate(['email' => $data['email']], ['email' => $data['email'], 'token' => str_random(60)]);
         /** Create the pass reset URL. */
-        $url = env('FRONT_END_URL') . '/auth/reset/' . $passwordReset->token;
+        $url = config('app.frontend-url') . '/auth/reset/' . $passwordReset->token;
         $set_password_data = array('url' => $url);
         /** Send welcoming email. */
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
@@ -216,14 +216,14 @@ class UserController extends Controller
 
     /**
      * Function responsible of processing user update requests.
-     * 
+     *
      * @param object $request Contains all the data needed for updating a user.
      * @param string $id The ID of the user to be updated.
-     * 
+     *
      * @return object 201 and the JSON encoded user details if successful
      *                400 if validation fails
      *                500 if an error occurs
-     *  
+     *
      * @SWG\put(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -252,19 +252,19 @@ class UserController extends Controller
         }
         $user->update($data);
 
-        return response()->json($user, 201); 
+        return response()->json($user, 201);
     }
 
 
     /**
      * Function responsible of processing delete user requests.
-     * 
+     *
      * @param object $request Contains all the data needed for deleting a user.
      * @param string $id The ID of the user to be deleted.
-     * 
+     *
      * @return object 200 if deletion is successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Delete(
      *   tags={"Users"},
      *   path="/api/users/{id}",

@@ -81,38 +81,38 @@ class AuthController extends Controller
     //         'role' => 'required',
     //         'phone' => 'required|string|min:6|'
     //     ]);
-    
+
     //     if ($validator->fails())
     //     {
     //         return response(['errors'=>$validator->errors()->all()], 422);
     //     }
-    
+
     //     $request['password']=Hash::make($request['password']);
     //     $user = User::create($request->toArray());
-    
+
     //     $token = $user->createToken('Laravel Password Grant Client')->accessToken;
     //     $response = ['token' => $token];
-    
+
     //     return response($response, 200);
-    
+
     // }
 
 
     /**
      * Function responsible with processing the login requests.
-     * 
+     *
      * @param object $request Contains all the login request data (like the email and password) to be used for the login process.
-     * 
+     *
      * @return object 200 and the login token if the login is successful
      *                422 if the password or user missmatches
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Post(
      *   tags={"Auth"},
      *   path="/api/login",
      *   summary="User login",
      *   operationId="login",
-     * 
+     *
      *   @SWG\Parameter(
      *     name="email",
      *     in="query",
@@ -154,9 +154,9 @@ class AuthController extends Controller
 
     /**
      * Function responsible with processing the logout requests.
-     * 
+     *
      * @param object $request Contains the token to be used for the logout process.
-     * 
+     *
      * @return object 200 if the logout is successful
      *                500 if an error occurs
      *
@@ -182,7 +182,7 @@ class AuthController extends Controller
 
     /**
      * Function responsible with processing the get user profile requests.
-     * 
+     *
      * @return object 200 and the profile of the logged-in user if no error occurs
      *                500 if an error occurs
      *
@@ -237,7 +237,7 @@ class AuthController extends Controller
 
         if ($user) {
             $passwordReset = PasswordReset::updateOrCreate(['email' => $user->email], ['email' => $user->email, 'token' => str_random(60)]);
-            $url = env('FRONT_END_URL') . '/auth/reset/' . $passwordReset->token;
+            $url = config('app.frontend-url') . '/auth/reset/' . $passwordReset->token;
 
             Mail::to($user->email)->send(new SendRecoverPasswordMail(['url' => $url]));
 
