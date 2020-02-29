@@ -29,13 +29,13 @@ class CsvParser
 
     /**
      *
-     * @param string $file - path to the file
+     * @param string $filePath
      * @param boolean $hasHeaders
      * @param bool|null $includeHeadersInData
      */
-    public function __construct($file, ?bool $hasHeaders = true, ?bool $includeHeadersInData = false)
+    public function __construct(string $filePath, ?bool $hasHeaders = true, ?bool $includeHeadersInData = false)
     {
-        $this->file = fopen($file, 'r');
+        $this->file = fopen($filePath, 'r');
         $this->hasHeaders = $hasHeaders;
     }
 

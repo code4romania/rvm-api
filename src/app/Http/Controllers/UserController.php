@@ -371,7 +371,7 @@ class UserController extends Controller
             );
         }
 
-        $parser = new CsvParser($file);
+        $parser = new CsvParser($file->getPathname());
 
         if (true === $import->importRescueOfficers($parser->parse(), $authenticatedUser)->hasErrors()) {
 
