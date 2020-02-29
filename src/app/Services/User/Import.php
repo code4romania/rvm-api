@@ -54,7 +54,7 @@ class Import
         return $this->import($list, User::ROLE_RESCUE_OFFICER, $importedBy);
     }
 
-    public function import(iterable $dataset, int $userRole, User $importedBy): self
+    public function import(iterable $dataset, $userRole, User $importedBy): self
     {
         if (!in_array($userRole, $this->rolesList)) {
             throw new \InvalidArgumentException(
