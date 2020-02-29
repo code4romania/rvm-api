@@ -13,10 +13,10 @@ return [
     */
 
     'role' => [
-        'officer' => '0',
-        'institution' => '1',
-        'ngo' => '2',
-        'dsu' => '3'
+        'officer' => \App\User::ROLE_RESCUE_OFFICER,
+        'institution' => \App\User::ROLE_INSTITUTION_ADMIN,
+        'ngo' => \App\User::ROLE_NGO_ADMIN,
+        'dsu' => \App\User::ROLE_DSU_ADMIN
     ],
 
 ];

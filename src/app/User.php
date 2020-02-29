@@ -9,6 +9,12 @@ use Robsonvn\CouchDB\Auth\User as Authenticatable;
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
+
+    const ROLE_RESCUE_OFFICER = 0;
+    const ROLE_INSTITUTION_ADMIN = 1;
+    const ROLE_NGO_ADMIN = 2;
+    const ROLE_DSU_ADMIN = 3;
+
     protected $connection = 'users';
     protected $collection = 'users';
     /**
@@ -28,4 +34,5 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
 }
