@@ -26,9 +26,9 @@ class Cnp implements Rule
      */
     public function passes($attribute, $value)
     {
-        
-        $exist = Volunteer::query()->where('ssn', '=', $value)->first();
-        if (strlen($value) === 13 && !$exist) {
+//        $exist = Volunteer::query()->where('ssn', '=', $value)->first();
+//        if (strlen($value) === 13 && !$exist) {
+        if (strlen($value) === 13 ) {
             $cnp = array_map('intval',str_split($value));
            
 			$coefs = [2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9];
