@@ -84,6 +84,7 @@ $ ./scripts/artisan.sh db:seed --class=ResourceCategoriesTableSeeder
 $ ./scripts/artisan.sh db:seed --class=CountriesTableSeeder
 $ ./scripts/artisan.sh db:seed --class=CountiesTableSeeder
 $ ./scripts/artisan.sh db:seed --class=CitiesTableSeeder
+$ ./scripts/artisan.sh db:seed --class=StaticsViewsSeeder
 $ ./scripts/artisan.sh db:seed --class=UsersTableSeeder
 ```
 
