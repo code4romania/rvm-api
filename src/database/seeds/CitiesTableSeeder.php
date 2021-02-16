@@ -13770,7 +13770,7 @@ class CitiesTableSeeder extends Seeder {
         ['county_id' => strval($counties['42']->id), 'country_id' => $id, 'slug' => 'Vlangaresti', 'name' => 'Vlăngărești']
       ];
 
-      foreach( $cities as $index => $city){
+      foreach($cities as $index => $city) {
         $county = array_values(array_filter(
           array_values($counties->toArray()),
           function ($e) use($city){
@@ -13784,7 +13784,7 @@ class CitiesTableSeeder extends Seeder {
       City::insert($cities);
 
       // Clean up
-      $countiesCol = County::all(); 
+      $countiesCol = County::all();
       foreach( $countiesCol as $county){
         $county->unset('county_id');
         $county->save();

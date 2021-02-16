@@ -35,7 +35,7 @@ class FilterController extends Controller
      *   operationId="filter_org_name",
      *   @SWG\Response(response=200, description="successful operation"),
      *   @SWG\Response(response=404, description="not acceptable"),
-     *   @SWG\Response(response=500, description="internal server error") 
+     *   @SWG\Response(response=500, description="internal server error")
      * )
      *
      */

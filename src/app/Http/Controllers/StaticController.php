@@ -13,12 +13,12 @@ class StaticController extends Controller
 {
     /**
      * Function responsible with extracting a list of cities.
-     * 
+     *
      * @param object $request Contains all the needed parameter for extracting the list of cities.
-     * 
+     *
      * @return object 200 and the list of cities if no error occurs
      *                500 if an error occurs
-     * 
+     *
      * @SWG\Get(
      *   tags={"Statics"},
      *   path="/api/cities",
@@ -73,12 +73,12 @@ class StaticController extends Controller
 
     /**
      * Function responsible with extracting a list of counties.
-     * 
+     *
      * @param object $request Contains all the needed parameter for extracting the list of counties.
-     * 
+     *
      * @return object 200 and the list of counties if no error occurs
      *                500 if an error occurs
-     * 
+     *
      * @SWG\Get(
      *   tags={"Statics"},
      *   path="/api/counties",

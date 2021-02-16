@@ -15,6 +15,6 @@ class StaticsViewsSeeder extends Seeder
         $client = \DB::connection('statics')->getCouchDBClient();
 
         $client->createDesignDocument('cities', new StaticCitiesBySlugAndNameView());
-		    $client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
+        $client->createDesignDocument('counties', new StaticCountiesBySlugAndNameView());
     }
 }
