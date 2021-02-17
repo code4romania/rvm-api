@@ -47,6 +47,11 @@ class VolunteerController extends Controller
         $params = $request->query();
         $volunteers = Volunteer::query();
 
+        /** Restrict 'ngo' user to view only he volunteers he/she added. */
+        if(isRole('ngo')) {
+            $volunteers->where('organisation._id', '=', getAffiliationId());
+        }
+
         /** Filter, sort and paginate the list of volunteers. */
         applyFilters($volunteers, $params, ['0' => ['county._id', 'ilike'], '1' => ['courses', 'elemmatch', "course_name._id", '$eq'], '2' => ['organisation._id', '='], '3' => ['name', 'ilike'], ]);
         applySort($volunteers, $params, array('1' => 'name', '2' => 'county', '3' => 'organisation.name'));
