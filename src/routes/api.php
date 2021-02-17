@@ -33,7 +33,7 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::middleware(['auth:api'])->group(function () {
         Route::get('/profile', 'AuthController@profile')->name('profile.api');
         Route::get('/logout', 'AuthController@logout')->name('logout');
-        
+
         Route::middleware(['checkRole:dsu'])->group(function () {
             Route::get('organisations/{id}/email', 'OrganisationController@sendNotification');
         });
@@ -62,13 +62,12 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::put('resources/{id}', 'ResourceController@update');
             Route::delete('resources/{id}', 'ResourceController@delete');
             Route::post('resources/import', 'ResourceController@importResources');
-            
+
             Route::post('volunteers', 'VolunteerController@store');
             Route::put('volunteers/{id}', 'VolunteerController@update');
             Route::delete('volunteers/{id}', 'VolunteerController@delete');
             Route::post('volunteers/import', 'VolunteerController@importVolunteers');
-          });
-
+        });
 
         Route::middleware(['checkRole:dsu,ngo,institution'])->group(function () {
             Route::get('volunteers', 'VolunteerController@index');
@@ -78,6 +77,7 @@ Route::group(['middleware' => ['json.response']], function () {
             Route::delete('users/{id}', 'UserController@delete');
             Route::get('volunteers/{id}/allocations', 'VolunteerController@allocations');
         });
+
         Route::get('filter/organisations', 'FilterController@filterOrganisationsName');
         Route::get('filter/volunteers/courses', 'FilterController@filterVolunteerCourses');
         Route::get('filter/users/institutions', 'FilterController@filterInstitutionUsers');
