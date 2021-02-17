@@ -40,6 +40,7 @@ class ResourceController extends Controller
         $params = $request->query();
         $resources = Resource::query();
 
+        /** Restrict 'ngo' user to view only he resources he/she added. */
         if(isRole('ngo')) {
             $resources->where('organisation._id', '=', getAffiliationId());
         }
