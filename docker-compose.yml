@@ -22,9 +22,10 @@ services:
     volumes:
       - ./src:/var/www
       - ./configs/nginx.app.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/:/etc/letsencrypt/
     ports:
-      - 8080:80
-
+      - 80:80
+      - 443:443
   # The Database
   database:
     image: couchdb:latest
