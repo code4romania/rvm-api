@@ -28,6 +28,6 @@ class PasswordChanged extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Password changed successfully')->view('mails.password_changed');
+        return $this->from(env('EMAIL_ADDRESS'))->subject('Password changed successfully')->view('mails.password_changed');
     }
 }
