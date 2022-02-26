@@ -28,6 +28,6 @@ class ResourceUpdate extends Mailable
      */
     public function build()
     {
-        return $this->from(env('MAIL_USERNAME'))->subject('Actualizare resurse')->view('mails.resource_update')->with('data', $this->data);
+        return $this->from(env('EMAIL_ADDRESS'))->subject('Actualizare resurse')->view('mails.resource_update')->with('data', $this->data);
     }
 }
