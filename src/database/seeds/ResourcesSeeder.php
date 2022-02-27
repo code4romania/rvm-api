@@ -23,6 +23,7 @@ class ResourcesSeeder extends Seeder
                 'city' => 'city_arges_albesti_6964',
                 'organisation_id' => '2e652e402b5ed4b5ab03a3cd0501374c',
                 "categories" => ["4620d41193cd85499cbfd1f67804ae52"],
+                "tags" => ["tag1", "tag2", "tag3"],
                 "comments" => "",
                 "address" => "",
             );

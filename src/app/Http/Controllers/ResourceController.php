@@ -72,7 +72,7 @@ class ResourceController extends Controller
     }
 
      /**
-     * Function responsible of processing get resource requests.
+     * Function responsible is processing get resource requests.
      * 
      * @param string $id The ID of the resource to be extracted.
      * 
@@ -281,6 +281,9 @@ class ResourceController extends Controller
                                                         ->first();
         $data['organisation'] = $organisation;
 
+         //  if we have tags add them
+         $data['tags'] = $request->has('tags') ?? [];
+
         /** Add the 'added by' to the resource. */
         \Auth::check() ? $data['added_by'] = \Auth::user()->_id : '';
         $resource = Resource::create($data);
@@ -318,6 +321,7 @@ class ResourceController extends Controller
     public function update(Request $request, $id) {
         $resource = Resource::findOrFail($id);
         $data = $request->all();
+
         if(isset($data['organisation_id']) && $data['organisation_id']) {
             $organisation_id = $data['organisation_id'];
             $organisation = Organisation::query()->where('_id', '=', $organisation_id)->get(['_id', 'name', 'website', 'address'])->first();
