@@ -77,7 +77,7 @@ $ ./scripts/artisan.sh passport:install
 
 Seed the database
 ```bash
-$ docker run -v ${PWD}/src:/app -w /app composer:latest composer dump-autoload
+$ docker run -v ${PWD}/src:/app -w /app composer:1.9.0 composer dump-autoload
 $ ./scripts/artisan.sh db:seed --class=CourseNamesTableSeeder
 $ ./scripts/artisan.sh db:seed --class=InstitutionsTableSeeder
 $ ./scripts/artisan.sh db:seed --class=ResourceCategoriesTableSeeder
