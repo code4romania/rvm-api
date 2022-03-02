@@ -2,29 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use App\Mail\SetUpPassword;
-use App\User;
-use App\PasswordReset;
 use App\Institution;
+use App\Mail\SetUpPassword;
 use App\Organisation;
-use App\Volunteer;
+use App\Parser\CsvParser;
+use App\PasswordReset;
+use App\Services\User\Import;
+use App\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Log\Logger;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
     /**
      * Function responsible of processing get all users requests.
-     * 
+     *
      * @param object $request Contains all the data needed for extracting the users list.
-     * 
+     *
      * @return object 200 and the list of users if successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users",
@@ -36,30 +40,31 @@ class UserController extends Controller
      * )
      *
      */
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $params = $request->query();
         $users = User::query();
 
-        if(isRole('institution')) {
+        if (isRole('institution')) {
             $users->where('role', '=', '0')->where('institution._id', '=', getAffiliationId());
         }
-        applyFilters($users, $params, array('0' => array( 'institution._id', 'ilike'), '1' => array( 'name', 'ilike' ),));
-        applySort($users, $params, array('1' => 'name', '2' => 'role', '3' => 'institution.name'));
+        applyFilters($users, $params, ['0' => ['institution._id', 'ilike'], '1' => ['name', 'ilike'],]);
+        applySort($users, $params, ['1' => 'name', '2' => 'role', '3' => 'institution.name']);
 
         $pager = applyPaginate($users, $params);
 
-        return response()->json(array("pager" => $pager, "data" => $users->get()), 200);
+        return response()->json(["pager" => $pager, "data" => $users->get()], 200);
     }
 
 
-     /**
+    /**
      * Function responsible of extracting a user details requests.
-     * 
+     *
      * @param object $request Contains all the data needed for extracting the user details.
-     * 
+     *
      * @return object 200 and the JSON encoded user details if successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Get(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -71,15 +76,16 @@ class UserController extends Controller
      * )
      *
      */
-    public function show($id) {
+    public function show($id)
+    {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
 
-        if(isset($user->organisation['_id'])){
+        if (isset($user->organisation['_id'])) {
             $user->organisation = Organisation::find($user->organisation['_id']);
         }
 
-        if(isset($user->institution['_id'])){
+        if (isset($user->institution['_id'])) {
             $user->institution = Institution::find($user->institution['_id']);
         }
 
@@ -89,13 +95,13 @@ class UserController extends Controller
 
     /**
      * Function responsible of processing user creation requests.
-     * 
+     *
      * @param object $request Contains all the data needed for creating a new user.
-     * 
+     *
      * @return object 201 and the JSON encoded new user details if successful
      *                400 if validation fails
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Post(
      *   tags={"Users"},
      *   path="/api/users",
@@ -149,7 +155,8 @@ class UserController extends Controller
      * )
      *
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $data = $request->all();
         $rules = [
             'name' => 'required|string|max:255',
@@ -164,35 +171,38 @@ class UserController extends Controller
         }
 
         $data = convertData($validator->validated(), $rules);
-        if(!isRole('dsu')){
-            if(isset($data['institution'])) {
+        if (!isRole('dsu')) {
+            if (isset($data['institution'])) {
                 unset($data['institution']);
             }
 
-            if(isset($data['organisation'])){
+            if (isset($data['organisation'])) {
                 unset($data['organisation']);
             }
         } else {
             $request->has('institution') ? $institution = Institution::findOrFail($request->institution) : '';
-            if(isset($institution)) {
+            if (isset($institution)) {
                 $data['institution'] = ['_id' => $institution->_id, 'name' => $institution->name];
             }
 
             $request->has('organisation') ? $organisation = Organisation::findOrFail($request->organisation) : '';
-            if(isset($organisation)) {
+            if (isset($organisation)) {
                 $data['organisation'] = ['_id' => $organisation->_id, 'name' => $organisation->name];
             }
         }
         $data = setAffiliate($data);
-        if(\Auth::check()) {
-           $data['added_by'] = \Auth::user()->_id;
+        if (\Auth::check()) {
+            $data['added_by'] = \Auth::user()->_id;
         }
 
         /** Generate a password reset. */
-        $passwordReset = PasswordReset::updateOrCreate(['email' => $data['email']], ['email' => $data['email'], 'token' => str_random(60)]);
+        $passwordReset = PasswordReset::updateOrCreate(
+            ['email' => $data['email']],
+            ['email' => $data['email'], 'token' => str_random(60)]
+        );
         /** Create the pass reset URL. */
-        $url = env('FRONT_END_URL') . '/auth/reset/' . $passwordReset->token;
-        $set_password_data = array('url' => $url);
+        $url = env('FRONT_END_URL').'/auth/reset/'.$passwordReset->token;
+        $set_password_data = ['url' => $url];
         /** Send welcoming email. */
         Mail::to($data['email'])->send(new SetUpPassword($set_password_data));
 
@@ -202,10 +212,15 @@ class UserController extends Controller
         $user = User::create($data);
 
         /** Chech if the user is ngo-admin. */
-        if($user['role'] == 2) {
+        if ($user['role'] == 2) {
             /** Extract the organization and update the contact person. */
             $organisation = Organisation::query()->where('_id', '=', $user['organisation._id'])->first();
-            $organisation->contact_person = (object) ['_id'=>$user['_id'], 'name'=>$user['name'], 'email'=>$user['email'], 'phone'=>$user['phone']];
+            $organisation->contact_person = (object)[
+                '_id' => $user['_id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'phone' => $user['phone'],
+            ];
             $organisation->save();
         }
         $response = ["message" => 'Password sent to email.', "user" => $user];
@@ -216,14 +231,14 @@ class UserController extends Controller
 
     /**
      * Function responsible of processing user update requests.
-     * 
+     *
      * @param object $request Contains all the data needed for updating a user.
      * @param string $id The ID of the user to be updated.
-     * 
+     *
      * @return object 201 and the JSON encoded user details if successful
      *                400 if validation fails
      *                500 if an error occurs
-     *  
+     *
      * @SWG\put(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -235,36 +250,37 @@ class UserController extends Controller
      * )
      *
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
         $user = setAffiliate($user);
         $data = $request->all();
 
-        if(isset($data['institution']) && $data['institution']) {
+        if (isset($data['institution']) && $data['institution']) {
             $institution = Institution::findOrFail($data['institution']);
             $data['institution'] = ['_id' => $institution->_id, 'name' => $institution->name];
         }
 
-        if(isset($data['organisation']) && $data['organisation']) {
+        if (isset($data['organisation']) && $data['organisation']) {
             $organisation = Organisation::findOrFail($data['organisation']);
             $data['organisation'] = ['_id' => $organisation->_id, 'name' => $organisation->name];
         }
         $user->update($data);
 
-        return response()->json($user, 201); 
+        return response()->json($user, 201);
     }
 
 
     /**
      * Function responsible of processing delete user requests.
-     * 
+     *
      * @param object $request Contains all the data needed for deleting a user.
      * @param string $id The ID of the user to be deleted.
-     * 
+     *
      * @return object 200 if deletion is successful
      *                500 if an error occurs
-     *  
+     *
      * @SWG\Delete(
      *   tags={"Users"},
      *   path="/api/users/{id}",
@@ -276,21 +292,134 @@ class UserController extends Controller
      * )
      *
      */
-    public function delete(Request $request, $id) {
+    public function delete(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         allowResourceAccess($user);
-        if(!isRole('dsu') && !isRole('ngo') && getAffiliationId($id) != \Auth::user()->institution['_id']){
-           isDenied();
+        if (!isRole('dsu') && !isRole('ngo') && getAffiliationId($id) != \Auth::user()->institution['_id']) {
+            isDenied();
         }
 
-        if($user->role == 2) {
+        if ($user->role == 2) {
             $ong = Organisation::query()->where('_id', '=', $user->organisation['_id'])->first();
-            $ong->contact_person = (object) ['_id'=>null, 'name'=>null, 'email'=>null, 'phone'=>null];
+            $ong->contact_person = (object)['_id' => null, 'name' => null, 'email' => null, 'phone' => null];
             $ong->save();
         }
         $user->delete();
-        $response = array("message" => 'User deleted.');
+        $response = ["message" => 'User deleted.'];
 
         return response()->json($response, 200);
+    }
+
+    /**
+     * Function responsible of processing import rescue officers requests.
+     *
+     * @param object $request Contains all the data needed for importing a list of users.
+     *
+     * @return object 200 if import is successful
+     *                500 if an error occurs
+     *
+     * @SWG\Post(
+     *   tags={"Users"},
+     *   path="/api/users/import",
+     *   summary="Import CSV with users",
+     *   operationId="post",
+     *   @SWG\Parameter(
+     *     name="file",
+     *     in="query",
+     *     description="CSV file.",
+     *     required=true,
+     *     type="File"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="Coloanele din CSV",
+     *     in="query",
+     *     description="nume,email,judet,localitate,telefon, institutie,organizatie",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(response=200, description="successful operation"),
+     *   @SWG\Response(response=400, description="request invalid"),
+     *   @SWG\Response(response=406, description="not acceptable"),
+     *   @SWG\Response(response=500, description="internal server error")
+     * )
+     *
+     */
+    public function importUsers(Request $request, Import $import): \Illuminate\Http\JsonResponse
+    {
+
+        /** @var User $authenticatedUser */
+        $authenticatedUser = \Auth::check() ? \Auth::user() : isDenied();;
+
+        $file = $request->file('file');
+
+        if (!$file instanceof UploadedFile) {
+            return response()->json(
+                [
+                    "message" => 'Trebuie sa incarcati un fisier',
+                ],
+                400
+            );
+        }
+
+        if(!in_array($file->getClientOriginalExtension(), ['csv'] )){
+            return response()->json(
+                [
+                    "message" => 'Fisierul trebuie sa fie de tip csv',
+                ],
+                400
+            );
+        }
+
+        $parser = new CsvParser($file->getPathname());
+
+        if (true === $import->importRescueOfficers($parser->parse(), $authenticatedUser)->hasErrors()) {
+
+            if ($import->getTotalImported() === 0) {
+                $message = "Importul nu a putut fi efectuat";
+            } else {
+                $message = "Import partial finalizat";
+            }
+
+        } else {
+            $message = "Import finalizat cu success";
+        }
+
+        $importedUsers = $import->getCreatedUsers();
+
+        App::terminating(function() use ($importedUsers){
+
+            foreach($importedUsers as $createdUser){
+
+                /** Generate a password reset. */
+                $passwordReset = PasswordReset::updateOrCreate(
+                    ['email' => $createdUser->email],
+                    ['email' => $createdUser->email, 'token' => Str::random(60)]
+                );
+
+                /** Create the pass reset URL. */
+                $url = env('FRONT_END_URL').'/auth/reset/'.$passwordReset->token;
+
+                try {
+                    /** Send welcoming email. */
+                    Mail::to($createdUser->email)->send(new SetUpPassword(['url' => $url]));
+                }catch (\Exception $e){
+                    //fail silently
+                    Log::error($e->getMessage());
+                    Log::error($e->getTraceAsString());
+                }
+            }
+
+        });
+
+        return response()->json(
+            [
+                "has_errors" => $import->hasErrors(),
+                "total_errors" => count($import->getErrors()),
+                "rows_imported" => $import->getTotalImported(),
+                "errors" => $import->getErrors(),
+                "message" => $message,
+            ]
+        );
     }
 }

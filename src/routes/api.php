@@ -42,6 +42,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::middleware(['checkRole:dsu,institution'])->group(function () {
             Route::get('users', 'UserController@index');
             Route::post('users', 'UserController@store');
+            Route::post('users/import', 'UserController@importUsers');
         });
 
         Route::middleware(['checkRole:dsu,ngo'])->group(function () {
