@@ -58,14 +58,14 @@ $ docker-compose up
 
 Setup CouchDB single-node here: http://localhost:5984/_utils#setup or do it manually by running:
 ```bash
-$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_users"'
-$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_replicator"'
-$ docker exec -it rvm-api_app_1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_global_changes"'
+$ docker exec -it rvm-api-app-1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_users"'
+$ docker exec -it rvm-api-app-1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_replicator"'
+$ docker exec -it rvm-api-app-1 sh -c 'curl -X PUT "http://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/_global_changes"'
 ```
 
 Run database migrations
 ```bash
-$ docker exec -it rvm-api_app_1 php ./database/migrations/v_1_0_0.php -c migrate
+$ docker exec -it rvm-api-app-1 php ./database/migrations/v_1_0_0.php -c migrate
 ```
 
 Generate app secret key, and personal access client keys
