@@ -1,0 +1,18 @@
+version: '3'
+services:
+  # The Application
+  app:
+    env_file: ./src/.env
+
+  # The Web Server
+  web:
+    volumes:
+      - ./configs/nginx.app.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/:/etc/letsencrypt/
+    ports:
+      - 443:443
+  # The Database
+  databases:
+    env_file: ./src/.env
+volumes:
+  dbdata:
