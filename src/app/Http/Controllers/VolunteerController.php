@@ -231,6 +231,7 @@ class VolunteerController extends Controller
         $data['allocation'] = '';
         $data['comments'] = $request->has('comments') ? $request->comments : '';
         $data['job'] = $request->has('job') ? $request->job : '';
+        $data['address'] = $request->has('address') ? $request->address : '';
 
         /** Add 'organisation' to the volunteer. */
         $organisation_id = $request->organisation_id;
